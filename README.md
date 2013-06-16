@@ -1,5 +1,6 @@
 # MEAN (Mongo Express Angular Node) stack
 *MongoDB Express.js AngularJS Node.js + Grunt Jasmine*
+
 This is project is meant to be a starting point for full stack javascript HTML5 websites and mobile apps (cross platform, responsive, can optionally be wrapped with TriggerIO, Phonegap, etc.). It's meant to be more specific than barebones language specific seeds such as angular-seed so you can start out with core user functionality (login, sign up, forgot password) out of the box but broad and modularized enough to be used for a wide variety of applications. Angular and Node are the core technologies and Express, Mongo (using mongodb-native) and Grunt are pretty heavily integrated but all other technologies can be swapped as needed with a little bit of work.
 - mongodb-native is used (rather than mongoose) as the npm plugin for the node-mongoDB interface.
 - Other key technologies used:
@@ -11,6 +12,7 @@ This is project is meant to be a starting point for full stack javascript HTML5 
 	- backend: `package.json`
 	
 Feel free to fork the project to make seeds with other default technologies (Mongoose instead of mongo-db-native, SASS instead of LESS, Mocha instead of Jasmine for backend tests, etc.).
+
 Any suggestions for improvement welcome!
 
 ### NOTE: In general, each (major) directory should have its own README file to avoid this one from getting bloated and hard to follow. Currently there is (just) a README specific to the frontend in the `app/src` folder.

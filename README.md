@@ -1,4 +1,4 @@
-# MEAN (Mongo Express Angular Node) stack
+# MEAN (Mongo Express Angular Node) seed
 *MongoDB Express.js AngularJS Node.js + Grunt Jasmine*
 
 This is project is meant to be a starting point for full stack javascript (Angular + Node) HTML5 websites and mobile apps (cross platform, responsive, can optionally be wrapped with TriggerIO, Phonegap, etc.).

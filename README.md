@@ -1,10 +1,17 @@
 # MEAN (Mongo Express Angular Node) stack
-*MongoDB Express.js AngularJS Node.js + Grunt Jasmine LESS*
+*MongoDB Express.js AngularJS Node.js + Grunt Jasmine*
+This is project is meant to be a starting point for full stack javascript HTML5 websites and mobile apps (cross platform, responsive, can optionally be wrapped with TriggerIO, Phonegap, etc.). It's meant to be more specific than barebones language specific seeds such as angular-seed so you can start out with core user functionality (login, sign up, forgot password) out of the box but broad and modularized enough to be used for a wide variety of applications. Angular and Node are the core technologies and Express, Mongo (using mongodb-native) and Grunt are pretty heavily integrated but all other technologies can be swapped as needed with a little bit of work.
 - mongodb-native is used (rather than mongoose) as the npm plugin for the node-mongoDB interface.
 - Other key technologies used:
-	- Grunt.js (build tool)
-	- Jasmine (testing framework - used for both frontend (with Karma) and backend (with jasmine-node) testing)
-	- LESS (CSS pre-processor. Twitter Bootstrap CSS framework is currently NOT used but can be easily integrated.)
+	- Grunt.js - build tool.
+	- Jasmine - testing framework - used for both frontend (with Karma) and backend (with jasmine-node) testing. Can switch in other testing frameworks in place of Jasmine if you want.
+	- LESS - CSS pre-processor. Twitter Bootstrap CSS framework is currently NOT used but can be easily integrated. SASS/SCSS/Compass can be switched in instead of LESS pretty easily as well.
+- For a full list of dependencies / technologies see below, though many of the non-core ones can be switched out as necessary.
+	- frontend: `app/src/lib`
+	- backend: `package.json`
+	
+Feel free to fork the project to make seeds with other default technologies (Mongoose instead of mongo-db-native, SASS instead of LESS, Mocha instead of Jasmine for backend tests, etc.).
+Any suggestions for improvement welcome!
 
 ### NOTE: In general, each (major) directory should have its own README file to avoid this one from getting bloated and hard to follow. Currently there is (just) a README specific to the frontend in the `app/src` folder.
 
@@ -320,4 +327,7 @@ API:Main Moudle Route   | `/api/`, `/api/help`
 
 
 ## TODO
+- Use Yeoman (once it comes out of 1.0 Beta)
 - modularize the non-modularized files so the configurations (all the custom code) can edited separately from the functions and generic code.
+- make a Mongoose fork for people who want to use Mongoose instead of mongo-db-native as the node-mongo interface?
+- make a SASS/SCSS fork for people who prefer SASS/Compass over LESS for CSS pre-processing?

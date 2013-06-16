@@ -10,14 +10,14 @@ This is project is meant to be a starting point for full stack javascript HTML5 
 - Other key technologies used:
 	- Grunt.js - build tool.
 	- Jasmine - testing framework - used for both frontend (with Karma) and backend (with jasmine-node) testing. Can switch in other testing frameworks in place of Jasmine if you want.
-	- LESS - CSS pre-processor. Twitter Bootstrap CSS framework is currently NOT used but can be easily integrated. SASS/SCSS/Compass can be switched in instead of LESS pretty easily as well.
+	- LESS - CSS pre-processor. Twitter Bootstrap CSS framework is currently NOT used but can be easily integrated. SASS/SCSS/Compass can be switched in instead of LESS pretty easily as well. The main reasons for going with LESS by default are because it seems to compile a bit faster and because Angular UI and Twitter Bootstrap use LESS so it makes it easier to develop/augment those.
 - For a full list of dependencies / technologies see below, though many of the non-core ones can be switched out as necessary.
 	- frontend: `app/src/lib`
 	- backend: `package.json`
 	
 Feel free to fork the project to make seeds with other default technologies (Mongoose instead of mongo-db-native, SASS instead of LESS, Mocha instead of Jasmine for backend tests, etc.).
 
-Any suggestions for improvement welcome!
+Any suggestions for improvement are welcome!
 
 ### NOTE: In general, each (major) directory should have its own README file to avoid this one from getting bloated and hard to follow. Currently there is (just) a README specific to the frontend in the `app/src` folder.
 

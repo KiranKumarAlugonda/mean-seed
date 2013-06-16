@@ -1,5 +1,5 @@
 # MEAN (Mongo Express Angular Node) stack
-*MongoDB Express.js AngularJS Node.js*
+*MongoDB Express.js AngularJS Node.js + Grunt Jasmine LESS*
 - mongodb-native is used (rather than mongoose) as the npm plugin for the node-mongoDB interface.
 Other key technologies used:
 - Grunt.js (build tool)

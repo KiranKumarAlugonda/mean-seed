@@ -1,10 +1,10 @@
 # MEAN (Mongo Express Angular Node) stack
 *MongoDB Express.js AngularJS Node.js + Grunt Jasmine LESS*
 - mongodb-native is used (rather than mongoose) as the npm plugin for the node-mongoDB interface.
-Other key technologies used:
-- Grunt.js (build tool)
-- Jasmine (testing framework - used for both frontend (with Karma) and backend (with jasmine-node) testing)
-- LESS (CSS pre-processor. Twitter Bootstrap CSS framework is currently NOT used but can be easily integrated.)
+- Other key technologies used:
+	- Grunt.js (build tool)
+	- Jasmine (testing framework - used for both frontend (with Karma) and backend (with jasmine-node) testing)
+	- LESS (CSS pre-processor. Twitter Bootstrap CSS framework is currently NOT used but can be easily integrated.)
 
 ### NOTE: In general, each (major) directory should have its own README file to avoid this one from getting bloated and hard to follow. Currently there is (just) a README specific to the frontend in the `app/src` folder.
 

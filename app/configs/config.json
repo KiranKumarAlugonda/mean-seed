@@ -1,0 +1,76 @@
+{
+    "versions":{
+        "cfg": "0.5",
+        "pkg": "0.0.6"
+    },
+    "env": "development",
+    "app": {
+        "name": "project",
+        "title": "Project"
+    },
+    "server": {
+        "domain": "localhost",
+        "port": 3000,
+        "httpsPort": 443,
+        "socketPort": 3001,
+        "serverPath": "/",
+        "appPath": "/",
+        "staticFilePath": "/src/",
+        "staticPath": "/src/"
+    },
+    "cors": {
+        "domains": ["localhost"],
+		"frontendUseCors": 0
+    },
+    "db": {
+		"fullURI": "",
+        "host": "localhost",
+        "port": 27017,
+        "database": "project",
+        "username": false,
+        "password": false
+    },
+    "logKey": "dev",
+    "cookie": {
+        "secret": "o@:&M<ZN PF(s.T)3?*;^1~TDjNE}=3xy$SpB7dE%dA-}fAn.b[RRU{cg+P#[):/"
+    },
+    "session": {
+        "maxAge": 3600000,
+        "store": {
+            "db": "project",
+            "collection": "session",
+            "auto_reconnect": true
+        }
+    },
+    "ssl": {
+        "enabled": false,
+        "key": "/etc/apache2/conf.d/ssl.key",
+        "cert": "/etc/apache2/conf.d/ssl.crt"
+    },
+    "rpc": {
+        "autoDoc": true,
+        "autoDocUrl": "help"
+    },
+	"email":{
+		"from": "admin@project.com",
+		"from_name": "Admin",
+		"mandrillApiKey": "teiFjhKF9G7KDOIzZJ8TlQ"
+	},
+	"sms":{
+		"twilio":{
+			"from": "+15005550006",
+			"account_sid": "AC7f1e9c6fdeee3c9f979d468d1b81ff03",
+			"auth_token": "d7ca9fa9cf8786b0c741185bc3ee1fe8"
+		}
+	},
+	"facebook":{
+		"appId": "195380783916970"
+	},
+	"less":{
+		"dirPathRootPrefix": ""
+	},
+	"google":{
+		"clientId": "486630891328.apps.googleusercontent.com",
+		"clientSecret": "uKWzHKd9hbF4dxCmxefrpkYh"
+	}
+}

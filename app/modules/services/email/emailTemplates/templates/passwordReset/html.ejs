@@ -1,0 +1,8 @@
+<html>
+    <body>
+		Your password reset key is <span class="highlight"><%= reset_key %></span>
+		<br />
+		Click <a href="http://<%= config.publicServerUrl %><%= config.resetUrlPath %>?<%= config.emailKey %>=<%= email %>&<%= config.resetKey %>=<%= reset_key %>">here</a> to reset your password.
+		<br />
+	</body>
+</html>

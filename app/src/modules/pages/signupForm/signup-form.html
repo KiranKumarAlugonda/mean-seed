@@ -1,0 +1,17 @@
+<div class='signup-form center' ng-controller='SignupFormCtrl'>
+	<form class='ui-forminput-form wider' name='signupForm' ng-submit='submitForm()'>
+		<div ui-forminput placeholder='Name' ng-model='formVals.name' opts='' required ng-minlength='4'></div>
+		<div ui-forminput placeholder='Email' ng-model='formVals.email' opts='' required></div>
+		<div ui-forminput type='password' placeholder='Password (6+ characters)' label='Password' ng-model='formVals.password' opts='' required ng-minlength='6'></div>
+		<div ui-forminput type='password' placeholder='Password Again' ng-model='formVals.password_confirm' opts='' required></div>
+		
+		<button class='btn btn-primary' type='submit' >Sign Up</button>
+		<div class='text-info'>{{msgNotify}}</div>
+	</form>
+
+	<div class='login-social-buttons center'>
+		<div class='facebook' ui-iconbutton icon-class='icon-facebook' button-text='Sign Up' ng-click='fbLogin()'></div>
+		<div class='google' ui-iconbutton icon-class='icon-google-plus' button-text='Sign Up' ng-click='googleLogin()'></div>
+	</div>
+	
+</div>

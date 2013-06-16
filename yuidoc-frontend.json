@@ -1,0 +1,11 @@
+{
+	"name": "TODO",
+    "description": "TODO",
+    "version": "0.0.0",
+    "url": "TODO",
+    "options": {
+        "paths": "./app/src/",
+        "outdir": "docs/frontend",
+        "exclude": ""
+    }
+}

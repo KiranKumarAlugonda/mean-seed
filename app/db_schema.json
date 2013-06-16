@@ -1,0 +1,40 @@
+{
+	"user":
+	{
+		"_id":"{ObjectId} ObjectId('123l4k234l')",
+		"email":"{String} test@test.com",
+		"emails_all":[
+			{
+				"email":"{String} test@test.com",
+				"confirmed":"{Number} 1",
+				"primary":"{Number} 1"
+			}
+		],
+		"phone":{
+			"area_code":"{String} 1",
+			"number":"{String} 0123456789",
+			"confirmed":"{Number} 1",
+			"primary":"{Number} 1"
+		},
+		"phones_all":[
+			{
+				"area_code":"{String} 1",
+				"number":"{String} 0123456789",
+				"confirmed":"{Number} 1",
+				"primary":"{Number} 1"
+			}
+		],
+		"first_name":"{String} John",
+		"last_name":"{String} Smith",
+		"name":"{String} John Smith",
+		"password":"{String} [encrypted salt + encrypted password]",
+		"password_salt":"{String} [string of password salt]",
+		"sess_id":"{String} [string of current session id]",
+		"password_reset_key":"{String} [string of random string to allow resetting password]",
+		"facebook_id":"128333",
+		"signup": "[timestamp]",
+		"last_login": "[timestamp]",
+		"status": "{String} member",
+		"super_admin": "{Number} 1"
+	}
+}

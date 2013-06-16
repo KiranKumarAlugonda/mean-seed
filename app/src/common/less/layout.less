@@ -1,0 +1,78 @@
+//in house / non-3rd party files
+.clearfix ()
+{
+	content: ".";
+	display: block;
+	height: 0;
+	clear: both;
+	visibility: hidden;
+}
+.clearfix:after {
+	.clearfix();
+}
+
+body {
+	z-index:1;
+	font: 14px/1.25 Helvetica, sans-serif;
+	-webkit-tap-highlight-color: rgb(255,255,158);
+	-webkit-text-size-adjust: 100%; /* Stops Mobile Safari from auto-adjusting font-sizes */
+}
+
+#content >div {
+	padding:10px 15px;
+}
+#content >div.content-no-top-padding
+{
+	padding-top:0;
+}
+#content >div.content-no-padding
+{
+	padding:0;
+}
+.dtv-appalert-cont {
+	position:fixed;
+	z-index:99999;
+}
+
+.center {
+	margin-left:auto;
+	margin-right:auto;
+	text-align:center;
+}
+.inline-block {
+	display:inline-block;
+}
+
+
+//2 column fixed/fluid layout (with floats)
+.fluid-left {
+	float:left;
+	width:100%;
+}
+.fixed-right {
+	float:right;
+	/*
+	width:50px;
+	margin-left:-50px;
+	*/
+}
+.fixed-right(@width) {
+	width:@width;
+	margin-left:(-1 *@width);
+	text-align:right;
+}
+.fluid-right {
+	float:right;
+	width:100%;
+}
+.fixed-left {
+	float:left;
+	/*
+	width:50px;
+	margin-right:-50px;
+	*/
+}
+.fixed-left(@width) {
+	width:@width;
+	margin-right:(-1 *@width);
+}

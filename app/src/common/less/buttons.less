@@ -1,0 +1,108 @@
+.pointer {
+	cursor:pointer;
+}
+
+a, .btn-link {
+	cursor:pointer;
+	color: @linkColor;
+	/*
+	text-decoration: none;
+	-webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+	*/
+}
+
+.btn-base() {
+	padding:.4em .67em;
+	border-radius:4px;
+	cursor:pointer;
+	text-align:center;
+	color:white;
+	min-width:75px;
+	&:active {
+		background: darken(#fff, 5%);
+	}
+	.user-select(none);
+}
+
+// Block level buttons (full width buttons)
+.btn-block {
+	display: block;
+	padding: 11px 11px;
+	margin: 10px 10px;
+	font-size: 16px;
+	max-width:100%;
+	width:100%;
+}
+
+button[type="submit"].btn-block, .btn-block.ui-forminput-submit {
+	max-width:100%;
+}
+/* overwrite wide/wider/widest form margin-left for block (full width) buttons */
+/*
+.ui-forminput-form.wide button[type="submit"].btn-block, .ui-forminput-form.wider button[type="submit"].btn-block, .ui-forminput-form.widest button[type="submit"].btn-block, .ui-forminput-form.wide .btn-block.ui-forminput-submit, .ui-forminput-form.wider .btn-block.ui-forminput-submit, .ui-forminput-form.widest .btn-block.ui-forminput-submit
+*/
+.ui-forminput-form.wide .btn.btn-block, .ui-forminput-form.wider .btn.btn-block, .ui-forminput-form.widest .btn.btn-block
+{
+	margin-left:0;
+}
+
+
+//actual button styles and classes
+.btn {
+	.btn-base();
+	.gradient(~"linear-gradient(180deg, #ffffff, #e6e6e6)");
+	border: 1px solid #bbbbbb;
+	color: #333333;
+}
+.btn:hover {
+	.gradient(~"linear-gradient(0deg, #ffffff, #e6e6e6)");
+}
+
+.btn-primary {
+	.btn-base();
+	.gradient(~"linear-gradient(180deg, #0088cc, #0044cc)");
+	border:solid 1px #0044cc;
+}
+.btn-primary:hover {
+	.gradient(~"linear-gradient(0deg, #0088cc, #0044cc)");
+}
+.btn-warning {
+	.btn-base();
+	.gradient(~"linear-gradient(180deg, #fbb450, #f89406)");
+	border:solid 1px #f89406;
+}
+.btn-warning:hover {
+	.gradient(~"linear-gradient(0deg, #fbb450, #f89406)");
+}
+.btn-danger {
+	.btn-base();
+	.gradient(~"linear-gradient(180deg, #ee5f5b, #bd362f)");
+	border:solid 1px #bd362f;
+}
+.btn-danger:hover {
+	.gradient(~"linear-gradient(0deg, #ee5f5b, #bd362f)");
+}
+.btn-success {
+	.btn-base();
+	.gradient(~"linear-gradient(180deg, #62c462, #51a351)");
+	border:solid 1px #51a351;
+}
+.btn-success:hover {
+	.gradient(~"linear-gradient(0deg, #62c462, #51a351)");
+}
+.btn-info {
+	.btn-base();
+	.gradient(~"linear-gradient(180deg, #5bc0de, #2f96b4)");
+	border:solid 1px #2f96b4;
+}
+.btn-info:hover {
+	.gradient(~"linear-gradient(0deg, #5bc0de, #2f96b4)");
+}
+.btn-inverse {
+	.btn-base();
+	.gradient(~"linear-gradient(180deg, #444444, #222222)");
+	border:solid 1px #222222;
+}
+.btn-inverse:hover {
+	.gradient(~"linear-gradient(0deg, #444444, #222222)");
+}

@@ -1,0 +1,32 @@
+# generic (system) files/extensions we don't want
+*.seed
+*.log
+*.csv
+*.dat
+*.out
+*.pid
+*.gz
+.idea/*
+*.DS_Store
+lib-cov
+pids
+logs
+results
+
+# node and node packages (local installs that should not be tracked)
+npm-debug.log
+node_modules
+
+# configuration files
+/configs
+app/test/config.json
+
+# ignore auto generated documentation (YUIDoc) files
+docs
+
+#ignore files compiled / built by grunt
+app/src/build
+app/src/modules/services/LGlobals.js
+app/src/config/karma.conf.js
+_dir-paths.less
+app/src/index.html

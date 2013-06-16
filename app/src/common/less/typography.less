@@ -1,0 +1,68 @@
+/* inline font sizing */
+h1,h2,h3,h4,h5,h6 {
+	font-weight:bold;
+}
+h1,h2,h3 {
+	line-height:40px;
+}
+h4,h5,h6 {
+	line-height:20px;
+}
+
+@baseFontSize: 15px;
+h1, .h1 { font-size: @baseFontSize * 2.75; }
+h2, .h2 { font-size: @baseFontSize * 2.25; }
+h3, .h3 { font-size: @baseFontSize * 1.75; }
+h4, .h4 { font-size: @baseFontSize * 1.25; }
+h5, .h5 { font-size: @baseFontSize; }
+h6, .h6 { font-size: @baseFontSize * 0.85; }
+
+/* colored text */
+.muted, .text-muted {
+	color: @grayLight;
+}
+.text-warning {
+	//color: @yellow;
+	color: @warningText;
+}
+.text-error, .text-danger {
+	//color:@red;
+	color: @errorText;
+}
+.text-info {
+	//color: @blue;
+	color: @infoText;
+}
+.text-success {
+	//color: @green;
+	color: @successText;
+}
+.white {
+	color:@white;
+}
+/* end: colored text */
+
+
+/* spacing */
+.section, .section-medium {
+	padding:10px;
+}
+.section-small {
+	padding:5px;
+}
+.section-large {
+	padding:20px;
+}
+.section-xlarge {
+	padding:30px;
+}
+
+.section.h, .section-medium.h, .section-small.h, .section-large.h, .section-xlarge.h {
+	padding-left:0;
+	padding-right:0;
+}
+
+.section.v, .section-medium.v, .section-small.v, .section-large.v, .section-xlarge.v {
+	padding-top:0;
+	padding-bottom:0;
+}

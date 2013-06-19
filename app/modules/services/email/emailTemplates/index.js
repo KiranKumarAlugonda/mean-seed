@@ -84,7 +84,9 @@ EmailTemplates.prototype.send = function(opts, cb){
     var self = this;
     self.transport.sendMail(opts, function(err, response){
         self.transport.close();
-        cb(err, response);
+		if(cb) {
+			cb(err, response);
+		}
     });
 };
 

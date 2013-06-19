@@ -1,5 +1,7 @@
 /**
 @fileOverview
+Sends emails
+Uses the appropriately installed email method (i.e. Nodemailer (default) or Mandrill 3rd party service) to send an email. This is just an abstraction function to pass through the appropriate info to the actual/appropriate module that will actually send the email. This allows keeping the email interface always the same to send an email and this then allows attaching various different email sending methods.
 
 @module emailer
 @class emailer
@@ -12,8 +14,9 @@
 var dependency =require('../../../dependency.js');
 var pathParts =dependency.buildPaths(__dirname, {});
 
-// var EmailTemplates =require(pathParts.services+'email/emailTemplates/index.js');
-var EmailMandrill =require(pathParts.services+'email/mandrill/emailMandrill.js');
+//include the appropriate email service here
+var EmailTemplates =require(pathParts.services+'email/emailTemplates/index.js');
+// var EmailMandrill =require(pathParts.services+'email/mandrill/emailMandrill.js');
 
 var self;
 
@@ -37,7 +40,9 @@ Uses the appropriately installed email method (i.e. email-templates, Mandrill 3r
 @return NONE
 */
 Emailer.prototype.send =function(opts) {
-	EmailMandrill.send(opts);
+	//call the email service function here
+	// EmailMandrill.send(opts);
+	EmailTemplates.send(opts);
 };
 
 module.exports = new Emailer({});

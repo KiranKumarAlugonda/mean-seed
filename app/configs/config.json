@@ -1,6 +1,6 @@
 {
     "versions":{
-        "cfg": "0.5",
+        "cfg": "0.6",
         "pkg": "0.0.6"
     },
     "env": "development",
@@ -52,25 +52,22 @@
         "autoDocUrl": "help"
     },
 	"email":{
-		"from": "admin@project.com",
-		"from_name": "Admin",
-		"mandrillApiKey": "teiFjhKF9G7KDOIzZJ8TlQ"
-	},
-	"sms":{
-		"twilio":{
-			"from": "+15005550006",
-			"account_sid": "AC7f1e9c6fdeee3c9f979d468d1b81ff03",
-			"auth_token": "d7ca9fa9cf8786b0c741185bc3ee1fe8"
+		"from": "Admin <admin@project.com>",
+		"transport":{
+			"sendmail":{
+			}
 		}
 	},
+	"sms":{
+	},
 	"facebook":{
-		"appId": "195380783916970"
+		"appId": ""
 	},
 	"less":{
 		"dirPathRootPrefix": ""
 	},
 	"google":{
-		"clientId": "486630891328.apps.googleusercontent.com",
-		"clientSecret": "uKWzHKd9hbF4dxCmxefrpkYh"
+		"clientId": "",
+		"clientSecret": ""
 	}
 }

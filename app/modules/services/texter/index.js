@@ -14,7 +14,8 @@ Uses the appropriately installed text/SMS method (i.e. Twilio 3rd party service)
 var dependency =require('../../../dependency.js');
 var pathParts =dependency.buildPaths(__dirname, {});
 
-var TextTwilio =require(pathParts.services+'text/twilio/textTwilio.js');
+// include your texting service here
+// var TextTwilio =require(pathParts.services+'text/twilio/textTwilio.js');
 
 var self;
 
@@ -35,7 +36,8 @@ function Texter(opts) {
 @return NONE
 */
 Texter.prototype.send =function(opts) {
-	TextTwilio.send(opts);
+	//call your texting service here
+	// TextTwilio.send(opts);
 };
 
 module.exports = new Texter({});

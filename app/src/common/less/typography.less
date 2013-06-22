@@ -1,5 +1,5 @@
 /* inline font sizing */
-h1,h2,h3,h4,h5,h6 {
+h1,h2,h3,h4,h5,h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 	font-weight:bold;
 }
 h1,h2,h3 {
@@ -10,12 +10,25 @@ h4,h5,h6 {
 }
 
 @baseFontSize: 15px;
-h1, .h1 { font-size: @baseFontSize * 2.75; }
-h2, .h2 { font-size: @baseFontSize * 2.25; }
-h3, .h3 { font-size: @baseFontSize * 1.75; }
-h4, .h4 { font-size: @baseFontSize * 1.25; }
+h1, .h1, .font-xxxlarge { font-size: @baseFontSize * 2.75; }
+h2, .h2, .font-xxlarge { font-size: @baseFontSize * 2.25; }
+h3, .h3, .font-xlarge { font-size: @baseFontSize * 1.75; }
+h4, .h4, .font-large { font-size: @baseFontSize * 1.25; }
 h5, .h5 { font-size: @baseFontSize; }
-h6, .h6 { font-size: @baseFontSize * 0.85; }
+h6, .h6, .font-small { font-size: @baseFontSize * 0.85; }
+
+.bold {
+	font-weight:bold;
+}
+
+
+.ellipsis {
+	.text-overflow(ellipsis);
+}
+.clip {
+	.text-overflow(clip);
+}
+
 
 /* colored text */
 .muted, .text-muted {

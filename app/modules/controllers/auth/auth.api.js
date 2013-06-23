@@ -446,8 +446,8 @@ AuthApi.prototype.rpcSocialLogin = function(){
 		info: 'Login via a third party social site. Creates a new user as necessary.',
 		params: {
 			user: { required: true, type: 'object', info: "User object. Must contain an email, phone, or _id field. May contain other user information." },
-			token: { required: true, type: 'string', info: "The login token to save." },
-			token_type: { required: true, type: 'string', info: "A key to save the token under, describing the social site. Ex: 'facebook', 'google', etc." }
+			socialData: { required: true, type: 'object', info: "The social data to save - typically a 'token' and 'id'." },
+			type: { required: true, type: 'string', info: "A key to save the token under, describing the social site. Ex: 'facebook', 'google', etc." }
 		},
 		returns: {
 			user: 'The new user object, if successfully created, or the user\'s existing database entry (with at least the _id field), if it\'s already there.',

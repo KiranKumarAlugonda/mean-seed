@@ -734,8 +734,10 @@ Auth.prototype.userExists = function(db, user, params)
 @method socialLogin
 @param {Object} data
 	@param {Object} user A user object. Should have '_id', 'email', or 'phone' defined
-	@param {String} token The loging token to save.
-	@param {String} token_type A key to save the token under, describing the social site. Ex: "facebook", "google", etc.
+	@param {Object} socialData The social data to save, i.e.
+		@param {String} [token] The social login token to save.
+		@param {String} [id] The social platform user id for this user.
+	@param {String} type A key to save the social data under, describing the social site. Ex: "facebook", "google", etc.
 @param {Object} params
 
 @return {Promise}
@@ -761,7 +763,7 @@ Auth.prototype.socialLogin = function(db, data, params)
 			}
 			
 			var set_obj = {};
-			set_obj["social." + data.token_type] = data.token;
+			set_obj["social." + data.type] = data.socialData;
 			db.user.update({_id:MongoDBMod.makeIds({'id':ret1.user._id}) }, {$set: set_obj}, function(err, valid)
 			{
 				if(err)
@@ -780,7 +782,7 @@ Auth.prototype.socialLogin = function(db, data, params)
 				{
 					ret.code = 0;
 					ret.msg +='User updated';
-					ret.user.social[data.token_type] = data.token;
+					ret.user.social[data.type] = data.socialData;
 					deferred.resolve(ret);
 				}
 			});

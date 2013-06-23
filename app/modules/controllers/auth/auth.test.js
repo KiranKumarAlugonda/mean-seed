@@ -376,8 +376,10 @@ function go(params) {
 		var params =
 		{
 			'user': testUser1,
-			'token': 'blahblah',
-			'token_type': 'test_type'
+			'socialData': {
+				'token':'blahblah'
+			},
+			'type': 'test_type'
 		};
 		console.log('3');
 		api.expectRequest({method:'Auth.socialLogin'}, {data:params }, {}, {})
@@ -387,7 +389,7 @@ function go(params) {
 			console.log(data);
 			expect(data.already_exists).toEqual(false);
 			expect(data.user.social.test_type).toBeDefined();
-			expect(data.user.social.test_type).toEqual(params.token);
+			expect(data.user.social.test_type).toEqual(params.socialData);
 			deferred.resolve();
 		});
 	};

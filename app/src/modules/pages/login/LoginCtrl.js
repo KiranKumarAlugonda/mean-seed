@@ -24,18 +24,23 @@ angular.module('myApp').controller('LoginCtrl', ['$scope', 'svcHttp', 'UserModel
 	$scope.fbLogin =function() {
 		var promise =svcSocialAuth.checkAuthFacebook({});
 		promise.then(function(data) {
-			console.log(data.facebook_id);
-			var dummy =1;
-			//@todo
-			/*
-			var url =LGlobals.dirPaths.ajaxUrl.api+"user/loginFB";
-			var promise =LHttp.query({'method':'jsonp', 'url':url, 'params':vals });
-			promise.then( function(response) {
-				var data =response.data;
-				UserModel.save(data.user);
-				$rootScope.$broadcast('loginEvt', {'loggedIn': true, 'sess_id':data.sess.sess_id, 'user_id':data.sess.user});
+			var vals ={
+				type: 'facebook',
+				user: {},
+				socialData: {
+					id: data.facebook_id,
+					token: data.access_token
+				}
+			};
+			if(data.email) {
+				vals.user.email =data.email;
+			}
+			var promise1 =svcHttp.go({}, {url:'auth/socialLogin', data:vals}, {}, {});
+			promise1.then(function(response) {
+				var user =response.result.user;
+				UserModel.save(user);
+				$rootScope.$broadcast('loginEvt', {'loggedIn': true, 'sess_id':user.sess_id, 'user_id':user._id});
 			});
-			*/
 		}, function(data) {
 			var dummy =1;
 		});
@@ -50,8 +55,23 @@ angular.module('myApp').controller('LoginCtrl', ['$scope', 'svcHttp', 'UserModel
 	$scope.googleLogin =function() {
 		var promise =svcSocialAuth.checkAuthGoogle({});
 		promise.then(function(data) {
-			var vals =data;
-			//@todo
+			var vals ={
+				type: 'google',
+				user: {},
+				socialData: {
+					id: data.google_id,
+					token: data.access_token
+				}
+			};
+			if(data.email) {
+				vals.user.email =data.email;
+			}
+			var promise1 =svcHttp.go({}, {url:'auth/socialLogin', data:vals}, {}, {});
+			promise1.then(function(response) {
+				var user =response.result.user;
+				UserModel.save(user);
+				$rootScope.$broadcast('loginEvt', {'loggedIn': true, 'sess_id':user.sess_id, 'user_id':user._id});
+			});
 		}, function(data) {
 			var dummy =1;
 		});

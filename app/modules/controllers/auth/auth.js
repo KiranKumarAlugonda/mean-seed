@@ -14,7 +14,10 @@ public methods
 11. resetPassword
 12. changePassword
 1.5. createGuest
-1.6 formatAlternateContact
+1.6. formatAlternateContact
+1.7. userImport
+1.8. userExists
+13. socialLogin
 private methods
 2. checkEmail
 2.5 checkPhone
@@ -38,7 +41,6 @@ var pathParts =dependency.buildPaths(__dirname, {});
 var Emailer =require(pathParts.services+'emailer/index.js');
 var StringMod =require(pathParts.services+'string/string.js');
 var MongoDBMod =require(pathParts.services+'mongodb/mongodb.js');
-var UserMod =require(pathParts.controllers+'user/user.js');
 
 //global values that will be set by passed in objects (to avoid having to require in every file)
 // var db;
@@ -57,14 +59,12 @@ var defaults = {
 @param {Object} options
 	// @param {Object} db
 	// @param {Object} Emailer
-	// @param {Object} userMod
 	// @param {Object} StringMod
 	// @param {Object} MongoDBMod
 */
 function Auth(options) {
 	this.opts = lodash.merge({}, defaults, options||{});
 
-	// this.userMod = this.opts.userMod;
 	self = this;
 	
 	// db =this.opts.db;
@@ -101,6 +101,11 @@ Auth.prototype.create = function(db, data, params)
 	{
 		data.status = 'member';
 	}
+	if(data.social === undefined)
+	{
+		data.social = {};
+	}
+	delete data.super_admin;
 	
 	data = self.formatAlternateContact(data, {});
 	
@@ -556,6 +561,240 @@ Auth.prototype.formatAlternateContact = function(user, params)
 	return user;
 };
 
+/**
+Checks if a user exists. If not, creates a guest user.
+@toc 1.7.
+@method userImport
+@param {Object} data
+	@param {Object} user New user object. Must contain an email, phone, or _id field. May contain other user information.
+@param {Object} params
+@return {Promise}
+	@param {Object} ret
+		@param {Object} user The new user object, if successfully created, or the user's existing database entry (with _id at least), if it's already there.
+		@param {Boolean} already_exists True iff the given user is already in the database.
+**/
+Auth.prototype.userImport = function(db, data, params)
+{	
+	var deferred =Q.defer();
+	var ret = {'code': 0, 'msg': 'Auth.userImport ', 'user': {}, 'already_exists': false };
+	
+	var exists_promise = self.userExists(db, data.user, {});
+	exists_promise.then(
+		function(ret1)
+		{
+			if(ret1.exists === true)
+			{
+				ret.already_exists = true;
+				ret.user = ret1.user;
+				deferred.resolve(ret);
+			}
+			else
+			{
+				var create_promise = self.createGuest(db, data.user, {});
+				create_promise.then(
+					function(ret1)
+					{
+						ret.already_exists = false;
+						ret.user = ret1.user;
+						ret.user._id = ret.user._id.toHexString();
+						deferred.resolve(ret);
+					},
+					function(err)
+					{
+						ret.code = 1;
+						ret.msg += err;
+						deferred.reject(ret);
+					}
+				);
+			}
+		},
+		function(err)
+		{
+			ret.code = 1;
+			ret.msg += err;
+			deferred.reject(ret);
+		}
+	);
+	
+	return deferred.promise;
+};
+
+/**
+Check if a user exists in the database, based on the given _id, email, or phone field. 
+@toc 1.8.
+@method userExists
+@param {Object} user A user object. Should have '_id', 'email', or 'phone' defined
+@param {Object} params
+
+@return {Promise}
+	@param {Object} ret
+		@param {Boolean} exists True iff the member already exists
+		@param {String} user The user's database object, if the user already exists
+**/
+Auth.prototype.userExists = function(db, user, params)
+{
+	var deferred = Q.defer();
+	var ret = {'exists': false, 'user': {}};
+	var UserMod =require(pathParts.controllers+'user/user.js');
+	
+	//DRY phone checking function
+	var checkPhone = function()
+	{
+		var phone_promise = UserMod.searchByPhone(db, {'phone': user.phone, 'fields': {'_id': 1}}, {});
+		phone_promise.then(
+			function(ret1)
+			{
+				if(ret1.exists)
+				{
+					ret.exists = true;
+					ret.user = ret1.user;
+					ret.user._id = ret.user._id.toHexString();
+					deferred.resolve(ret);
+				}
+				else
+				{
+					ret.exists = false;
+					deferred.resolve(ret);
+				}
+			},
+			function(ret1)
+			{
+				//Error occurred
+				console.log(ret1.msg);
+				deferred.reject(ret);
+			}
+		);
+	};
+	
+	
+	//If the user already has an _id, it must exist. We're done.
+	if(user._id !== undefined)
+	{
+		ret.user = user;
+		ret.exists = true;
+		deferred.resolve(ret);
+	}
+	//Id may also be under the user_id field, allow both
+	else if(user.user_id !== undefined)
+	{
+		ret.user = user;
+		ret.user._id = ret.user.user_id;
+		ret.exists = true;
+		deferred.resolve(ret);
+	}
+	//No _id field. Check email
+	else if(user.email !== undefined)
+	{
+		var email_promise = UserMod.searchByEmail(db, {'email': user.email, 'fields': {'_id': 1}}, {});
+		email_promise.then(
+			function(ret1)
+			{
+				if(ret1.exists)
+				{
+					ret.exists = true;
+					ret.user = ret1.user;
+					ret.user._id = ret.user._id.toHexString();
+					deferred.resolve(ret);
+				}
+				else if(user.phone !== undefined)
+				{
+					checkPhone();
+				}
+				else
+				{
+					ret.exists = false;
+					deferred.resolve(ret);
+				}
+			},
+			function(ret1)
+			{
+				//Error occurred
+				console.log(ret1.msg);
+				deferred.reject(ret);
+			}
+		);
+	}
+	else if(user.phone !== undefined)
+	{
+		checkPhone();
+	}
+	else
+	{
+		//No data given. Impossible to check if the user exists.
+		console.log("Auth.userExists: Error: No _id, email, or phone given. Cannot check if user exists");
+		deferred.reject(ret);		
+	}
+	
+	return deferred.promise;
+};
+
+/**
+
+@toc 13.
+@method socialLogin
+@param {Object} data
+	@param {Object} user A user object. Should have '_id', 'email', or 'phone' defined
+	@param {String} token The loging token to save.
+	@param {String} token_type A key to save the token under, describing the social site. Ex: "facebook", "google", etc.
+@param {Object} params
+
+@return {Promise}
+	@param {Object} ret
+		@param {Object} user The new user object, if successfully created, or the user's existing database entry (with _id at least), if it's already there.
+		@param {Boolean} already_exists True iff the given user is already in the database.
+**/
+Auth.prototype.socialLogin = function(db, data, params)
+{	
+	var deferred =Q.defer();
+	var ret = {'code': 0, 'msg': 'Auth.socialLogin ', 'user': {}, 'already_exists': false };
+	
+	var import_promise = self.userImport(db, {'user': data.user}, {});
+	import_promise.then(
+		function(ret1)
+		{
+			ret.already_exists = ret1.already_exists;
+			ret.user = ret1.user;
+			
+			if(ret.user.social === undefined)
+			{
+				ret.user.social = {};
+			}
+			
+			var set_obj = {};
+			set_obj["social." + data.token_type] = data.token;
+			db.user.update({_id:MongoDBMod.makeIds({'id':ret1.user._id}) }, {$set: set_obj}, function(err, valid)
+			{
+				if(err)
+				{
+					ret.code = 1;
+					ret.msg +='Error: '+err;
+					deferred.reject(ret);
+				}
+				else if (!valid)
+				{
+					ret.code = 2;
+					ret.msg +='Not valid ';
+					deferred.reject(ret);
+				}
+				else
+				{
+					ret.code = 0;
+					ret.msg +='User updated';
+					ret.user.social[data.token_type] = data.token;
+					deferred.resolve(ret);
+				}
+			});
+		},
+		function(err)
+		{
+			ret.code = 1;
+			ret.msg += err;
+			deferred.reject(ret);
+		}
+	);
+	
+	return deferred.promise;
+};
 
 /**
 @toc 2.
@@ -572,6 +811,7 @@ Auth.prototype.formatAlternateContact = function(user, params)
 function checkEmail(db, email, params) {
 	var deferred =Q.defer();
 	var ret ={code: 0, msg:'checkEmail '};
+	var UserMod =require(pathParts.controllers+'user/user.js');
 	
 	var email_promise = UserMod.searchByEmail(db, {'email': email, 'fields': {'_id': 1} }, params);
 	email_promise.then(
@@ -634,6 +874,7 @@ function checkPhone(db, phone, params)
 {
 	var deferred =Q.defer();
 	var ret ={code: 0, msg:'checkPhone '};
+	var UserMod =require(pathParts.controllers+'user/user.js');
 
 	var phone_promise = UserMod.searchByPhone(db, {'phone': phone, 'fields': {'_id': 1} }, params);
 	phone_promise.then(

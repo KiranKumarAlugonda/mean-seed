@@ -32,6 +32,7 @@ var MongoDBMod =require(pathParts.services+'mongodb/mongodb.js');
 //site-specific
 var AuthTests = require(paths.modules+'/controllers/auth/auth.test.js');
 var UserTests = require(paths.modules+'/controllers/user/user.test.js');
+var FollowTests = require(paths.modules+'/controllers/follow/follow.test.js');
 
 var db =false;
 
@@ -65,6 +66,7 @@ describe('all tests', function() {
 			//site-specific
 			AuthTests =new AuthTests({db: db, api:api});
 			UserTests =new UserTests({db: db, api:api});
+			FollowTests =new FollowTests({db: db, api:api});
 		};
 
 		/**
@@ -88,6 +90,7 @@ describe('all tests', function() {
 					//site-specific
 					var promiseAuth =AuthTests.run({})
 					.then(UserTests.run({}))
+					.then(FollowTests.run({}))
 					.then(function(retFin) {
 						console.log('all tests done!');
 					}, function(err) {

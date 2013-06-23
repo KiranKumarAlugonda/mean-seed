@@ -18,6 +18,7 @@ private methods
 	10. forgotPassword
 	11. resetPassword
 	12. changePassword
+	13. socialLogin
 */
 
 'use strict';
@@ -69,6 +70,7 @@ var TEST_USERS =[
 	}
 ];
 var testUser =TEST_USERS[0];
+var testUser1 =TEST_USERS[1];
 
 module.exports = Auth;
 
@@ -128,7 +130,7 @@ function before(params) {
 
 	var msg ='';
 	//drop test user(s)
-	db.user.remove({email: {$in:[testUser.email]} }, function(err, numRemoved) {
+	db.user.remove({email: {$in:[testUser.email, testUser1.email]} }, function(err, numRemoved) {
 		if(err) {
 			msg +="db.user.remove Error: "+err;
 		}
@@ -170,8 +172,9 @@ Do clean up to put database back to original state it was before ran tests (remo
 function after(params) {
 	var deferred =Q.defer();
 	var msg ='';
+
 	//drop test user(s)
-	db.user.remove({email: {$in:[testUser.email]} }, function(err, numRemoved) {
+	db.user.remove({email: {$in:[testUser.email, testUser1.email]} }, function(err, numRemoved) {
 		if(err) {
 			msg +="db.user.remove Error: "+err;
 		}
@@ -363,8 +366,29 @@ function go(params) {
 				expect(data.result.user).toBeDefined();
 				expect(data.result.user._id).toBe(userId);
 
-				deferred.resolve({});		//complete (return promise) now since this is the last call
+				socialLogin();
 			});
+		});
+	};
+	
+	var socialLogin =function()
+	{
+		var params =
+		{
+			'user': testUser1,
+			'token': 'blahblah',
+			'token_type': 'test_type'
+		};
+		console.log('3');
+		api.expectRequest({method:'Auth.socialLogin'}, {data:params }, {}, {})
+		.then(function(res)
+		{
+			var data =res.data.result;
+			console.log(data);
+			expect(data.already_exists).toEqual(false);
+			expect(data.user.social.test_type).toBeDefined();
+			expect(data.user.social.test_type).toEqual(params.token);
+			deferred.resolve();
 		});
 	};
 	

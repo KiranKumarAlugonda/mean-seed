@@ -11,6 +11,8 @@ RPC auth endpoints
 5. rpcForgotPassword
 6. rpcResetPassword
 7. rpcChangePassword
+8. rpcUserImport
+9. rpcSocialLogin
 */
 
 'use strict';
@@ -75,7 +77,9 @@ AuthApi.prototype.getRpcMethods = function(){
 		active: this.rpcActive(),
 		forgotPassword: this.rpcForgotPassword(),
 		resetPassword: this.rpcResetPassword(),
-		changePassword: this.rpcChangePassword()
+		changePassword: this.rpcChangePassword(),
+		userImport: this.rpcUserImport(),
+		socialLogin: this.rpcSocialLogin()
 	};
 };
 
@@ -114,9 +118,7 @@ AuthApi.prototype.rpcLogin = function(){
 				{
 					ret1.user =UserMod.readFilter(ret1.user, {type:'login'});		//only return certain fields (i.e strip out password)
 
-					//@example: var fields ={'user': ret1.user, 'fields': {'tribe': {'_id':1, 'email': 1, 'phone': 1, 'first_name': 1, 'last_name': 1, 'name': 1}, 'follow':{'_id':1, 'email': 1, 'phone': 1, 'first_name': 1, 'last_name': 1, 'name': 1} } };
-					var fields ={};
-					var fill_promise = UserMod.fillInfo(db, {'user': ret1.user, 'fields': fields }, {});
+					var fill_promise = UserMod.fillInfo(db, {'user': ret1.user, 'fields': {'tribe': {'_id':1, 'email': 1, 'phone': 1, 'first_name': 1, 'last_name': 1, 'name': 1}, 'follow':{'_id':1, 'email': 1, 'phone': 1, 'first_name': 1, 'last_name': 1, 'name': 1} } }, {});
 					fill_promise.then(
 						function(ret2)
 						{
@@ -253,9 +255,7 @@ AuthApi.prototype.rpcActive = function(){
 			promise.then(function(ret1) {
 				ret1.user =UserMod.readFilter(ret1.user, {type:'public'});		//only return certain fields (i.e strip out password)
 				
-				//@example: var fields ={'user': ret1.user, 'fields': {'tribe': {'_id':1, 'email': 1, 'phone': 1, 'first_name': 1, 'last_name': 1, 'name': 1}, 'follow':{'_id':1, 'email': 1, 'phone': 1, 'first_name': 1, 'last_name': 1, 'name': 1} } };
-				var fields ={};
-				var fill_promise = UserMod.fillInfo(db, {'user': ret1.user, 'fields': fields }, {});
+				var fill_promise = UserMod.fillInfo(db, {'user': ret1.user, 'fields': {'tribe': {'_id':1, 'email': 1, 'phone': 1, 'first_name': 1, 'last_name': 1, 'name': 1}, 'follow':{'_id':1, 'email': 1, 'phone': 1, 'first_name': 1, 'last_name': 1, 'name': 1} } }, {});
 				fill_promise.then(
 					function(ret2)
 					{
@@ -383,6 +383,83 @@ AuthApi.prototype.rpcChangePassword = function(){
 			var promise =AuthMod.changePassword(db, params, {});
 			promise.then(function(ret1) {
 				ret1.user =UserMod.readFilter(ret1.user, {type:'public'});		//only return certain fields (i.e strip out password)
+				out.win(ret1);
+			}, function(err) {
+				self.handleError(out, err, {});
+			});
+		}
+	};
+};
+
+
+/**
+@toc 8.
+@method rpcUserImport
+**/
+AuthApi.prototype.rpcUserImport = function(){
+	var self = this;
+
+	return {
+		info: 'Checks if a user exists. If not, creates a guest user.',
+		params: {
+			user: { required: true, type: 'object', info: "New user object. Must contain an email, phone, or _id field. May contain other user information." }
+		},
+		returns: {
+			user: 'The new user object, if successfully created, or the user\'s existing database entry (with at least the _id field), if it\'s already there.',
+			already_exists: 'Boolean. True iff the user was already in the database.'
+		},		
+		
+		/**
+		@method action
+		@param {Object} params
+			@param {Object} data new user params (detailed above)
+		@param {Object} out callback object which provides `win` and `fail` functions for handling `success` and `fail` callbacks
+			@param {Function} win Success callback
+			@param {Function} fail Fail callback
+		**/
+		action: function(params, out){
+			var promise =AuthMod.userImport(db, params, {});
+			promise.then(function(ret1) {
+				ret1.user =UserMod.readFilter(ret1.user, {type:'public'});		//only return certain fields (i.e strip out password)
+				out.win(ret1);
+			}, function(err) {
+				self.handleError(out, err, {});
+			});
+		}
+	};
+};
+
+/**
+@toc 8.
+@method rpcSocialLogin
+**/
+AuthApi.prototype.rpcSocialLogin = function(){
+	var self = this;
+
+	return {
+		info: 'Login via a third party social site. Creates a new user as necessary.',
+		params: {
+			user: { required: true, type: 'object', info: "User object. Must contain an email, phone, or _id field. May contain other user information." },
+			token: { required: true, type: 'string', info: "The login token to save." },
+			token_type: { required: true, type: 'string', info: "A key to save the token under, describing the social site. Ex: 'facebook', 'google', etc." }
+		},
+		returns: {
+			user: 'The new user object, if successfully created, or the user\'s existing database entry (with at least the _id field), if it\'s already there.',
+			already_exists: 'Boolean. True iff the user was already in the database.'
+		},
+		
+		/**
+		@method action
+		@param {Object} params
+			@param {Object} data new user params (detailed above)
+		@param {Object} out callback object which provides `win` and `fail` functions for handling `success` and `fail` callbacks
+			@param {Function} win Success callback
+			@param {Function} fail Fail callback
+		**/
+		action: function(params, out){
+			var promise =AuthMod.socialLogin(db, params, {});
+			promise.then(function(ret1) {
+				ret1.user =UserMod.readFilter(ret1.user, {type:'full'});		//only return certain fields (i.e strip out password)
 				out.win(ret1);
 			}, function(err) {
 				self.handleError(out, err, {});

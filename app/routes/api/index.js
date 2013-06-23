@@ -35,6 +35,7 @@ var pathParts =dependency.buildPaths(__dirname, {});
 var pathPart =pathParts.controllers;
 var AuthApi = require(pathPart+'auth/auth.api.js');
 var UserApi = require(pathPart+'user/user.api.js');
+var FollowApi = require(pathPart+'follow/follow.api.js');
 //site-specific - require other api files here
 
 
@@ -56,6 +57,9 @@ module.exports = function(cfg, server, db){
 		db: db
 	});
 	var userApi = new UserApi({
+		db: db
+	});
+	var followApi = new FollowApi({
 		db: db
 	});
 	//site-specific - load other api's here
@@ -87,6 +91,12 @@ module.exports = function(cfg, server, db){
 		user: {
 			modules: {
 				user: userApi
+			},
+			middleware: []
+		},
+		follow: {
+			modules: {
+				follow: followApi
 			},
 			middleware: []
 		}

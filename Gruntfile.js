@@ -348,7 +348,8 @@ module.exports = function(grunt) {
 						Lawnchair: false,
 						//@todo - fix this?
 						globalPhoneGap: false,
-						forge: false
+						forge: false,
+						Pikaday: false
 					}
 				},
 				//beforeconcat: ['common/module.js', 'modules/**/*.js'],

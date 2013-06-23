@@ -30,6 +30,7 @@ var inst ={
 					"angular-lib-build/angular-lib.min.css",
 					//"bootstrap/css/bootstrap.css",		//now using LESS to build bootstrap.css (included above)
 					"jcrop/jquery.Jcrop.css",
+					"pikaday/pikaday.css"
 				]
 			},
 		},
@@ -61,6 +62,8 @@ var inst ={
 					"jcrop/jquery.Jcrop.min.js",
 					"jquery/jquery.mobile.events.js",
 					"moment/moment.min.js",
+					// "pikaday/pikaday.js",		//must be AFTER moment.js is included	//@todo - put this somewhere else and minify it
+					"pikaday/pikaday-luke-edit.js",
 					// "lawnchair/lawnchair.min.js"		//causes Karma SyntaxError
 					// "lawnchair/lawnchair.js"		//causes Karma SyntaxError
 					"lawnchair/lawnchair-edit.js"
@@ -84,7 +87,7 @@ var inst ={
 				],
 				"directives":[
 					"dtv.js",
-					"appalert/appalert.js"
+					"appalert/appalert.js",
 				],
 				"pages":[
 					"layout/LayoutCtrl.js",

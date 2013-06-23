@@ -788,6 +788,12 @@ input:focus.ui-multiselect-input {
   background: yellow;
 }
 
+/* ui-datetimepicker */
+
+.ui-datetimepicker-input {
+  width: 100%;
+}
+
 /*
 https://github.com/ProLoser/Flexbox.less
 */

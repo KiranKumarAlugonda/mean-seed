@@ -35,6 +35,14 @@
 		"signup": "[timestamp]",
 		"last_login": "[timestamp]",
 		"status": "{String} member",
-		"super_admin": "{Number} 1"
+		"super_admin": "{Number} 1",
+		"social":{
+			"google":{
+				"token":"{String}"
+			},
+			"facebook":{
+				"token":"{String}"
+			}
+		}
 	}
 }

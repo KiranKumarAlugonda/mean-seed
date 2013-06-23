@@ -8,6 +8,7 @@ User module representing the end-users of the system
 @toc
 1. readFilter
 1.5. fillInfo		//site-specific
+1.52.fillFollow
 2. search
 3. update
 4. delete1
@@ -141,8 +142,21 @@ User.prototype.fillInfo =function(db, data, params)
 		function(key, callback)
 		{
 			var promise;
-			if(0) {
-				//put if conditions to match keys here
+			//put if conditions to match keys here
+			if(key == 'follow')
+			{
+				promise = fillFollow(db, data, params);
+				promise.then(
+					function(ret1)
+					{
+						ret.user.follow = ret1.follow;
+						callback(false);
+					},
+					function(ret1)
+					{
+						callback(true);
+					}
+				);
 			}
 			else
 			{
@@ -165,6 +179,47 @@ User.prototype.fillInfo =function(db, data, params)
 	
 	return deferred.promise;
 };
+
+/**
+@toc 1.52.
+@method fillFollow
+@param {Object} data
+	@param {Object} user User object to add info to.
+	@param {Object} fields Has keys specifying which fields in the user object to add info to. Leave a key undefined to skip that field.
+		@param {Object} follow A mongoDB fields object specifying what user fields to look up for each followed user.
+@param {Object} params
+@return {Promise}
+	@param {Ojbect} ret
+		@param {follow} The new follow data object, now with additional information filled in.
+*/
+function fillFollow(db, data, params)
+{
+	var FollowMod =require(pathParts.controllers+'follow/follow.js');	//Cannot require at the top of the file (circular dependency)
+	var deferred = Q.defer();
+	var ret ={code:0, msg:'User.fillFollow ', 'follow': data.user.follow};
+	
+	var follow_params =
+	{
+		'user_id': data.user._id,
+		'fields': data.fields.follow
+	};
+	
+	var follow_promise = FollowMod.getFollowedUsers(db, follow_params, params);
+	follow_promise.then(
+		function(ret1)
+		{
+			ret.follow = ret1.followed;
+			deferred.resolve(ret);
+		},
+		function(ret1)
+		{
+			ret.msg += ret1.msg;
+			deferred.reject(ret);
+		}
+	);
+	
+	return deferred.promise;
+}
 
 /**
 @toc 2.

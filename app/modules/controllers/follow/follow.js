@@ -384,13 +384,12 @@ Follow.prototype.searchFollowableUsers = function(db, data, params)
 		}
 		else
 		{
+			if(data.skipIds === undefined)
+			{
+				data.skipIds = [];
+			}
 			if(user.follow !== undefined && user.follow.length > 0)
 			{
-				if(data.skipIds === undefined)
-				{
-					data.skipIds = [];
-				}
-				
 				for(ii = 0; ii < user.follow.length; ii++)
 				{
 					data.skipIds.push(user.follow[ii].user_id);

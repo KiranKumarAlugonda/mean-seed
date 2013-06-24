@@ -34,6 +34,7 @@ var crypto =require('crypto');
 var moment = require('moment');
 var Q = require('q');
 var lodash = require('lodash');
+var async = require('async');
 
 var dependency =require('../../../dependency.js');
 var pathParts =dependency.buildPaths(__dirname, {});
@@ -618,6 +619,81 @@ Auth.prototype.userImport = function(db, data, params)
 	
 	return deferred.promise;
 };
+
+/**
+Checks if a user exists. If not, creates a guest user.
+@toc 1.71.
+@method userImport
+@param {Object} data
+	@param {String} user_id Id of the user doing the importing, if applicable.
+	@param {Array} users Array of new user objects. Each must contain an email, phone, or _id field. May contain other user information.
+	@param {Number} follow 1 iff the new users should be followed by the user doing the importing.
+@param {Object} params
+@return {Promise}
+	@param {Object} ret
+		@param {Array} users Array of the new user objects, if successfully created, or the users' existing database entries (with at least the _id field), if they're already there.
+**/
+Auth.prototype.usersImport = function(db, data, params)
+{	
+	var deferred =Q.defer();
+	var ret = {'code': 0, 'msg': 'Auth.usersImport ', 'users': [] };
+	var FollowMod = require(pathParts.controllers+'follow/follow.js');
+	
+	async.forEach(data.users,
+		function(user, callback)
+		{
+			var import_promise = self.userImport(db, {'user': user}, params);
+			import_promise.then(
+				function(ret1)
+				{
+					ret.users.push(ret1.user);
+					callback(false);
+				},
+				function(ret1)
+				{
+					callback(true);
+				}
+			);
+		},
+		function(err)
+		{
+			if(err)
+			{
+				ret.code = 1;
+				deferred.reject(ret);
+			}
+			else
+			{
+				if(data.user_id !== undefined && data.follow === 1)
+				{
+					var follow_promise = FollowMod.follow(db, {'user_id': data.user_id, 'followed': ret.users}, params);
+					follow_promise.then(
+						function(ret1)
+						{
+							ret.code = 0;
+							ret.msg += ret1.msg;
+							deferred.resolve(ret);
+						},
+						function(ret1)
+						{
+							ret.code = 1;
+							ret.msg += ret1.msg;
+							deferred.reject(ret);
+						}
+					);
+				}
+				else
+				{
+					ret.code = 1;
+					deferred.resolve(ret);
+				}
+			}
+		}
+	);
+	
+	return deferred.promise;
+};
+
 
 /**
 Check if a user exists in the database, based on the given _id, email, or phone field. 

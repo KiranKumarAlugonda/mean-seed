@@ -407,8 +407,7 @@ AuthApi.prototype.rpcUserImport = function(){
 
 	return {
 		info: 'Checks if a user exists. If not, creates a guest user.',
-		/*
-		//NEW API
+
 		params: {
 			users: { required: true, type: 'array', info: "Array of new user objects. Each object must contain an email, phone, or _id field. May contain other user information." },
 			user_id: { required: false, type: 'string', info: "Id of user who is importing. This is used to link/follow these new users." },
@@ -416,16 +415,8 @@ AuthApi.prototype.rpcUserImport = function(){
 		},
 		returns: {
 			users: 'Array of the new user objects, if successfully created, or the user\'s existing database entry (with at least the _id field), if it\'s already there.'
-			// already_exists: 'Boolean. True iff the user was already in the database.'
 		},
-		*/
-		params: {
-			user: { required: true, type: 'object', info: "New user object. Must contain an email, phone, or _id field. May contain other user information." }
-		},
-		returns: {
-			user: 'The new user object, if successfully created, or the user\'s existing database entry (with at least the _id field), if it\'s already there.',
-			already_exists: 'Boolean. True iff the user was already in the database.'
-		},		
+		
 		
 		/**
 		@method action
@@ -436,7 +427,7 @@ AuthApi.prototype.rpcUserImport = function(){
 			@param {Function} fail Fail callback
 		**/
 		action: function(params, out){
-			var promise =AuthMod.userImport(db, params, {});
+			var promise =AuthMod.usersImport(db, params, {});
 			promise.then(function(ret1) {
 				ret1.user =UserMod.readFilter(ret1.user, {type:'public'});		//only return certain fields (i.e strip out password)
 				out.win(ret1);

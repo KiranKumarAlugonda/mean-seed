@@ -407,6 +407,18 @@ AuthApi.prototype.rpcUserImport = function(){
 
 	return {
 		info: 'Checks if a user exists. If not, creates a guest user.',
+		/*
+		//NEW API
+		params: {
+			users: { required: true, type: 'array', info: "Array of new user objects. Each object must contain an email, phone, or _id field. May contain other user information." },
+			user_id: { required: false, type: 'string', info: "Id of user who is importing. This is used to link/follow these new users." },
+			follow: { required: false, type: 'number', info: "1 to have the user_id user follow all the users after being imported." }
+		},
+		returns: {
+			users: 'Array of the new user objects, if successfully created, or the user\'s existing database entry (with at least the _id field), if it\'s already there.'
+			// already_exists: 'Boolean. True iff the user was already in the database.'
+		},
+		*/
 		params: {
 			user: { required: true, type: 'object', info: "New user object. Must contain an email, phone, or _id field. May contain other user information." }
 		},

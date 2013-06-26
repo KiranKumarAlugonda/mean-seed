@@ -34,6 +34,19 @@
 	- anything in the `lib` folder (3rd party dependencies - i.e. `moment.js`)
 	- `modules/directives` and `modules/services`
 	
+## Best practices
+- MODULARIZE!!
+- try to make everything a directive (if it interacts with the DOM) or service (if it does NOT interact with the DOM)
+	- directives should NOT have any backend API calls or HTTP requests in them and in general should NOT modify data (use a service for that). They should simply take data and display it. They can call services to manipulate data.
+	- services are where ALL data manipulation and formatting should happen
+		- do NOT alter data in contollers - call a service function instead (services should typically exist for each model/data type and should have CRUD operation functions. With regards to data, controllers should ideally only have an equal assignment sign `=` for returns from function calls (to services).
+		- services CAN have backend API calls if the service is a model. Model services are common and the model typically will have a `read` function that will load from one of three places (in order):
+			- javascript/memory
+			- localStorage
+			- backend (via API/AJAX call)
+				- if necessary, services may have 'transformFromBackend' and 'transformForBackend' functions that convert/format data between frontend (which may need additional display data/fields/values) and backend.
+- keep controllers as slim as possible - they should ONLY handle wiring - just a bunch of function calls between different things (setting up directives, making API/AJAX calls, making service function calls)
+	
 ## A note on how to structure common/reusable LESS/style components
 There are TWO ways to pre-define styles. There are pros and cons to each and in general the "Classes" approach is better at first and for simpler things but the "Mixins" approach is better where higher customization is needed. But the most important thing is to pick one approach and stick to it so all the HTML files are similarly structured and consistent.
 1. Mixins: define styles within a LESS mixin then define a class that uses that mixin.

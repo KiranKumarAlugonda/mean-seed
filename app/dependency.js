@@ -18,14 +18,17 @@ var path =require('path');
 var lodash = require('lodash');
 
 function Dependency(options) {
+	// var pathSep =path.sep;		//not working.. always want forward slash??
+	// var pathSep =path.sep;
+	var pathSep ='/';
 	//hardcoded
 	this.config ={
-		rootDir: 'app'+path.sep,
+		rootDir: 'app'+pathSep,
 		paths: {
-			modules: path.sep+'modules',
-			controllers: path.sep+'modules'+path.sep+'controllers',
-			services: path.sep+'modules'+path.sep+'services',
-			routes: path.sep+'routes'
+			modules: pathSep+'modules',
+			controllers: pathSep+'modules'+pathSep+'controllers',
+			services: pathSep+'modules'+pathSep+'services',
+			routes: pathSep+'routes'
 		}
 	};
 	//end: hardcoded
@@ -44,6 +47,9 @@ Dependency.prototype.buildPaths =function(dirname, params) {
 	var self =this;
 	var paths ={};
 	var basePath =path.relative(dirname, self.config.rootDir);
+	if(basePath[0] !='.') {
+		basePath ='.'+basePath;		//need a leading dot otherwise it will be an absolute path, which will not work!
+	}
 	var xx;
 	for(xx in this.config.paths) {
 		paths[xx] =basePath+this.config.paths[xx]+'/';		//add trailing slash

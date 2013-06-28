@@ -44,6 +44,7 @@ GatewayServer.prototype = {
 		@param {String} rpcMethod i.e. 'Auth.login'
 	**/
     handle: function(req, res, params){
+		var xx;
         var self        = this;
         var postData    = req.body;
         var getData     = req.query;
@@ -56,6 +57,38 @@ GatewayServer.prototype = {
         } else {
             // try to get data from post[inputVar], then fallback to entire post body
             inputData = postData[self.inputVar] || postData;
+			if(req.files !==undefined && req.files) {
+				console.log('files!');
+				//if didn't come in as rpc format, add these fields and move data into 'params' field
+				if(inputData.jsonrpc ===undefined) {
+					var skipKeys =['method'];
+					var ii;
+					var deleteKeys =[];
+					var paramsTemp ={};
+					for(xx in inputData) {
+						if(skipKeys.indexOf(xx) <0) {
+							paramsTemp[xx] =inputData[xx];
+							deleteKeys.push(xx);
+						}
+					}
+					for(ii =0; ii<deleteKeys.length; ii++) {
+						delete inputData[deleteKeys[ii]];
+					}
+					inputData.params =paramsTemp;
+					inputData.jsonrpc ='2.0';
+					inputData.id =1;
+				}
+				//do this AFTER convert inputData above!
+				inputData.params.files =req.files;
+				//sometimes extra nesting of files??!
+				if(inputData.params.files.files !==undefined) {
+					inputData.params.files =inputData.params.files.files;
+				}
+				
+				// console.log('inputData: '+JSON.stringify(inputData));
+				console.log(inputData);
+			}
+			// console.log('inputData: '+JSON.stringify(inputData));
         }
 
         // rpcjs requires strings to be passed in with 'textInput' and objects with 'input'
@@ -108,7 +141,7 @@ GatewayServer.prototype = {
 			}
 			
 			//remove blank keys (i.e. so undefined check works later - rpc sends in empty strings)
-			for(var xx in inputData.params) {
+			for(xx in inputData.params) {
 				if(typeof(inputData.params[xx]) =='string' && inputData.params[xx].length <1) {
 					delete inputData.params[xx];
 				}

@@ -2,8 +2,9 @@
 @class auth
 
 @toc
-//2. saveUrlLocation
-//1. checkSess
+2. saveUrlLocation
+3. done		//called AFTER login status is figured out - in case need to do any logic AFTER have login status (and user object filled if logged in)
+1. checkSess
 */
 
 'use strict';
@@ -19,12 +20,13 @@ var inst ={
 		// curPage: false,
 		urlInfo: {
 			page: false,
-			queryParams: false
+			queryParams: false,
+			curNavPage: false		//holds the 'page' name used by the nav service (this uniquely identifies the page/view WITHOUT any query params)
 		}
 	},
 	
 	/**
-	//2.
+	@toc 2.
 	saves the current url as this.data.redirectUrl (EXCEPT on login/register pages) to allow redirecting back to that page after login
 	@method saveUrlLocation
 	*/
@@ -38,7 +40,7 @@ var inst ={
 		var ret1 =libString.parseUrl({url: curUrl, rootPath: appPath});
 		var curPage =ret1.page;
 		var queryParams =ret1.queryParams;
-		this.urlInfo =ret1;
+		this.data.urlInfo =angular.extend(this.data.urlInfo, ret1);
 		/*
 		var pos1 =curUrl.indexOf(appPath);
 		var curPage =curUrl.slice((pos1+appPath.length), curUrl.length);
@@ -67,7 +69,15 @@ var inst ={
 	},
 	
 	/**
-	//1.
+	@toc 3.
+	@method done
+	*/
+	done: function(params) {
+		console.log(JSON.stringify(this.data.urlInfo));
+	},
+	
+	/**
+	@toc 1.
 	checks if logged in and if not, redirects to login page. Returns a promise otherwise
 	Also calls scvNav.updateNav to set the current page for navigation (header and footer)
 	@method checkSess
@@ -85,7 +95,7 @@ var inst ={
 		
 		this.saveUrlLocation({});		//save current url for future redirects
 		
-		svcNav.updateNav({'urlInfo':this.urlInfo});
+		this.data.urlInfo.curNavPage =svcNav.updateNav({'urlInfo':this.data.urlInfo});
 		
 		var goTrig =true;
 		if(LGlobals.state.loggedIn ===false) {
@@ -101,6 +111,7 @@ var inst ={
 					thisObj.data.redirectUrl =false;		//reset for next time
 					libCookie.clear('redirectUrl', {});
 				}
+				thisObj.done({});
 				deferred.resolve({'goTrig':goTrig});
 			}, function(err) {	//check cookies
 				var cookieSess =libCookie.get('sess_id', {});
@@ -119,6 +130,7 @@ var inst ={
 							thisObj.data.redirectUrl =false;		//reset for next time
 							libCookie.clear('redirectUrl', {});
 						}
+						thisObj.done({});
 						deferred.resolve({'goTrig':goTrig});
 					}, function(response) {
 						libCookie.clear('sess_id', {});		//clear cookie to avoid endless loop
@@ -126,6 +138,7 @@ var inst ={
 						if(!params.noLoginRequired) {
 							$location.url(LGlobals.dirPaths.appPathLocation+params.loginPage);
 						}
+						thisObj.done({});
 						deferred.resolve({'goTrig':goTrig});
 					});
 				}
@@ -141,6 +154,7 @@ var inst ={
 					else {
 						$rootScope.$broadcast('loginEvt', {'loggedIn':true, 'noRedirect':true});
 					}
+					thisObj.done({});
 					deferred.resolve({'goTrig':goTrig});
 				}
 			});
@@ -156,6 +170,7 @@ var inst ={
 			else {
 				$rootScope.$broadcast('loginEvt', {'loggedIn':true, 'noRedirect':true});
 			}
+			thisObj.done({});
 			deferred.resolve({'goTrig':goTrig});
 		}
 		

@@ -184,18 +184,34 @@ var inst ={
 	@param {Object} params
 		@param {Object} urlInfo Holds parsed URL info
 			@param {String} page i.e. 'login'
-			@param {String} queryParams i.e. '?yes=1&no=2'
+			@param {String} queryParams i.e. 'yes=1&no=2'
+			@param {Object} queryParamsObj Object of parsed URL GET query params (i.e. {yes:'1', no:'2'})
+			@param {String} pageToUse The actual nav page key - this will skip any url checks and just use this given page. This MUST exactly match a this.pages nav item (i.e. 'eventviewinfo')!
+	@return {String} unique identifier for this page
 	*/
 	updateNav: function(params) {
 		var self =this;
-		// console.log(params.urlInfo);
-		var curPage =this.getPageFromRoute(params.urlInfo.page, {});
+		var curPage;
+		if(params.pageToUse) {
+			curPage =params.pageToUse;
+		}
+		else {
+			// console.log(params.urlInfo);
+			curPage =this.getPageFromRoute(params.urlInfo.page, {queryParamsObj: params.urlInfo.queryParamsObj});
+		}
 		// console.log('updateNav: curPage: '+curPage);
 		this.curPageKey =curPage;		//save
 		this.curPage =this.pages[curPage];		//save
 		
 		this.broadcastNavUpdates({});
 		this.updateRouteChangeCounter({});
+		
+		//return a unique identifier for this page/view/nav (that takes into account the URL/query params)
+		var pageToReturn =curPage;
+		if(curPage =='defaultPage') {		//if no nav defined for this page/URL params combination, just use the page (without query params)
+			pageToReturn =params.urlInfo.page;
+		}
+		return pageToReturn;
 	},
 	
 	/**

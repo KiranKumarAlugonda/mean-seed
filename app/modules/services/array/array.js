@@ -9,6 +9,8 @@ Some additional array/object functions that lodash doesn't seem to have..
 //public
 1. findArrayIndex
 2. sort2D
+3. isArray
+4. copy
 //private
 2.5. subSort2D
 */
@@ -106,6 +108,88 @@ Array.prototype.sort2D =function(arrayUnsorted, column, params) {
 	}
 	
 	return sortedArray;
+};
+
+/**
+distinguishes between an object/hash (i.e. {'key':'val'}) and (scalar) array (i.e. [1, 2, 3])
+@toc 3.
+@method isArray
+*/
+Array.prototype.isArray =function(array1, params) {
+	/*	Cannot detect that a scalar array with an undefined first entry is an array
+		if(typeof(array1) !='string' && (array1.length !=undefined && (typeof(array1) !='object' || array1[0] !=undefined || array1.length ===0)))	{		//have to ALSO check not object since it could be an object with a "length" key!... update - typeof is object sometimes for arrays??! so now checking array1[0] too/alternatively..
+			return true;
+		}
+	*/
+	if(Object.prototype.toString.apply(array1) === "[object Array]") {
+		return true;
+	}
+	else {
+		return false;
+	}
+};
+
+/**
+NOTE: lodash has 'clone' and 'cloneDeep' functions but they only work on objects? or do they work on arrays too? If they work on both, should just use that instead.
+
+By default, arrays/objects are assigned by REFERENCE rather than by value (so var newArray =oldArray means that if you update newArray later, it will update oldArray as well, which can lead to some big problems later). So this function makes a copy by VALUE of an array without these backwards overwriting issues
+This is a recursive function so can hog memory/performance easily so set "skip keys" when possible
+
+@todo - copying issue where scalar array is being converted to object..?
+
+@toc 4.
+@method copy
+@param {Array|Object} array1 Array/object to copy
+@param {Object} [params]
+	@param {Array} [skipKeys] Array of keys to NOT copy (currently only for associative array - wouldn't make a ton of sense otherwise?)
+@return {Array|Object} newArray Array/object that has been copied by value
+*/
+Array.prototype.copy =function(array1, params) {
+	var newArray, aa;
+	if(!array1) {		//to avoid errors if null
+		return array1;
+	}
+	if(!params)
+		params ={};
+	if(!params.skipKeys || params.skipKeys ===undefined)
+		params.skipKeys =[];
+	if(typeof(array1) !="object")		//in case it's not an array, just return itself (the value)
+		return array1;
+	if(this.isArray(array1))
+	{
+		newArray =[];
+		for(aa=0; aa<array1.length; aa++)
+		{
+			if(array1[aa] && (typeof(array1[aa]) =="object"))
+				newArray[aa] =this.copy(array1[aa], params);		//recursive call
+			else
+				newArray[aa] =array1[aa];
+		}
+	}
+	else		//associative array)
+	{
+		newArray ={};
+		for(aa in array1)
+		{
+			var goTrig =true;
+			for(var ss =0; ss<params.skipKeys.length; ss++)
+			{
+				if(params.skipKeys[ss] ==aa)
+				{
+					goTrig =false;
+					break;
+				}
+			}
+			if(goTrig)
+			{
+				if(array1[aa] && (typeof(array1[aa]) =="object"))
+					newArray[aa] =this.copy(array1[aa], params);		//recursive call
+				else
+					newArray[aa] =array1[aa];
+			}
+		}
+	}
+	return newArray;
 };
 
 /**

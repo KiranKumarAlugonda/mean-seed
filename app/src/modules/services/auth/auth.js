@@ -73,7 +73,7 @@ var inst ={
 	@method done
 	*/
 	done: function(params) {
-		console.log(JSON.stringify(this.data.urlInfo));
+		// console.log(JSON.stringify(this.data.urlInfo));
 	},
 	
 	/**

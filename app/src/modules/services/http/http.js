@@ -61,10 +61,23 @@ angular.module('svc').factory('svcHttp', ['$http', '$q', '$rootScope', 'libCooki
 						deferred.resolve(response);
 					}
 				})
-				.error(function(response) {
+				.error(function(response, status) {
 					// response =MobileWrapper.httpParse(response, {});		//handle any mobile native wrapper quirks for malformed responses..
 					
-					$rootScope.$broadcast('evtAppalertAlert', {type:'error', msg:'Error'});
+					var msg ='Error ';
+					if(response.msg !==undefined) {
+						msg+=response.msg+' ';
+					}
+					else if(status ==401) {
+						if(response.status !==undefined) {
+							msg+=response.status+'. ';
+						}
+						msg+=' Try logging out and logging in again to refresh your session if you think you should have access to this content. Note that everytime you log in on another device or browser your session is reset everywhere else for security purposes.';
+					}
+					else {
+						msg+=status+', '+JSON.stringify(response);
+					}
+					$rootScope.$broadcast('evtAppalertAlert', {type:'error', msg:msg});
 					deferred.reject(response);
 				})
 				;

@@ -110,9 +110,12 @@ var inst ={
 					$location.url(LGlobals.dirPaths.appPathLocation+thisObj.data.redirectUrl);
 					thisObj.data.redirectUrl =false;		//reset for next time
 					libCookie.clear('redirectUrl', {});
+					deferred.reject({'goTrig':goTrig});		//reject since changing pages so will come back here from new page; don't want to load the current page
 				}
-				thisObj.done({});
-				deferred.resolve({'goTrig':goTrig});
+				else {
+					thisObj.done({});
+					deferred.resolve({'goTrig':goTrig});
+				}
 			}, function(err) {	//check cookies
 				var cookieSess =libCookie.get('sess_id', {});
 				var cookieUser =libCookie.get('user_id', {});
@@ -129,17 +132,23 @@ var inst ={
 							$location.url(LGlobals.dirPaths.appPathLocation+thisObj.data.redirectUrl);
 							thisObj.data.redirectUrl =false;		//reset for next time
 							libCookie.clear('redirectUrl', {});
+							deferred.reject({'goTrig':goTrig});		//reject since changing pages so will come back here from new page; don't want to load the current page
 						}
-						thisObj.done({});
-						deferred.resolve({'goTrig':goTrig});
+						else {
+							thisObj.done({});
+							deferred.resolve({'goTrig':goTrig});
+						}
 					}, function(response) {
 						libCookie.clear('sess_id', {});		//clear cookie to avoid endless loop
 						libCookie.clear('user_id', {});		//clear cookie to avoid endless loop
 						if(!params.noLoginRequired) {
 							$location.url(LGlobals.dirPaths.appPathLocation+params.loginPage);
+							deferred.reject({'goTrig':goTrig});		//reject since changing pages so will come back here from new page; don't want to load the current page
 						}
-						thisObj.done({});
-						deferred.resolve({'goTrig':goTrig});
+						else {
+							thisObj.done({});
+							deferred.resolve({'goTrig':goTrig});
+						}
 					});
 				}
 				else {
@@ -149,13 +158,18 @@ var inst ={
 						if(!params.noLoginRequired) {
 							//thisObj.data.redirectUrl =$location.url();		//save for after login
 							$location.url(LGlobals.dirPaths.appPathLocation+params.loginPage);
+							deferred.reject({'goTrig':goTrig});		//reject since changing pages so will come back here from new page; don't want to load the current page
+						}
+						else {
+							thisObj.done({});
+							deferred.resolve({'goTrig':goTrig});
 						}
 					}
 					else {
 						$rootScope.$broadcast('loginEvt', {'loggedIn':true, 'noRedirect':true});
+						thisObj.done({});
+						deferred.resolve({'goTrig':goTrig});
 					}
-					thisObj.done({});
-					deferred.resolve({'goTrig':goTrig});
 				}
 			});
 		}
@@ -165,13 +179,18 @@ var inst ={
 				if(!params.noLoginRequired) {
 					//thisObj.data.redirectUrl =$location.url();		//save for after login
 					$location.url(LGlobals.dirPaths.appPathLocation+params.loginPage);
+					deferred.reject({'goTrig':goTrig});		//reject since changing pages so will come back here from new page; don't want to load the current page
+				}
+				else {
+					thisObj.done({});
+					deferred.resolve({'goTrig':goTrig});
 				}
 			}
 			else {
 				$rootScope.$broadcast('loginEvt', {'loggedIn':true, 'noRedirect':true});
+				thisObj.done({});
+				deferred.resolve({'goTrig':goTrig});
 			}
-			thisObj.done({});
-			deferred.resolve({'goTrig':goTrig});
 		}
 		
 		return deferred.promise;

@@ -7,6 +7,7 @@ Some additional array/object functions that lodash doesn't seem to have..
 
 @toc
 //public
+0. remove
 1. findArrayIndex
 2. sort2D
 3. isArray
@@ -22,9 +23,39 @@ var self;
 /**
 @param {Object} opts
 */
-function Array(opts) {
+function Array1(opts) {
 	self =this;
 }
+
+/**
+Removes one or more items from an array
+// Array Remove - By John Resig (MIT Licensed)
+// Remove the second item from the array
+ArrayMod.remove(arr1, 1);
+// Remove the second-to-last item from the array
+ArrayMod.remove(arr1, -2);
+// Remove the second and third items from the array
+ArrayMod.remove(arr1, 1,2);
+// Remove the last and second-to-last items from the array
+ArrayMod.remove(arr1, -2,-1);
+@toc 0.
+@method remove
+@param {Array} arr1 The array to remove from
+@param {Number} from The index to remove (or remove starting from if removing more than one)
+@param {Number} [to] The index to remove up to
+@param {Object} [params]
+@return {Array} arr1 The new array with the appropriate element(s) removed
+*/
+Array1.prototype.remove =function(arr1, from, to, params) {
+	// console.log('array remove: before: '+JSON.stringify(arr1));
+	var rest = arr1.slice((to || from) + 1 || arr1.length);
+	arr1.length = from < 0 ? arr1.length + from : from;
+	// arr1 =arr1.push.apply(this, rest);
+	// arr1.push(rest);
+	arr1 =arr1.concat(rest);
+	// console.log('array remove: after: '+JSON.stringify(arr1));
+	return arr1;
+};
 
 /**
 Returns the index of an 2D []{} associative array when given the key & value to search for within the array
@@ -36,7 +67,7 @@ Returns the index of an 2D []{} associative array when given the key & value to 
 @param {Object} [params]
 	@param {Boolean} oneD True if it's a 1D array
 */
-Array.prototype.findArrayIndex =function(array, key, val, params) {
+Array1.prototype.findArrayIndex =function(array, key, val, params) {
 	var ii;
 	//var index =false;		//index can be 0, which evaluates to false
 	var index =-1;
@@ -75,7 +106,7 @@ takes a multidimensional array & array index to sort by and returns the multidim
 	@param {String} [order] 'Desc' for reverse order sort
 @return {Array} sortedArray input array of objects []{} but now sorted
 */
-Array.prototype.sort2D =function(arrayUnsorted, column, params) {
+Array1.prototype.sort2D =function(arrayUnsorted, column, params) {
 	var tempArray =[];	//copy calHide array here to sort; then re-copy back into calHide array once sorted
 	var array2D =[];
 	var ii;
@@ -115,7 +146,7 @@ distinguishes between an object/hash (i.e. {'key':'val'}) and (scalar) array (i.
 @toc 3.
 @method isArray
 */
-Array.prototype.isArray =function(array1, params) {
+Array1.prototype.isArray =function(array1, params) {
 	/*	Cannot detect that a scalar array with an undefined first entry is an array
 		if(typeof(array1) !='string' && (array1.length !=undefined && (typeof(array1) !='object' || array1[0] !=undefined || array1.length ===0)))	{		//have to ALSO check not object since it could be an object with a "length" key!... update - typeof is object sometimes for arrays??! so now checking array1[0] too/alternatively..
 			return true;
@@ -144,7 +175,7 @@ This is a recursive function so can hog memory/performance easily so set "skip k
 	@param {Array} [skipKeys] Array of keys to NOT copy (currently only for associative array - wouldn't make a ton of sense otherwise?)
 @return {Array|Object} newArray Array/object that has been copied by value
 */
-Array.prototype.copy =function(array1, params) {
+Array1.prototype.copy =function(array1, params) {
 	var newArray, aa;
 	if(!array1) {		//to avoid errors if null
 		return array1;
@@ -264,4 +295,4 @@ function subSort2D(array1)
 	return array1;
 }
 
-module.exports = new Array({});
+module.exports = new Array1({});

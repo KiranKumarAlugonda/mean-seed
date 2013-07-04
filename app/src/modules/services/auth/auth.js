@@ -2,6 +2,7 @@
 @class auth
 
 @toc
+4. samePage
 2. saveUrlLocation
 3. done		//called AFTER login status is figured out - in case need to do any logic AFTER have login status (and user object filled if logged in)
 1. checkSess
@@ -22,6 +23,20 @@ var inst ={
 			page: false,
 			queryParams: false,
 			curNavPage: false		//holds the 'page' name used by the nav service (this uniquely identifies the page/view WITHOUT any query params)
+		}
+	},
+	
+	/**
+	Just before changing $location.url (to change a page / redirect), need to figure out if we want to deferred.reject (in case going to a DIFFERENT page) or deferred.resolve (if staying on the same page OR 'redirecting' to the same page). Rejecting the promises causes the controller and page NOT to load, and this is good IF we're going to a new page but obviously breaks things if we're staying on the same page so need to resolve if staying on the same page.
+	@toc 4.
+	@method samePage
+	*/
+	samePage: function(newUrl, params) {
+		if(newUrl.indexOf(this.data.urlInfo.page) >-1) {		//same page (or close enough)
+			return true;
+		}
+		else {
+			return false;
 		}
 	},
 	
@@ -108,9 +123,16 @@ var inst ={
 				$rootScope.$broadcast('loginEvt', {'loggedIn':true, 'noRedirect':true, 'user_id':user._id, 'sess_id':user.sess_id});
 				if(thisObj.data.redirectUrl) {
 					$location.url(LGlobals.dirPaths.appPathLocation+thisObj.data.redirectUrl);
+					var redirectUrlSave =thisObj.data.redirectUrl;
 					thisObj.data.redirectUrl =false;		//reset for next time
 					libCookie.clear('redirectUrl', {});
-					deferred.reject({'goTrig':goTrig});		//reject since changing pages so will come back here from new page; don't want to load the current page
+					if(thisObj.samePage(redirectUrlSave, {})) {
+						thisObj.done({});
+						deferred.resolve({'goTrig':goTrig});
+					}
+					else {
+						deferred.reject({'goTrig':goTrig});		//reject since changing pages so will come back here from new page; don't want to load the current page
+					}
 				}
 				else {
 					thisObj.done({});
@@ -130,9 +152,16 @@ var inst ={
 						$rootScope.$broadcast('loginEvt', {'loggedIn':true, 'noRedirect':true, 'user_id':user._id, 'sess_id':user.sess_id});
 						if(thisObj.data.redirectUrl) {
 							$location.url(LGlobals.dirPaths.appPathLocation+thisObj.data.redirectUrl);
+							var redirectUrlSave =thisObj.data.redirectUrl;
 							thisObj.data.redirectUrl =false;		//reset for next time
 							libCookie.clear('redirectUrl', {});
-							deferred.reject({'goTrig':goTrig});		//reject since changing pages so will come back here from new page; don't want to load the current page
+							if(thisObj.samePage(redirectUrlSave, {})) {
+								thisObj.done({});
+								deferred.resolve({'goTrig':goTrig});
+							}
+							else {
+								deferred.reject({'goTrig':goTrig});		//reject since changing pages so will come back here from new page; don't want to load the current page
+							}
 						}
 						else {
 							thisObj.done({});
@@ -143,7 +172,13 @@ var inst ={
 						libCookie.clear('user_id', {});		//clear cookie to avoid endless loop
 						if(!params.noLoginRequired) {
 							$location.url(LGlobals.dirPaths.appPathLocation+params.loginPage);
-							deferred.reject({'goTrig':goTrig});		//reject since changing pages so will come back here from new page; don't want to load the current page
+							if(thisObj.samePage(params.loginPage, {})) {
+								thisObj.done({});
+								deferred.resolve({'goTrig':goTrig});
+							}
+							else {
+								deferred.reject({'goTrig':goTrig});		//reject since changing pages so will come back here from new page; don't want to load the current page
+							}
 						}
 						else {
 							thisObj.done({});
@@ -158,7 +193,13 @@ var inst ={
 						if(!params.noLoginRequired) {
 							//thisObj.data.redirectUrl =$location.url();		//save for after login
 							$location.url(LGlobals.dirPaths.appPathLocation+params.loginPage);
-							deferred.reject({'goTrig':goTrig});		//reject since changing pages so will come back here from new page; don't want to load the current page
+							if(thisObj.samePage(params.loginPage, {})) {
+								thisObj.done({});
+								deferred.resolve({'goTrig':goTrig});
+							}
+							else {
+								deferred.reject({'goTrig':goTrig});		//reject since changing pages so will come back here from new page; don't want to load the current page
+							}
 						}
 						else {
 							thisObj.done({});
@@ -179,7 +220,13 @@ var inst ={
 				if(!params.noLoginRequired) {
 					//thisObj.data.redirectUrl =$location.url();		//save for after login
 					$location.url(LGlobals.dirPaths.appPathLocation+params.loginPage);
-					deferred.reject({'goTrig':goTrig});		//reject since changing pages so will come back here from new page; don't want to load the current page
+					if(thisObj.samePage(params.loginPage, {})) {
+						thisObj.done({});
+						deferred.resolve({'goTrig':goTrig});
+					}
+					else {
+						deferred.reject({'goTrig':goTrig});		//reject since changing pages so will come back here from new page; don't want to load the current page
+					}
 				}
 				else {
 					thisObj.done({});

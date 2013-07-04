@@ -67,20 +67,11 @@ User module constructor
 @class User
 @constructor
 @param options {Object} constructor options
-	// @param {Object} db
-	// @param {Object} StringMod
-	// @param {Object} MongoDBMod
-	// @param {Object} CrudMod
-	// @param {Object} LookupMod
 **/
 function User(options){
     this.opts = lodash.merge({}, defaults, options||{});
 
-    // db = this.opts.db;
-	// StringMod =this.opts.StringMod;
-	// MongoDBMod =this.opts.MongoDBMod;
-	// CrudMod =this.opts.CrudMod;
-	// LookupMod =this.opts.LookupMod;
+	self = this;
 }
 
 /**

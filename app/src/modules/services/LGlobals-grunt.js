@@ -30,7 +30,7 @@ var cfgJson = grunt.config('cfgJson');
 	'serverPath': "http://<% print(cfgJson.server.domain); %>:<% print(cfgJson.server.socketPort); %>/",
 	'publicPath': "http://<% print(cfgJson.server.domain); %>:<% print(cfgJson.server.port); %>/",
 	'homeDirectory': false,
-	'images':"img/",		//will have appPath prepended to it
+	'images':"common/img/",		//will have staticPath prepended to it
 	'uploads':"uploads/",		//will have appPath prepended to it
 	'ajaxUrlParts':{
 		//'main':"http://"+window.location.host+":<% print(cfgJson.server.port); %>/"
@@ -106,7 +106,8 @@ var cfgJson = grunt.config('cfgJson');
 
 	//0.
 	this.init =function(params) {
-		this.dirPaths.images =this.dirPaths.appPath+this.dirPaths.images;
+		// this.dirPaths.images =this.dirPaths.appPath+this.dirPaths.images;
+		this.dirPaths.images =this.dirPaths.staticPath+this.dirPaths.images;
 		this.dirPaths.uploads =this.dirPaths.appPath+this.dirPaths.uploads;
 		this.dirPaths.homeDirectory =this.dirPaths.serverUrl;
 

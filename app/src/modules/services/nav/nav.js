@@ -247,7 +247,7 @@ var inst ={
 	@method getNav
 	*/
 	getNav: function(params) {
-		return this.curPage;
+		return libArray.copyArray(this.curPage, {});		//must return COPY otherwise changes will overwrite objects here!
 	},
 	
 	/**

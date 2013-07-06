@@ -4,14 +4,17 @@
 - To add a new route/page
 	- Create a new folder in `modules/pages` with (usually) 4 new files. 1 css file, 1 html file, 1 javascript file, and 1 test file.
 		1. The HTML / partial file (i.e. home.html) is the html template.
+			- convention is to name this is snake case NOT camelCase - i.e. 'my-new-page.html'
 			- Make sure to add this file to `config/buildfileList.js` so these resources will be properly included. You'll have to run `grunt` to rebuild the code files and see your changes take place after you refresh your browser.
 		2. The CSS or CSS-preprocessor file (i.e. home.less) defines the styles for the page.
+			- convention is to match this naming to the HTML file - i.e. 'my-new-page.less'
 			- Make sure to include this new LESS file (with `@import [filename];`) in `modules/pages/pages.less` so it is used (`pages.less` is imported into `common/less/_base.less` which is the final LESS file that is compiled).
 		3. The Javascript controller file (i.e. HomeCtrl.js) connects with the AngularJS partial file.
+			- convention is to camelCase name this file - i.e. 'MyNewPageCtrl.js'
 			- Make sure to add this file to `config/buildfileList.js` so these resources will be properly included. You'll have to run `grunt` to rebuild the code files and see your changes take place after you refresh your browser.
 		4. The test jasmine Javascript file (i.e. HomeCtrl.spec.js) is where you write your tests for this module.
 	- Add the new route url path to `common/js/app.js`.
-	- Update `services/nav/nav.js` with the navigation for your new page.
+	- Update `modules/services/nav/nav.js` with the navigation for your new page.
 	- Run `grunt q` then refresh your browser to see your changes.
 	
 - To add a common component / module (directive or service), do **one** of:

@@ -318,7 +318,7 @@ Crud.prototype.delete1 =function(db, data, params, callback) {
 };
 
 /**
-Updates an item in an array inside of a record, or adds via $push if not present. Assumes that items in the sub-array have unique _id fields.
+Updates an item in an array inside of a record, or adds via $push if not present. Assumes that items in the sub-array have unique _id fields. NOTE: you can update as many fields as you want (even outside the subArray on the main object/document) BUT you can only have ONE positional operator update per $set query.
 @toc 5.
 @method saveSubArray
 @param {Object} data
@@ -326,6 +326,8 @@ Updates an item in an array inside of a record, or adds via $push if not present
 		@param {String} _id
 	@param {Object} subObj Info to be saved.
 		@param {String} _id
+	@param {Object} [setObj] Any additional values to set on the root/main object
+	@param {Object} [updateQuery] Any additional queries to run updates on (i.e. {$inc: {field1: 1}} )
 @param {Object} params
 	@param {String} collection Name of mongo collection to operate on.
 	@param {String} subKey Name of the array to edit or $push to. If nested in another array, include the positional operator '$'**.
@@ -390,6 +392,13 @@ Crud.prototype.saveSubArray =function(db, data, params, callback)
 				var subIdSave =data.subObj._id;
 				delete data.subObj._id;
 				var setQuery ={};
+				if(data.setObj !==undefined) {
+					setQuery =data.setObj;
+				}
+				var updateQuery ={};
+				if(data.updateQuery !==undefined) {
+					updateQuery =data.updateQuery;
+				}
 				//ret.msg +='data.subObj: '+JSON.stringify(data.subObj)+' ';
 				for(var xx in data.subObj)
 				{
@@ -397,7 +406,10 @@ Crud.prototype.saveSubArray =function(db, data, params, callback)
 					setQuery[key1] =data.subObj[xx];
 				}
 				//ret.msg +='query: '+JSON.stringify(query)+' setQuery: '+JSON.stringify(setQuery)+' ';
-				db[params.collection].update(query, {'$set':setQuery}, {'safe':true}, function(err, num_modified)
+				updateQuery.$set =setQuery;
+				// db[params.collection].update(query, {'$set':setQuery}, {'safe':true}, function(err, num_modified)
+				// console.log('collection: '+params.collection+' query: '+JSON.stringify(query)+' updateQuery: '+JSON.stringify(updateQuery));
+				db[params.collection].update(query, updateQuery, {'safe':true}, function(err, num_modified)
 				{
 					if(err)
 					{
@@ -419,7 +431,9 @@ $Pushes a given item to a given record's given sub-array. Creates an _id for the
 	@param {Object} main Holds id of outer collection item to use
 		@param {String} _id
 	@param {Object} subObj Info to be saved.
-		@param {String} _id		
+		@param {String} _id
+	@param {Object} [setObj] Any additional values to set on the root/main object
+	@param {Object} [updateQuery] Any additional queries to run updates on (i.e. {$inc: {field1: 1}} )
 	@param {Object} [secondary] key-value params for additional query paramters to get to even further nested arrays
 		@example {'course._id':'382923', 'course.completed._id':'302044'}
 @param {Object} params
@@ -464,7 +478,18 @@ Crud.prototype.subArrayCreate =function(db, data, params, callback)
 			query[xx] =MongoDBMod.makeIds({'id':data.secondary[xx]});
 		}
 	}
-	db[params.collection].update(query, {'$push': pushObj }, {'safe':true}, function(err, valid)
+	
+	var updateQuery ={};
+	if(data.updateQuery !==undefined) {
+		updateQuery =data.updateQuery;
+	}
+	if(data.setObj !==undefined) {
+		updateQuery.$set =data.setObj;
+	}
+	updateQuery.$push =pushObj;
+	
+	// console.log('collection: '+params.collection+' query: '+JSON.stringify(query)+' updateQuery: '+JSON.stringify(updateQuery));
+	db[params.collection].update(query, updateQuery, {'safe':true}, function(err, valid)
 	{
 		if(err)
 		{

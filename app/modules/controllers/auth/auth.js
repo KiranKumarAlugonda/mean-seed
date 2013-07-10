@@ -226,6 +226,14 @@ Auth.prototype.login = function(db, data, params) {
 			}, function(err) {
 				deferred.reject(err);
 			});
+			
+			//ensure user is no longer 'guest' status
+			var setObj ={
+				'status':'member'
+			};
+			db.user.update({_id: MongoDBMod.makeIds({'id':user._id})}, {$set: setObj}, function(err, valid) {
+				var dummy =1;
+			});
 		}
 	});
 	

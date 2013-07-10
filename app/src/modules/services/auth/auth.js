@@ -74,7 +74,12 @@ var inst ={
 			}
 		}
 		if(!skip) {		//save it
-			curPage +=queryParams;
+			//ensure it has a leading question mark (otherwise will just always redirect the main/default page)
+			var queryParamsString =queryParams;
+			if(queryParamsString.length >0) {
+				queryParamsString ='?'+queryParamsString;
+			}
+			curPage +=queryParamsString;
 			this.data.redirectUrl =curPage;
 			libCookie.set('redirectUrl', curPage, 1, {});		//save cookie as well just in case (page refresh, etc.)
 		}

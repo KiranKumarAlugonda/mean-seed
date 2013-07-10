@@ -82,9 +82,9 @@ Crud.prototype.setSearchParams =function(data, query, params) {
 Creates a new record in the collection if _id is absent. If _id field is present, performs an update with $set, so only specified fields are changed and the rest are left untouched.
 @toc 2.
 @method save
+@param {Object} data A partial or complete database record to save.
 @param {Object} params
 	@param {String} collection Name of mongo collection to operate on.
-@param {Object} data A partial or complete database record to save.
 */
 Crud.prototype.save =function(db, data, params, callback)
 {

@@ -55,7 +55,12 @@ var cfgJson = grunt.config('cfgJson');
 	//'fbPerms':"email,user_birthday,offline_access,publish_stream",
 	'fbPerms':"email,user_birthday",
 	'twitterHandle':'handleHere',
-	'googleClientId':'<% print(cfgJson.google.clientId); %>'
+	'googleClientId':'<% print(cfgJson.google.clientId); %>',
+	'timezone':{
+		'name':'',
+		'offset':'',
+		'minutes':''
+	}
 	};
 
 	//data / state storage

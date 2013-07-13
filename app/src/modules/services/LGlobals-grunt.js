@@ -114,6 +114,56 @@ var cfgJson = grunt.config('cfgJson');
 		this.info.emailContact +=this.emailDomain;
 		this.info.emailNoReply +=this.emailDomain;
 		
+		//get timezone offset
+		var getOffsetFromMinutes =function(minutesTotal, params) {
+			var ret ={'z':'', 'minutes':minutesTotal};
+			var posNegSwitch =false;		//not sure if should be "420" or "-420" so this toggles it..
+			
+			var posNeg ='+';
+			if(posNegSwitch) {
+				posNeg ='-';
+				ret.minutes =ret.minutes *-1;
+			}
+			if(minutesTotal <0) {
+				posNeg ='-';
+				if(posNegSwitch) {
+					posNeg ='+';
+				}
+				minutesTotal =minutesTotal *-1;		//force positive
+			}
+			var hours = Math.floor(minutesTotal /60).toString();
+			var minutes =(minutesTotal %60).toString();
+			if(hours.length ==1) {
+				hours ='0'+hours;
+			}
+			if(minutes.length ==1) {
+				minutes ='0'+minutes;
+			}
+			ret.z =posNeg+hours+':'+minutes;
+			return ret;
+		};
+		
+		var minutesTotal =new Date().getTimezoneOffset();
+		var ret1 =getOffsetFromMinutes(minutesTotal, {});
+		this.info.timezone.offset =ret1.z;
+		this.info.timezone.minutes =ret1.minutes;
+		
+		/*
+		var timezone = jstz.determine();
+		this.info.timezone.name =timezone.name();
+		//get offset
+		var xx;
+		for(xx in jstz.olson.timezones) {
+			if(jstz.olson.timezones[xx] ==this.info.timezone.name) {
+				var minutesTotal =xx.slice(0, xx.indexOf(','));
+				this.info.timezone.offset =getOffsetFromMinutes(minutesTotal, {}).z;
+				break;
+			}
+		}
+		*/
+		// console.log('timezone: '+this.info.timezone.name+' '+this.info.timezone.offset+' '+this.info.timezone.minutes);
+		//end: get timezone offset
+		
 		
 		
 		

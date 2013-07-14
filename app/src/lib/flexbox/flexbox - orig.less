@@ -1,5 +1,5 @@
 /*
-Adapted from https://github.com/ProLoser/Flexbox.less but with some additions (i.e. .center() for vertical centering) from here: http://coding.smashingmagazine.com/2013/05/22/centering-elements-with-flexbox/
+https://github.com/ProLoser/Flexbox.less
 */
 
 // display: inline-flex //
@@ -114,24 +114,4 @@ Adapted from https://github.com/ProLoser/Flexbox.less but with some additions (i
   -ms-order: @order;
   -o-order: @order;
   order: @order;
-}
-
-
-// center //
-// copied from http://coding.smashingmagazine.com/2013/05/22/centering-elements-with-flexbox/
-.center() {
-	-webkit-box-align: center;
-	-moz-box-align: center; /* OLD… */
-	-ms-flex-align: center; /* You know the drill now… */
-	-webkit-align-items: center;
-	align-items: center;
-
-	-webkit-box-pack: center;
-	-moz-box-pack: center; 
-	-ms-flex-pack: center; 
-	-webkit-justify-content: center;
-	justify-content: center;
-	
-	height:100%;
-	width:100%;
 }

@@ -13,7 +13,13 @@ angular.module('myApp').controller('SignupFormCtrl', ['$scope', 'LGlobals', '$ro
 	*/
 	$scope.submitForm =function() {
 		if($scope.signupForm.$valid) {
-			if($scope.formVals.password_confirm ==$scope.formVals.password) {
+			if($scope.formVals.password_confirm !=$scope.formVals.password) {
+				$scope.$emit('evtAppalertAlert', {type:'error', msg:'Passwords must match'});
+			}
+			else if($scope.formVals.name.indexOf(' ') <0) {
+				$scope.$emit('evtAppalertAlert', {type:'error', msg:'Must enter a first and last name'});
+			}
+			else {
 				$scope.$emit('evtAppalertAlert', {close:true});		//clear existing messages
 
 				var vals ={
@@ -41,9 +47,6 @@ angular.module('myApp').controller('SignupFormCtrl', ['$scope', 'LGlobals', '$ro
 					UserModel.save(user);
 					$rootScope.$broadcast('loginEvt', {'loggedIn': true, 'sess_id':user.sess_id, 'user_id':user._id});
 				});
-			}
-			else {
-				$scope.$emit('evtAppalertAlert', {type:'error', msg:'Passwords must match'});
 			}
 		}
 	};

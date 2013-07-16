@@ -32,6 +32,7 @@ Any suggestions for improvement are welcome!
 		- `git config --global --add color.ui true`
 	- Install global NPM packages.
 		- `sudo npm install -g grunt-cli jasmine-node less karma yuidocjs forever`
+		- NOTE: IF new global npm packages are installed, you'll need to run this again.
 	- Clone the project to your desired folder location with git.
 	
 2. [ONCE PER APPLICATION - THIS SHOULD ONLY BE DONE BY THE INITIAL/CORE DEVELOPER ONCE. IF YOU DON'T KNOW WHAT THIS MEANS, SKIP IT] Update all default configuration properties in the following configuration files. Typical fields to update include `name` and `title`.

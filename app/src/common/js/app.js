@@ -31,7 +31,7 @@ config(['$routeProvider', '$locationProvider', 'LGlobalsProvider', '$compileProv
 	setup - whitelist, appPath, html5Mode
 	@toc 1.
 	*/
-	$compileProvider.urlSanitizationWhitelist(/^\s*(https?|ftp|mailto|file|tel|content):/);		//otherwise ng-href links don't work on Android within TriggerIO: http://stackoverflow.com/questions/16130902/angular-js-and-trigger-io-cant-follow-a-link-on-android-that-works-on-ios
+	$compileProvider.urlSanitizationWhitelist(/^\s*(https?|ftp|mailto|file|tel|content|geo|http?):/);		//otherwise ng-href links don't work on Android within TriggerIO: http://stackoverflow.com/questions/16130902/angular-js-and-trigger-io-cant-follow-a-link-on-android-that-works-on-ios
 	
 	var appPath =LGlobalsProvider.dirPaths.appPath;
 	var staticPath = LGlobalsProvider.dirPaths.staticPath;

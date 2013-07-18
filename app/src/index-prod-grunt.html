@@ -30,7 +30,7 @@ print('\t<link rel="stylesheet" href="' + filePath + '"/>\n');
             if (re.exec(ua) != null)
                 ie = parseFloat( RegExp.$1 );
         }
-        if(ie >-1 && ie <9)     //IE less than 9
+        if(ie >-1 && ie <10)		//IE less than 10 (only >=10 supports flexbox)
         {
             window.location ="ie.html";
             //alert("redirect");

@@ -18,12 +18,10 @@ a, .btn-link {
 
 .btn-base() {
 	display:inline-block;
-	padding:.4em .67em;
 	border-radius:4px;
 	cursor:pointer;
 	text-align:center;
 	color:white;
-	min-width:75px;
 	&:active {
 		background: darken(#fff, 5%);
 	}
@@ -56,6 +54,8 @@ button[type="submit"].btn-block, .btn-block.ui-forminput-submit {
 //actual button styles and classes
 .btn {
 	.btn-base();
+	padding:5px 9px;
+	min-width:75px;
 	.gradient(~"linear-gradient(180deg, #ffffff, #e6e6e6)");
 	border: 1px solid #bbbbbb;
 	color: #333333;
@@ -63,6 +63,48 @@ button[type="submit"].btn-block, .btn-block.ui-forminput-submit {
 .btn:hover {
 	.gradient(~"linear-gradient(0deg, #ffffff, #e6e6e6)");
 }
+
+
+//from Twitter Bootstrap
+// Button Sizes
+// --------------------------------------------------
+
+// Large
+.btn-large {
+  padding: @paddingLarge;
+  font-size: @fontSizeLarge;
+  .border-radius(@borderRadiusLarge);
+}
+.btn-large [class^="icon-"],
+.btn-large [class*=" icon-"] {
+  margin-top: 4px;
+}
+
+// Small
+.btn-small {
+  padding: @paddingSmall;
+  font-size: @fontSizeSmall;
+  .border-radius(@borderRadiusSmall);
+  min-width:0;
+}
+.btn-small [class^="icon-"],
+.btn-small [class*=" icon-"] {
+  margin-top: 0;
+}
+.btn-mini [class^="icon-"],
+.btn-mini [class*=" icon-"] {
+  margin-top: -1px;
+}
+
+// Mini
+.btn-mini {
+  padding: @paddingMini;
+  font-size: @fontSizeMini;
+  .border-radius(@borderRadiusSmall);
+  min-width:0;
+}
+//end: from Twitter Bootstrap
+
 
 .btn-primary {
 	.btn-base();

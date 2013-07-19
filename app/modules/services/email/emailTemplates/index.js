@@ -92,7 +92,7 @@ EmailTemplates.prototype.send = function(opts, cb){
 
 /**
 Uses templates to form body of message and send an email using the given params below (specifcally 'to' and 'subject')
-@method send
+@method sendTemplate
 @param templateName {String} Name of email template to use
 @param emailParams {Object} sendMail specific params
     @param emailParams.to {String} Comma delimited string of email addresses

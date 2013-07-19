@@ -42,7 +42,9 @@ Uses the appropriately installed email method (i.e. email-templates, Mandrill 3r
 Emailer.prototype.send =function(opts) {
 	//call the email service function here
 	// EmailMandrill.send(opts);
-	EmailTemplates.send(opts);
+	EmailTemplates.sendTemplate(opts.template, opts.emailParams, opts.templateParams, function(err, response) {
+		var dummy =1;
+	});
 };
 
 module.exports = new Emailer({});

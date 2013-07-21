@@ -21,6 +21,21 @@ Any suggestions for improvement are welcome!
 
 ### NOTE: In general, each (major) directory should have its own README file to avoid this one from getting bloated and hard to follow. Currently there is (just) a README specific to the frontend in the `app/src` folder.
 
+## Limitations / Compatibility
+- Built to be cross browser and cross platform (mobile, desktop, Windows, Mac, etc.) compatibile so it should work most everywhere
+	- Exceptions - it will NOT work:
+		- Internet Explorer <=9. Works on Internet Explorer 10+ (10 is the only/first version to support flexbox. It can work on IE9 without flexbox use but IE8 and below is iffy..)
+	- Tested / should work on:
+		- Chrome, Firefox, Safari, Internet Explorer 10+
+		- Android 2.3+
+		- iOS
+		- should work elsewhere too but not rigorously tested outside the ones listed above
+	- In total, should be about 85% coverage (IE 9, 8, 7, 6 make up about 15% market share as of 2013.07.21 - this number will go down with time as more people switch to IE10). See current statistics below; note they vary as these are all (very large) samples from different sites.
+		- http://www.impressivewebs.com/browser-usage-stats/
+			- http://gs.statcounter.com/
+			- http://www.w3counter.com/globalstats.php
+
+
 ## Server Setup
 
 1. [ONCE PER MACHINE/ENVIRONMENT] Make sure that the server environment is properly set up first. This only needs to be done once per machine. Thus, some of this may already be done and may therefore be skipped.
@@ -335,6 +350,6 @@ API:Main Moudle Route   | `/api/`, `/api/help`
 
 ## TODO
 - Use Yeoman (once it comes out of 1.0 Beta)
-- modularize the non-modularized files so the configurations (all the custom code) can edited separately from the functions and generic code.
+- modularize the non-modularized files so the configurations (all the custom code) can be edited separately from the functions and generic code.
 - make a Mongoose fork for people who want to use Mongoose instead of mongo-db-native as the node-mongo interface?
 - make a SASS/SCSS fork for people who prefer SASS/Compass over LESS for CSS pre-processing?

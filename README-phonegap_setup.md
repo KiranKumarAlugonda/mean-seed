@@ -25,7 +25,7 @@ NOTE: do this AFTER you've got the default phonegap app running successfully - S
 	1. check node version with `node -v`
 	2. upgrade
 		1. Windows: by redownloading the installer from the nodejs website and re-running it.
-		2. Mac/Linux: ? I think you can run commands from terminal to do this but I'm not sure.
+		2. Mac/Linux: I think you can run commands from terminal to do this but I'm not sure and I just re-downloaded & re-installed it from the nodejs website and that worked.
 2. `[sudo] npm install -g cordova`
 
 
@@ -55,3 +55,16 @@ From here, instructions are platform specific
 2. Once you get to the Eclipse part/steps, right click on your project, go to 'Properties' then the 'Android' nav on the left, then for 'Project Build Target' select the one that matches you device then press the 'OK' button.
 	1. if you went to an older SDK version, you'll likely now have errors (i.e. in the 'AndroidManifest.xml' file) because the older SDK version doesn't support new properties; remove them then refresh the app / do a 'clean' and the errors should go away.
 		1. for example, for Android 2.3 'hardwareAccelerated' and 'screenSize' are not supported so remove them
+		
+
+### iOS
+- do NOT use the beginning parts of the ios platform guide; you can just install and use the cordova command line tools instead:
+	- install them: `sudo npm install -g cordova`
+	- create app:
+		- [cd to directory you want to put phonegap - for this seed use a new `app/src/deploys` folder]
+		- `cordova create phonegap com.[project] "[Project Name]"`
+		- `cd phonegap`
+		- `cordova platform add ios`
+		- `cordova build`
+- after you've built the ios app, open/import it to xCode by going to the phonegap `platforms/ios` folder and double clicking the `.xcodeproj` file
+	- run it in xCode (you'll need Apple Developer credentials, provisioning profiles, etc. to run on an actual device)

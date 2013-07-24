@@ -280,17 +280,18 @@ module.exports = function(grunt) {
 						src:        publicPathRelative+"index-prod-grunt.html",
 						dest:       publicPathRelative+"index.html"
 					},
-					// indexHtmlPhonegap: {
+					indexHtmlPhonegap: {
 						// ifOpts: [{key:'type', val:'prod'}, {key:'config', val:'phonegap'}],		//pass in options via command line with `--type=prod`
-						// src:        publicPathRelative+"index-phonegap-grunt.html",
-						// dest:       publicPathRelative+"index-phonegap.html"
-					// },
+						ifOpts:	[{key: 'config', val:'phonegap'}],
+						src:        publicPathRelative+"index-phonegap-grunt.html",
+						dest:       publicPathRelative+"index.html"
+					},
 					//TriggerIO version - NOTE: for production builds this ALSO writes to index.html so this MUST be after the indexHtml task above since these writes overwrite each other!
-					// indexHtmlTriggerIO: {
-						// ifOpts:	[{key: 'config', val:'triggerio'}],
-						// src:        publicPathRelative+"index-triggerio-grunt.html",
-						// dest:       publicPathRelative+"index.html"
-					// },
+					indexHtmlTriggerIO: {
+						ifOpts:	[{key: 'config', val:'triggerio'}],
+						src:        publicPathRelative+"index-triggerio-grunt.html",
+						dest:       publicPathRelative+"index.html"
+					},
 					// touchHtml: {
 						// src:        publicPathRelative+"partials/resources/touch-grunt.html",
 						// dest:       publicPathRelative+"partials/resources/touch.html"
@@ -548,6 +549,15 @@ module.exports = function(grunt) {
 
 		//quick version of default task testing/viewing quick changes
 		grunt.registerTask('q', ['buildfiles', 'ngtemplates:main', 'jshint:backendQ', 'jshint:beforeconcatQ', 'uglify:build', 'less:development', 'concat:devJs', 'concat:devCss']);
+		
+		//Phonegap build
+		grunt.registerTask('phonegap', 'run Phonegap task', function() {
+			grunt.option('config', 'phonegap');
+			grunt.option('type', 'prod');
+			init({});		//re-init (since changed grunt options)
+		
+			grunt.task.run(['buildfiles', 'ngtemplates:main', 'uglify:build', 'less:development', 'concat:devJs', 'concat:devCss']);
+		});
 		
 		grunt.registerTask('noMin', ['buildfiles', 'ngtemplates:main', 'less:development', 'concat:devJsNoMin', 'concat:devCss']);
 	

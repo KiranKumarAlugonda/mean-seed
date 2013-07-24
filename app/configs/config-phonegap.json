@@ -8,20 +8,20 @@
         "name": "project",
         "title": "Project"
     },
-	"platform":"",
+	"platform":"phonegap",
     "server": {
         "domain": "localhost",
-        "port": 3000,
+        "port": "",
         "httpsPort": 443,
-        "socketPort": 3001,
-        "serverPath": "/",
-        "appPath": "/",
-        "staticFilePath": "/src/",
-        "staticPath": "/src/"
+        "socketPort": "",
+        "serverPath": "",
+        "appPath": "",
+        "staticFilePath": "",
+        "staticPath": ""
     },
     "cors": {
         "domains": ["localhost"],
-		"frontendUseCors": 0
+		"frontendUseCors": 1
     },
     "db": {
 		"fullURI": "",

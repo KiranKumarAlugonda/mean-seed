@@ -24,9 +24,12 @@ app/test/config.json
 # ignore auto generated documentation (YUIDoc) files
 docs
 
-#ignore files compiled / built by grunt
+# ignore files compiled / built by grunt
 app/src/build
 app/src/modules/services/LGlobals.js
 app/src/config/karma.conf.js
 _dir-paths.less
 app/src/index.html
+
+# ignore deploys (i.e. PhoneGap, TriggerIO build folder/files)
+app/src/deploys

@@ -50,7 +50,7 @@ Any suggestions for improvement are welcome!
 		- NOTE: IF new global npm packages are installed, you'll need to run this again.
 	- Clone the project to your desired folder location with git.
 	
-2. [ONCE PER APPLICATION - THIS SHOULD ONLY BE DONE BY THE INITIAL/CORE DEVELOPER ONCE. IF YOU DON'T KNOW WHAT THIS MEANS, SKIP IT] Update all default configuration properties in the following configuration files. Typical fields to update include `name` and `title`.
+2. [ONCE PER APPLICATION - THIS SHOULD ONLY BE DONE BY THE INITIAL/CORE DEVELOPER ONCE. IF YOU DON'T KNOW WHAT THIS MEANS, SKIP IT] Update all default configuration properties in the following configuration files. Typically you want to replace all `project` references with your application name - typical fields to update include `name`, `title`, and `database` and `db`.
 	- package.json
 	- app/configs/config.json
 
@@ -70,19 +70,16 @@ npm install email-templates
 
 5. Copy the default configuration file into the project root directory and edit as needed. This only needs to be done once, but must be updated every time the file is updated.
 ```bash
-# in root project directory
-# copy a pre-exiting config file
-# OLD - copy just the core file
-# mkdir configs
-# cp app/configs/config.json configs/config.json
-# NEW - copy the whole directory (to get alternate configs - i.e. for heroku, triggerio)
+# cd to root project directory
+# copy the whole directory (to get alternate configs - i.e. for heroku, triggerio)
 cp -R app/configs configs
-# Copy test configuration (for backend tests) then update it accordingly for the test environment.
+# Copy test configuration (for backend tests) then UPDATE it (SEE BELOW).
 cp app/configs/config.json app/test/config.json
-# Specifically, change 'db.database' and 'session.store.db' to a different testing database, such as 'test_temp'. Also change the `server.port` so that way both the test server and the non-test server can run at the same time.
+# Update your new, copied test config for the test environment - specifically, change 'db.database' and 'session.store.db' to a different testing database, such as 'test_temp'. Also change the `server.port` so that way both the test server and the non-test server can run at the same time.
 ```
 
 6. Run grunt from the root project folder (the folder that has "Gruntfile.js" in it) to build all files. Grunt should be run after most file changes and prior to any commits. NOTE: there are other "quick" grunt commands and if you're just trying to run the app rather than develop on it, you can use `grunt q` instead.
+NOTE: grunt runs tests (backend and frontend) and for this to work, you need to have a node process running on the TEST CONFIG environment AND you'll need to open a CHROME web browser to http://localhost:9876 for the frontend tests to run. See the 'Grunt' section below for more details. If you want to skip the tests for now, you can run `grunt q` instead.
 ```bash
 grunt
 ```

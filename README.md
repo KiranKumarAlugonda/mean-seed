@@ -52,7 +52,7 @@ Any suggestions for improvement are welcome!
 	
 2. [ONCE PER APPLICATION - THIS SHOULD ONLY BE DONE BY THE INITIAL/CORE DEVELOPER ONCE. IF YOU DON'T KNOW WHAT THIS MEANS, SKIP IT] Update all default configuration properties in the following configuration files. Typically you want to replace all `project` references with your application name - typical fields to update include `name`, `title`, and `database` and `db`.
 	- package.json
-	- app/configs/config.json
+	- app/configs/config.json (and any other config.json files in the app/configs folder that you'll be using)
 
 3. Install `nodejs` dependencies using `npm`. This only needs to be done once initially, but must be re-run every time package.json is updated. When in doubt, run `npm install` from your project root since you can't run it too much (if you run it extra times it won't do anything).
 ```bash
@@ -71,7 +71,7 @@ npm install email-templates
 5. Copy the default configuration file into the project root directory and edit as needed. This only needs to be done once, but must be updated every time the file is updated.
 ```bash
 # cd to root project directory
-# copy the whole directory (to get alternate configs - i.e. for heroku, triggerio)
+# copy the whole directory (to get alternate configs - i.e. for phonegap, triggerio, heroku)
 cp -R app/configs configs
 # Copy test configuration (for backend tests) then UPDATE it (SEE BELOW).
 cp app/configs/config.json app/test/config.json

@@ -111,6 +111,12 @@ module.exports = function(grunt) {
 		var buildfilesListObj = require('./'+publicPathRelativeRoot+'config/buildfilesList');
 		var publicPathRelative = publicPathRelativeRoot;
 		var publicPathRelativeDot = "./"+publicPathRelative;		//the "./" is necessary for some file paths to work in grunt tasks
+		
+		//relative to app/src folder (prepend this when using it)
+		var pathsPhonegap ={
+			android: "deploys/phonegap/platforms/android/assets/www",
+			ios: "deploys/phonegap/platforms/ios/assets/www"
+		};
 
 		var serverPath = cfgJson.server.serverPath;
 		var appPath = cfgJson.server.appPath;
@@ -491,6 +497,31 @@ module.exports = function(grunt) {
 					],
 					dest: "<%= buildPath %>/templates.js"
 				}
+			},
+			//see here for example, it was confusing to me how to copy a folder recursively without having the src path automatically pre-pended.. http://stackoverflow.com/questions/13389952/flattening-of-file-tree-when-using-grunt-copy-task
+			copy: {
+				phonegapAndroid: {
+					files: [
+						{src: publicPathRelativeDot+'index.html', dest: publicPathRelativeDot+pathsPhonegap.android+'/index.html'},
+						{src: publicPathRelativeDot+'build/main.css', dest: publicPathRelativeDot+pathsPhonegap.android+'/build/main.css'},
+						{src: publicPathRelativeDot+'build/main.js', dest: publicPathRelativeDot+pathsPhonegap.android+'/build/main.js'},		//for development only
+						{src: publicPathRelativeDot+'build/main-min.js', dest: publicPathRelativeDot+pathsPhonegap.android+'/build/main-min.js'},
+						{src: publicPathRelativeDot+'build/templates.js', dest: publicPathRelativeDot+pathsPhonegap.android+'/build/templates.js'},
+						{expand: true, cwd: publicPathRelativeDot+'common/font/', src: ['**'], dest: publicPathRelativeDot+pathsPhonegap.android+'/common/font/'},		//apparently it copies the folder(s) in the src path to the dest as well..
+						{expand: true, cwd: publicPathRelativeDot+'common/img/', src: ['**'], dest: publicPathRelativeDot+pathsPhonegap.android+'/common/img/'}		//apparently it copies the folder(s) in the src path to the dest as well..
+					]
+				},
+				phonegapIOS: {
+					files: [
+						{src: publicPathRelativeDot+'index.html', dest: publicPathRelativeDot+pathsPhonegap.ios+'/index.html'},
+						{src: publicPathRelativeDot+'build/main.css', dest: publicPathRelativeDot+pathsPhonegap.ios+'/build/main.css'},
+						{src: publicPathRelativeDot+'build/main.js', dest: publicPathRelativeDot+pathsPhonegap.ios+'/build/main.js'},		//for development only
+						{src: publicPathRelativeDot+'build/main-min.js', dest: publicPathRelativeDot+pathsPhonegap.ios+'/build/main-min.js'},
+						{src: publicPathRelativeDot+'build/templates.js', dest: publicPathRelativeDot+pathsPhonegap.ios+'/build/templates.js'},
+						{expand: true, cwd: publicPathRelativeDot+'common/font/', src: ['**'], dest: publicPathRelativeDot+pathsPhonegap.ios+'/common/font/'},		//apparently it copies the folder(s) in the src path to the dest as well..
+						{expand: true, cwd: publicPathRelativeDot+'common/img/', src: ['**'], dest: publicPathRelativeDot+pathsPhonegap.ios+'/common/img/'}		//apparently it copies the folder(s) in the src path to the dest as well..
+					]
+				}
 			}
 		});
 		
@@ -556,7 +587,7 @@ module.exports = function(grunt) {
 			grunt.option('type', 'prod');
 			init({});		//re-init (since changed grunt options)
 		
-			grunt.task.run(['buildfiles', 'ngtemplates:main', 'uglify:build', 'less:development', 'concat:devJs', 'concat:devCss']);
+			grunt.task.run(['buildfiles', 'ngtemplates:main', 'uglify:build', 'less:development', 'concat:devJs', 'concat:devCss', 'copy:phonegapAndroid', 'copy:phonegapIOS']);
 		});
 		
 		grunt.registerTask('noMin', ['buildfiles', 'ngtemplates:main', 'less:development', 'concat:devJsNoMin', 'concat:devCss']);

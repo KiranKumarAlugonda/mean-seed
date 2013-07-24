@@ -6,11 +6,11 @@ NOTE: do this AFTER you've got the default phonegap app running successfully - S
 1. `git pull` to get updated files (if you're working and changing files locally you can skip this step)
 	1. if app config files changed, you'll have to update your local versions accordingly - @todo - document this better
 2. run `grunt phonegap`
-3. copy over the following folders/files to the phonegap app `assets/www` folder you created above (make sure to put it in ALL the specific platforms you're using - i.e. `platforms/android`, `platforms/ios`, etc.)
-	1. `app/src/index.html`
-	2. `app/src/build` folder
-	3. `app/src/common/font` and `app/src/common/img` folders (you may or may not need the `img` folder depending on if you're using images in the mobile version - when in doubt copy it over just in case)
-4. refresh then run the app in Phonegap (i.e. in Eclipse for Android or xCode for iOS)
+	1. this build then copies over the following folders/files to the phonegap app `assets/www` folder you created (it will put it in ALL the specific platforms - i.e. `platforms/android`, `platforms/ios`, etc.). NOTE: only android and ios are automatically copied over currently!
+		1. `app/src/index.html`
+		2. `app/src/build` folder
+		3. `app/src/common/font` and `app/src/common/img` folders (you may or may not need the `img` folder depending on if you're using images in the mobile version - when in doubt leave it copied but if you're NOT using some/all images, remove them to reduce the Phonegap packaged file size)
+3. refresh then run the app in Phonegap (i.e. in Eclipse for Android or xCode for iOS)
 
 
 

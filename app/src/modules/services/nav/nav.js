@@ -9,6 +9,23 @@ Each button generally has the following properties (but check the corresponding 
 	- `html` of the content to display, i.e. "Title Here" or "<span class='icon-bell'></span>" or "&nbsp;"
 	- either an `href` or `click`. For the `click`, it's generally a $rootScope.$broadcast that can be listened for in the appropriate controller for that page.
 	- `classes` which is an object that has style classes to apply for different parts of the nav item (i.e. `cont` is usually the class for the outer-most container)
+	
+@example
+buttons: [
+	{
+		html: "<span class='icon-bell'></span>",
+		href: this.paths.appPathLink+'notifications',
+		id: 'notifications'
+	},
+	{
+		html: "<span class='icon-calendar-17-dark'></span>",
+		click: function() { $rootScope.$broadcast('NavEventChangePage', {page:'event1'}); },
+	},
+	{
+		html: "<span class='icon-tribe'></span>",
+		href: this.paths.appPathLink+'tribes'
+	}
+]
 
 @module nav
 @class nav
@@ -89,7 +106,7 @@ var inst ={
 			headerCentered: this.pathRoot+'header-centered/header-centered.html',
 			footerFlex: this.pathRoot+'footer-flex/footer-flex.html'
 		};
-		this.paths.appPath =LGlobals.dirPaths.appPathLink;
+		this.paths.appPathLink =LGlobals.dirPaths.appPathLink;
 	},
 	
 	/**

@@ -1,12 +1,13 @@
-@height: 45px;
+//IMPORTANT: namespace variables to avoid conflicts in other files!
+@header-height: 45px;
 .header-fixed {
 	position:fixed;
 	left:0;
 	right:0;
-	height: @height;
+	height: @header-height;
 	z-index:9999;
 }
 .header-spacer {
 	position:relative;
-	height: @height;
+	height: @header-height;
 }

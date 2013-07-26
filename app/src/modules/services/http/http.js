@@ -12,10 +12,13 @@ $http wrapper for making (backend) calls and handling notifications (in addition
 
 'use strict';
 
-angular.module('svc').factory('svcHttp', ['$http', '$q', '$rootScope', 'libCookie', 'LGlobals',
-	function($http, $q, $rootScope, libCookie, LGlobals){
+angular.module('svc').factory('svcHttp', ['$http', '$q', '$rootScope', 'libCookie', 'LGlobals', '$timeout',
+	function($http, $q, $rootScope, libCookie, LGlobals, $timeout){
 
 	var inst = {
+	
+		timeoutTrig: false,		//object global timeout trigger so can cancel/clear it before all new calls
+		
 		/**
 		@toc 1.
 		Makes the $http call and returns a deferred object (promise) then when call is complete, shows a notification and completes (resolves or rejects) the promise
@@ -27,6 +30,8 @@ angular.module('svc').factory('svcHttp', ['$http', '$q', '$rootScope', 'libCooki
 			@param {Object} data The data to send back
 		@param {Object} [params] additional options
 			@param {String} [msgSuccess] Message to alert upon success
+			@param {Boolean} [noLoadingScreen] Boolean true to NOT show loading screen
+			@param {Number} [maxMilliseconds =7500] How long to allow the call to go (after this, call will fail and error will be returned)
 		@return deferred.promise
 		@example with just success handling
 			var promise =svcHttp.go({method:'Auth.login'}, {data:$scope.formVals}, {});
@@ -41,13 +46,29 @@ angular.module('svc').factory('svcHttp', ['$http', '$q', '$rootScope', 'libCooki
 				//handle error
 			});
 		**/
-		go: function(rpcOpts, httpOpts, params){
+		go: function(rpcOpts, httpOpts, params) {
+			var self =this;
+			var defaults ={
+				maxMilliseconds: 7500
+				// maxMilliseconds: 50		//TESTING
+			};
+			params =angular.extend(defaults, params);
+			
+			if(params.noLoadingScreen ===undefined || !params.noLoadingScreen) {
+				$rootScope.$broadcast('evtLoadingStart', {});
+			}
+
 			var deferred = $q.defer();
+			
+			if(self.timeoutTrig) {
+				$timeout.cancel(self.timeoutTrig);
+			}
 			
 			httpOpts =this.formConfig(rpcOpts, httpOpts, params);
 			
 			$http(httpOpts)
 				.success(function(response) {
+					$timeout.cancel(self.timeoutTrig);
 					// response =MobileWrapper.httpParse(response, {});		//handle any mobile native wrapper quirks for malformed responses..
 					
 					// response.error is only pressent when an error has occurred
@@ -60,27 +81,44 @@ angular.module('svc').factory('svcHttp', ['$http', '$q', '$rootScope', 'libCooki
 						}
 						deferred.resolve(response);
 					}
+					$rootScope.$broadcast('evtLoadingDone', {});
 				})
 				.error(function(response, status) {
-					// response =MobileWrapper.httpParse(response, {});		//handle any mobile native wrapper quirks for malformed responses..
-					
+					$timeout.cancel(self.timeoutTrig);
 					var msg ='Error ';
-					if(response.msg !==undefined) {
-						msg+=response.msg+' ';
-					}
-					else if(status ==401) {
-						if(response.status !==undefined) {
-							msg+=response.status+'. ';
-						}
-						msg+=' Try logging out and logging in again to refresh your session if you think you should have access to this content. Note that everytime you log in on another device or browser your session is reset everywhere else for security purposes.';
+					
+					if(status ===0 || !status || !response) {
+						msg+=" No server response - try checking your internet connection and trying again. If the problem persists please let us know and we'll look into it!";
 					}
 					else {
-						msg+=status+', '+JSON.stringify(response);
+						// response =MobileWrapper.httpParse(response, {});		//handle any mobile native wrapper quirks for malformed responses..
+						
+						if(response.msg !==undefined) {
+							msg+=response.msg+' ';
+						}
+						else if(status ==401) {
+							if(response.status !==undefined) {
+								msg+=response.status+'. ';
+							}
+							msg+=' Try logging out and logging in again to refresh your session if you think you should have access to this content. Note that everytime you log in on another device or browser your session is reset everywhere else for security purposes.';
+						}
+						else {
+							msg+=status+', '+JSON.stringify(response);
+						}
 					}
 					$rootScope.$broadcast('evtAppalertAlert', {type:'error', msg:msg});
 					deferred.reject(response);
+					$rootScope.$broadcast('evtLoadingDone', {});
 				})
 				;
+				
+				//start timeout going to cancel call if it takes too long
+				self.timeoutTrig =$timeout(function() {
+					$rootScope.$broadcast('evtAppalertAlert', {type:'error', msg:'Call is taking too long so was canceled; please check your internet connection and try again later'});
+					deferred.reject({msg:'call timeout - taking too long'});
+					$rootScope.$broadcast('evtLoadingDone', {});
+				}, params.maxMilliseconds);
+				
 				if(!$rootScope.$$phase) {
 					$rootScope.$apply();		//AngularJS 1.1.4 fix (otherwise $httpBackend tests give "no pending requests to flush" error and potentially there are other (non-test) issues as well. See: https://github.com/angular/angular.js/issues/2371	https://github.com/angular/angular.js/issues/2431
 				}

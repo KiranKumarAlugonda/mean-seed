@@ -67,6 +67,7 @@ var inst ={
 					// "lawnchair/lawnchair.min.js"		//causes Karma SyntaxError
 					// "lawnchair/lawnchair.js"		//causes Karma SyntaxError
 					"lawnchair/lawnchair-edit.js"
+					// "facebook/facebook.all.js"			//HUGE filesize (168kb) just for login - WASTE - try to shift to just using backend facebook calls?
 				],
 				"common":[
 					"js/app.js",

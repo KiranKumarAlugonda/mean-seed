@@ -218,11 +218,14 @@ angular.module('svc').factory('svcHttp', ['$http', '$q', '$rootScope', 'libCooki
 			//set CORS
 			if(parseInt(LGlobals.dirPaths.useCorsUrls.all, 10)) {
 				$http.defaults.headers.common["X-Requested-With"] = undefined;		//CORS
+				host =LGlobals.dirPaths.ajaxUrlParts.main;		//not a local request - need to set host
 			}
-			
+			/*
+			//update: this isn't true; could be a local request from a production (non 'localhost') server
 			if(LGlobals.dirPaths.ajaxUrlParts.main.indexOf('localhost') <0) {		//not a local request - need to set host
 				host =LGlobals.dirPaths.ajaxUrlParts.main;
 			}
+			*/
 
 			return host;
 		}

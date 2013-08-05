@@ -483,8 +483,8 @@ AuthApi.prototype.rpcSocialLogin = function(){
 		action: function(params, out){
 			var promise =AuthMod.socialLogin(db, params, {});
 			promise.then(function(ret1) {
-				// ret1.user =UserMod.readFilter(ret1.user, {type:'full'});		//only return certain fields (i.e strip out password)
-				ret1.user =UserMod.readFilter(ret1.user, {type:'login'});		//only return certain fields (i.e strip out password)
+				ret1.user =UserMod.readFilter(ret1.user, {type:'full'});		//only return certain fields (i.e strip out password)
+				// ret1.user =UserMod.readFilter(ret1.user, {type:'login'});		//only return certain fields (i.e strip out password)
 
 				//@example: var fields ={'tribe': {'_id':1, 'email': 1, 'phone': 1, 'first_name': 1, 'last_name': 1, 'name': 1}, 'follow':{'_id':1, 'email': 1, 'phone': 1, 'first_name': 1, 'last_name': 1, 'name': 1} };
 				// var fields ={};

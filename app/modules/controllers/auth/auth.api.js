@@ -215,7 +215,22 @@ AuthApi.prototype.rpcCreateLogin = function(){
 			var promise =AuthMod.create(db, params, {});
 			promise.then(function(ret1) {
 				ret1.user =UserMod.readFilter(ret1.user, {type:'login'});		//only return certain fields (i.e strip out password)
-				out.win(ret1);
+
+				//@example: var fields ={'tribe': {'_id':1, 'email': 1, 'phone': 1, 'first_name': 1, 'last_name': 1, 'name': 1}, 'follow':{'_id':1, 'email': 1, 'phone': 1, 'first_name': 1, 'last_name': 1, 'name': 1} };
+				// var fields ={};
+				var fields ={ 'follow':{'_id':1, 'email': 1, 'phone': 1, 'first_name': 1, 'last_name': 1, 'name': 1} };
+				var fill_promise = UserMod.fillInfo(db, {'user': ret1.user, 'fields': fields }, {});
+				fill_promise.then(
+					function(ret2)
+					{
+						ret1.user = ret2.user;
+						out.win(ret1);
+					},
+					function(err)
+					{
+						self.handleError(out, err, {});
+					}
+				);
 			}, function(err) {
 				// self.handleError(out.fail);
 				self.handleError(out, err, {});
@@ -468,8 +483,24 @@ AuthApi.prototype.rpcSocialLogin = function(){
 		action: function(params, out){
 			var promise =AuthMod.socialLogin(db, params, {});
 			promise.then(function(ret1) {
-				ret1.user =UserMod.readFilter(ret1.user, {type:'full'});		//only return certain fields (i.e strip out password)
-				out.win(ret1);
+				// ret1.user =UserMod.readFilter(ret1.user, {type:'full'});		//only return certain fields (i.e strip out password)
+				ret1.user =UserMod.readFilter(ret1.user, {type:'login'});		//only return certain fields (i.e strip out password)
+
+				//@example: var fields ={'tribe': {'_id':1, 'email': 1, 'phone': 1, 'first_name': 1, 'last_name': 1, 'name': 1}, 'follow':{'_id':1, 'email': 1, 'phone': 1, 'first_name': 1, 'last_name': 1, 'name': 1} };
+				// var fields ={};
+				var fields ={ 'follow':{'_id':1, 'email': 1, 'phone': 1, 'first_name': 1, 'last_name': 1, 'name': 1} };
+				var fill_promise = UserMod.fillInfo(db, {'user': ret1.user, 'fields': fields }, {});
+				fill_promise.then(
+					function(ret2)
+					{
+						ret1.user = ret2.user;
+						out.win(ret1);
+					},
+					function(err)
+					{
+						self.handleError(out, err, {});
+					}
+				);
 			}, function(err) {
 				self.handleError(out, err, {});
 			});

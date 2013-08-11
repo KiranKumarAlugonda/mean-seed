@@ -92,6 +92,7 @@ angular.module('dtv').directive('dtvAppalert', ['$rootScope', '$timeout', functi
 			@method hideAlert
 			@param {Object} [opts ={}]
 				@param {Boolean} noAnimate True to immediately close
+				@param {Number} [delay=2000] How many milliseconds to wait before auto closing the alert
 			*/
 			function hideAlert(opts) {
 				var hidingTime =1250;		//hardcoded should match (or just be around .25s under) what's set in fade transition css in appalert.less on .dtv-appalert class
@@ -124,11 +125,13 @@ angular.module('dtv').directive('dtvAppalert', ['$rootScope', '$timeout', functi
 			
 			/**
 			@method showAlert
+			@param {Object} opts
+				@param {Number} [delay=2000] How many milliseconds to wait before auto closing the alert
 			*/
 			function showAlert(opts) {
 				resetAlert({});
 				$scope.alert.classes ='';
-				hideAlert({delay:2000});
+				hideAlert(opts);
 			}
 			
 			/**
@@ -137,6 +140,7 @@ angular.module('dtv').directive('dtvAppalert', ['$rootScope', '$timeout', functi
 				@param {String} [type =''] Alert type - one of: 'success' (green colored), 'error' (red), 'info' (blue), or blank '' for the default yellow color
 				@param {Boolean} [close =false] True to close the alert rather than display it
 				@param {String} msg String of what to display in the alert
+				@param {Number} [delay=2000] How many milliseconds to wait before auto closing the alert
 			*/
 			$rootScope.$on('evtAppalertAlert', function(evt, opts) {
 				if(opts.close || !opts.msg) {		//close alert
@@ -145,7 +149,7 @@ angular.module('dtv').directive('dtvAppalert', ['$rootScope', '$timeout', functi
 				else {		//set type, message and show alert
 					$scope.alert.type =opts.type || '';
 					$scope.alert.msg =opts.msg;
-					showAlert({});
+					showAlert(opts);
 				}
 			});
 		}

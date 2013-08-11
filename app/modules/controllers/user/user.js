@@ -15,6 +15,7 @@ User module representing the end-users of the system
 5. read
 6. searchByEmail
 7. searchByPhone
+9. fixPhoneFormat
 */
 
 'use strict';
@@ -280,6 +281,8 @@ User.prototype.update = function(db, data, params)
 	ret.user = data;
 	delete data._id;			//can't $set _id
 	
+	data =self.fixPhoneFormat(db, data, params);
+	
 	db.user.update({_id:MongoDBMod.makeIds({'id':_id}) }, {$set: data}, function(err, valid)
 	{
 		if(err) {
@@ -440,7 +443,7 @@ Check for a user's existence based on a given phone number.
 @toc 7.
 @method read
 @param {Object} data
-	@param {String} phone The phone object to search for.
+	@param {String} phone The phone object to search for.  Will be stripped of all non digit characters first for comparison.
 	@param {Array} [fields = {}] Mongo query for which fields in the record to return. Default is everything.
 		@example {'_id':1, 'name':1}
 @param {Object} params
@@ -458,6 +461,8 @@ User.prototype.searchByPhone = function(db, data, params)
 	{
 		data.fields = {};
 	}
+	
+	data =self.fixPhoneFormat(db, data, params);
 	
 	db.user.findOne({'$or': [ {'phone.number': data.phone}, {'phones_all.number': data.phone.number} ] }, data.fields, function(err, user)
 	{
@@ -483,6 +488,42 @@ User.prototype.searchByPhone = function(db, data, params)
 	});
 
 	return deferred.promise;
+};
+
+/**
+Ensures the phone and phones_all keys are of the proper format (an object with a 'number' field') rather than a string. It also strips all phone numbers of all special characters so there's only digits.
+@toc 9.
+@method fixPhoneFormat
+@param {Object} data
+	@param {Object|String} phone Either a string of a phone number or an object with phone.number
+	@param {Array} [phones_all] Array of phone objects (or strings)
+@return {data} The same data as passed in but now with the proper phone formats for 'phone' and 'phones_all'
+**/
+User.prototype.fixPhoneFormat = function(db, data, params) {
+	//phone
+	if(data.phone !==undefined) {
+		if(typeof(data.phone) =='string') {		//convert to object
+			data.phone ={
+				number: data.phone
+			};
+		}
+		data.phone.number =data.phone.number.replace(/[^\d.]/g, '');		//strip out any non digit characters
+	}
+	
+	//phones_all
+	var ii;
+	if(data.phones_all !==undefined) {
+		for(ii =0; ii<data.phones_all.length; ii++) {
+			if(typeof(data.phones_all[ii]) =='string') {		//convert to object
+				data.phones_all[ii] ={
+					number: data.phones_all[ii]
+				};
+			}
+			data.phones_all[ii].number =data.phones_all[ii].number.replace(/[^\d.]/g, '');		//strip out any non digit characters
+		}
+	}
+	
+	return data;
 };
 
 

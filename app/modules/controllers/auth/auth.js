@@ -43,6 +43,8 @@ var Emailer =require(pathParts.services+'emailer/index.js');
 var StringMod =require(pathParts.services+'string/string.js');
 var MongoDBMod =require(pathParts.services+'mongodb/mongodb.js');
 
+var UserMod =require(pathParts.controllers+'user/user.js');
+
 //global values that will be set by passed in objects (to avoid having to require in every file)
 // var db;
 var self;
@@ -98,6 +100,9 @@ Auth.prototype.create = function(db, data, params)
 		// deferred.reject(ret);
 	// }
 	//check email to ensure valid (no duplicates, etc.)
+	
+	data =UserMod.fixPhoneFormat(db, data, params);
+	
 	if(data.status === undefined)
 	{
 		data.status = 'member';
@@ -587,6 +592,8 @@ Auth.prototype.userImport = function(db, data, params)
 	var deferred =Q.defer();
 	var ret = {'code': 0, 'msg': 'Auth.userImport ', 'user': {}, 'already_exists': false };
 	
+	data.user =UserMod.fixPhoneFormat(db, data.user, params);
+	
 	var exists_promise = self.userExists(db, data.user, {});
 	exists_promise.then(
 		function(ret1)
@@ -719,11 +726,13 @@ Auth.prototype.userExists = function(db, user, params)
 {
 	var deferred = Q.defer();
 	var ret = {'exists': false, 'user': {}};
-	var UserMod =require(pathParts.controllers+'user/user.js');
 	
 	//DRY phone checking function
 	var checkPhone = function()
 	{
+	
+		user =UserMod.fixPhoneFormat(db, user, params);
+		
 		var phone_promise = UserMod.searchByPhone(db, {'phone': user.phone, 'fields': {'_id': 1}}, {});
 		phone_promise.then(
 			function(ret1)
@@ -897,7 +906,6 @@ Auth.prototype.socialLogin = function(db, data, params)
 function checkEmail(db, email, params) {
 	var deferred =Q.defer();
 	var ret ={code: 0, msg:'checkEmail '};
-	var UserMod =require(pathParts.controllers+'user/user.js');
 	
 	var email_promise = UserMod.searchByEmail(db, {'email': email, 'fields': {'_id': 1} }, params);
 	email_promise.then(
@@ -960,7 +968,6 @@ function checkPhone(db, phone, params)
 {
 	var deferred =Q.defer();
 	var ret ={code: 0, msg:'checkPhone '};
-	var UserMod =require(pathParts.controllers+'user/user.js');
 
 	var phone_promise = UserMod.searchByPhone(db, {'phone': phone, 'fields': {'_id': 1} }, params);
 	phone_promise.then(

@@ -508,6 +508,16 @@ User.prototype.fixPhoneFormat = function(db, data, params) {
 			};
 		}
 		data.phone.number =data.phone.number.replace(/[^\d.]/g, '');		//strip out any non digit characters
+		if(data.phone.number.length >10) {		//only take last 10 characters
+			if(!data.phone.area_code) {
+				data.phone.area_code =data.phone.number.slice(0, data.phone.number.length-10);
+			}
+			data.phone.number =data.phone.number.slice(data.phone.number.length-10, data.phone.number.length);
+		}
+		else if(!data.phone.area_code) {
+			
+			data.phone.area_code ='1';		//default to US area code
+		}
 	}
 	
 	//phones_all
@@ -520,6 +530,15 @@ User.prototype.fixPhoneFormat = function(db, data, params) {
 				};
 			}
 			data.phones_all[ii].number =data.phones_all[ii].number.replace(/[^\d.]/g, '');		//strip out any non digit characters
+			if(data.phones_all[ii].number.length >10) {		//only take last 10 characters
+				if(!data.phones_all[ii].area_code) {
+					data.phones_all[ii].area_code =data.phones_all[ii].number.slice(0, data.phones_all[ii].number.length-10);
+				}
+				data.phones_all[ii].number =data.phones_all[ii].number.slice(data.phones_all[ii].number.length-10, data.phones_all[ii].number.length);
+			}
+			else if(!data.phones_all[ii].area_code) {
+				data.phones_all[ii].area_code ='1';		//default to US area code
+			}
 		}
 	}
 	

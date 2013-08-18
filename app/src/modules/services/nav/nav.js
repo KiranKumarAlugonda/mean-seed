@@ -54,7 +54,7 @@ var inst ={
 		routeChange: false		//used to skip the first time so don't go back out of the app on history.back
 	},
 	pathRoot: 'modules/services/nav/',		//LGlobals.dirPaths.staticPath will be prepended
-	paths: {},		//holds file paths for various things, specifically templates (HTML template files) and appPath. See initPaths function for more info.
+	paths: {},		//holds file paths for various things, specifically templates (HTML template files) and appPathLink. See initPaths function for more info.
 	
 	historyCounter: 0,		//will increment on each route change (so can avoid going "back" outside of app)
 	
@@ -77,6 +77,17 @@ var inst ={
 	For all the pages where the url route is not the same as the pages key
 	@property pagesRouteMap Key-pairs where the key corresponds to this.pages array keys and the value corresponds to the url page to match. i.e. {'login': 'login-url'}
 	@type Object
+	@example
+		eventviewinfo:{
+			url: 'eventview',		//the sanitized version of the url (i.e. no hypens)
+			params: {
+				page: 'info'
+			}
+		},
+		//will match things like 'test/898' or 'test/yes/no' in case passing in :id or other sub-page parameters in the URL (but NOT in GET query params)
+		test:{
+			urlRegex: 'test\/'		//the sanitized version of the url (i.e. no hypens)
+		},
 	*/
 	pagesRouteMap: {
 	},
@@ -280,21 +291,49 @@ var inst ={
 	/**
 	@toc 7.
 	@method getPageFromRoute
-	@param {String} urlPage i.e. 'login' or 'some-url-here'
+	@param {String} urlPage i.e. 'login' or 'tribe-members'
+	@param {Object} [params]
+		@param {Object} queryParamsObj Object of parsed URL GET query params (i.e. {page:'yes'}) to check against in ADDITION to checking the url
 	*/
 	getPageFromRoute: function(urlPage, params) {
 		var page =false;
-		var urlPageSanitized =urlPage.replace(/[-_]/g, '');		//remove special characters (dashes and underscores) in route for matching
+		var regex;
+		if(params.queryParamsObj ===undefined) {
+			params.queryParamsObj ={};
+		}
+		var urlPageSanitized =urlPage.replace(/[-_]/g, '').toLowerCase();		//remove special characters (dashes and underscores) in route for matching
 		if(this.pages[urlPage] !==undefined || this.pages[urlPageSanitized] !==undefined) {		//check keys directly
 			// page =urlPage;
 			page =urlPageSanitized;
 		}
-		else {		//have to check map
-			var xx;
+		if(!page) {		//check map
+			var xx, qq, matchAll;
 			for(xx in this.pagesRouteMap) {
-				if(this.pagesRouteMap[xx] ==urlPage) {		//match
-					page =xx;
-					break;
+				if(this.pagesRouteMap[xx].urlRegex !==undefined) {		//regex match
+					regex = new RegExp(this.pagesRouteMap[xx].urlRegex, '');
+					if(urlPageSanitized.match(regex)) {
+						page =xx;
+					}
+				}
+				if(!page && this.pagesRouteMap[xx].url ==urlPageSanitized) {		//match
+					//check url params too
+					if(this.pagesRouteMap[xx].params !==undefined) {
+						matchAll =true;
+						for(qq in this.pagesRouteMap[xx].params) {
+							if(params.queryParamsObj[qq] ===undefined || params.queryParamsObj[qq] !==this.pagesRouteMap[xx].params[qq]) {
+								matchAll =false;
+								break;
+							}
+						}
+						if(matchAll) {
+							page =xx;
+							break;
+						}
+					}
+					else {		//no params to check
+						page =xx;
+						break;
+					}
 				}
 			}
 		}

@@ -90,6 +90,10 @@ https://github.com/ProLoser/Flexbox.less
 }
 */
 
+input[type="checkbox"].ui-forminput-input-checkbox {
+  width: 20px;
+}
+
 /* get button to layout / act like div element instead */
 
 button[type='submit'],
@@ -260,6 +264,27 @@ button[type='submit'],
 .ui-lookup-content-scroll {
   height: 300px;
   overflow: auto;
+}
+
+.ui-lookup-input-div {
+  position: relative;
+}
+
+.ui-lookup-input-x {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  padding: 0 5px;
+  line-height: 20px;
+  color: white;
+  cursor: pointer;
+  background-color: #969696;
+  -webkit-border-radius: 10px;
+     -moz-border-radius: 10px;
+          border-radius: 10px;
+  -webkit-background-clip: padding-box;
+     -moz-background-clip: padding;
+          background-clip: padding-box;
 }
 
 /* ui-iconbutton */
@@ -792,6 +817,118 @@ input:focus.ui-multiselect-input {
 
 .ui-datetimepicker-input {
   width: 100%;
+}
+
+/* ui-multi-file-upload */
+
+.ui-multi-file-upload-progress-bar {
+  display: none;
+  padding: 3px;
+  margin: 10px 0;
+  clear: both;
+  font-size: 14px;
+  border: 1px solid #000;
+  opacity: 0;
+}
+
+.ui-multi-file-upload-progress-bar.loading {
+  display: block;
+  opacity: 1.0;
+}
+
+.ui-multi-file-upload-progress-bar.complete {
+  display: none;
+  opacity: 0;
+  -webkit-transition: opacity 2s linear 1s;
+     -moz-transition: opacity 2s linear 1s;
+      -ms-transition: opacity 2s linear 1s;
+       -o-transition: opacity 2s linear 1s;
+          transition: opacity 2s linear 1s;
+}
+
+.ui-multi-file-upload-progress-bar .percent {
+  display: block;
+  width: 0;
+  height: auto;
+  background-color: #99ccff;
+}
+
+.ui-multi-file-upload-progress-bar-inner {
+  background-color: black;
+}
+
+/* ui-carousel */
+
+.ui-carousel-cont-outer {
+  /*
+	//make position absolute to get full height
+	position:absolute;
+	top:0;
+	bottom:0;
+	width:100%;
+	*/
+
+}
+
+.ui-carousel-cont {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+}
+
+.ui-carousel-content-swipe {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 999;
+  width: 100%;
+}
+
+.ui-carousel-content {
+  height: 100%;
+  -webkit-transition: margin-left 0.5s;
+     -moz-transition: margin-left 0.5s;
+      -ms-transition: margin-left 0.5s;
+       -o-transition: margin-left 0.5s;
+          transition: margin-left 0.5s;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+}
+
+.ui-carousel-arrow-outer {
+  width: 100%;
+  height: 100%;
+}
+
+.ui-carousel-arrow {
+  width: 50px;
+  height: 50px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.ui-carousel-arrow-icon {
+  width: 37px;
+  margin: 0 auto;
+  font-size: 37px;
+}
+
+.ui-carousel-prev,
+.ui-carousel-next {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 100;
+  width: 50px;
+}
+
+.ui-carousel-prev {
+  left: 0;
+}
+
+.ui-carousel-next {
+  right: 0;
 }
 
 /*

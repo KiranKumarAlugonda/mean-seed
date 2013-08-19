@@ -1,6 +1,7 @@
 'use strict';
 
 angular.module('myApp').controller('TestCtrl', ['$scope', '$timeout', 'svcHttp', 'UserModel', 'LGlobals', '$location', function($scope, $timeout, svcHttp, UserModel, LGlobals, $location) {
+	
 	$scope.formVals ={
 	};
 	
@@ -11,4 +12,20 @@ angular.module('myApp').controller('TestCtrl', ['$scope', '$timeout', 'svcHttp',
 			showTime: true		//show timepicker as well
 		}
 	};
+	
+	$scope.slides =[
+		{
+			image: 'http://placekitten.com/200/200',
+			text: 'cat 1'
+		},
+		{
+			image: 'http://placekitten.com/210/200',
+			text: 'cat 2'
+		},
+		{
+			image: 'http://placekitten.com/200/215',
+			text: 'cat 3'
+		}
+	];
+	
 }]);

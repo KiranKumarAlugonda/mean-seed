@@ -107,6 +107,560 @@ angular.module('ui.directives').directive('uiCalendar',['ui.config', '$parse', f
          }
     };
 }]);
+/**
+@todo
+- same-height attr seems to break it (everything is 0 height)?
+- vertical center prev/next arrows (either position absolute negative margin hack or flexbox?)
+- add functionality / support options to bring it to parity with angular-ui carousel
+- remove jQuery dependency (about 5 uses left..)
+- [maybe?] option to automatically make it one slide at a time with overflow hidden, display inline-block, etc. so they just pass in slides and it looks like ui-bootstrap carousel
+	- UPDATE: this is the ONLY way it works now (at least the 1 slide at a time bit) - so may option to NOT do that and allow it to show multiple slides at a time.
+
+NOTE: there's already a ui-bootstrap carousel which is similar; I wrote this one (rather than using / modifying the existing one) because:
+- I'm adding in (hammer) swipe functionality options so need to move the template to the compile function to conditionally build the HTML
+- I want it to work without twitter bootstrap (which the existing one didn't seem to)
+
+Takes a parent element with a bunch of children and makes the children horizontally scrollable. The children can be any html; this will use the .wrap function to wrap the children and add previous & next clickable arrows as well as touch swipe support to scroll through content horizontally
+NOTE: you are responsible for using "display:inline-block" or similar to get the content to display side to side rather than vertically as well as keeping them in one line (i.e. "white-space:nowrap;")
+
+@dependencies
+OPTIONAL
+- font-awesome for the next & prev arrows (or you can replace it with whatever you want for the classes 'icon-chevron-left' and 'icon-chevron-right' or by passing in htmlPrev and/or htmlNext attributes of your own custom HTML)
+- angular-hammer.js and hammer.js IF using hammer-swipe attribute (defaults to false so this isn't need by default and will work without it)
+	- https://github.com/randallb/angular-hammer
+	- http://eightmedia.github.io/hammer.js/
+
+//TOC
+0. setup
+	0.5. init
+	0.7. scope.$on(attrs.ids.resizeEvt,..
+1. initMaxSlides function
+2. updateAnimateInfo function
+3. scope.$on('lmContentSliderReInit', ..
+	// broadcast this to update if content changes
+4. scope.nav function
+5. scope.$watch('opts.curSlide',..
+
+
+scope (attrs that must be defined on the scope (i.e. in the controller) - they can't just be defined in the partial html)
+	// @param {Number} interval The time, in milliseconds, that it will take the carousel to go to the next slide.
+	// @param {Boolean} noTransition Whether to disable transitions on the carousel.
+	// @param {Boolean} noPause Whether to disable pausing on the carousel (by default, the carousel interval pauses on hover)
+	@param {Object} [opts]
+		@param {Number|String} [curSlide =0] Either 0 indexed number of which slide to go to OR string of: 'first', 'last'
+
+attrs
+	@param {String} id Instance id
+	@param {Number} [sameHeight =0] 1 (true) if want to make all elements the same height as the tallest one
+	//@param {Number} [noCenter] 1 (true) to not start with the first one centered in the middle
+	@param {Number} [centerOffset =0] Number of pixels to start from left (otherwise it will default to centering the first element)
+	// @param {Number} [touchShowArrows =0] 1 (true) to show next/prev arrows even on touch
+	@param {Number} [showArrows =1] 1 (true) to show next/prev arrows even on touch
+	@param {String} [htmlPrev] HTML for "previous" (left) arrow (otherwise default styles will be used)
+	@param {String} [htmlNext] HTML for "next" (right) arrow (otherwise default styles will be used)
+	@param {Number|String} [navNumItems =0] Either int of number of slides to nav through on each click OR string of 'width' to calculate number of slides based on total width (will show all new items on nav)
+	@param {Number} [alwaysShowNav =0] 1 if want to NEVER hide arrows (even if all content could fit so there's no need to scroll)	//@todo this is mostly to avoid an issue with centering where there's no nav even though some content is off the screen.. just fix this issue instead??
+	@param {Number} [hammerSwipe =0] 1 to supprt hammer.js swiping to change slides
+	@param {Number} [swipeOverlay =0] 1 to put a transparent div on top of all the slides for swiping (since swipe doesn't work on images). NOTE: this will make all your content un-clickable/actionable!!
+
+
+@usage
+$scope.opts.curSlide is $watch'ed so can change it to navigate through to a particular slide
+
+//1. default / no extra options
+partial / html:
+<div ui-carousel>
+	<div ng-repeat='slide in slides' style='display:inline-block; text-align:center; vertical-align:top;'>		<!-- styles are optional and should be moved to a class / stylesheet; this centers things and makes them display side by side -->
+		<!-- custom content here -->
+		<img ng-src='{{slide.image}}' style='margin:auto; max-width:100%;'>		<!-- styles are optional and should be moved to a class / stylehseet; this makes the content/images dynamic full width. Remove max-width:100%; for them to keep their size and be centered. Make sure NOT to use 'width:100%;' as this will stretch tall, narrow images. -->
+		<div>
+			<h4>Slide {{$index}}</h4>
+			<p>{{slide.text}}</p>
+		</div>
+		<!-- end: custom content here -->
+	</div>
+</div>
+
+controller / js:
+$scope.slides =[
+	{
+		image: 'http://placekitten.com/200/200',
+		text: 'cat 1'
+	},
+	{
+		image: 'http://placekitten.com/210/200',
+		text: 'cat 2'
+	},
+	{
+		image: 'http://placekitten.com/200/215',
+		text: 'cat 3'
+	}
+];
+
+// $scope.myInterval = 5000;
+var slides = $scope.slides = [];
+$scope.addSlide = function() {
+	var newWidth = 200 + ((slides.length + (25 * slides.length)) % 150);
+	slides.push({
+		image: 'http://placekitten.com/' + newWidth + '/200',
+		text: ['More','Extra','Lots of','Surplus'][slides.length % 4] + ' ' +
+		['Cats', 'Kittys', 'Felines', 'Cutes'][slides.length % 4]
+	});
+};
+for (var i=0; i<4; i++) {
+	$scope.addSlide();
+}
+
+
+
+//2. (hammer) swipe
+partial / html:
+<div ui-carousel hammer-swipe='1' swipe-overlay='1'>
+	<div ng-repeat='slide in slides' style='display:inline-block; text-align:center; vertical-align:top;'>		<!-- styles are optional and should be moved to a class / stylesheet; this centers things and makes them display side by side -->
+		<!-- custom content here -->
+		<img ng-src='{{slide.image}}' style='margin:auto; max-width:100%;'>		<!-- styles are optional and should be moved to a class / stylehseet; this makes the content/images dynamic full width. Remove max-width:100%; for them to keep their size and be centered. Make sure NOT to use 'width:100%;' as this will stretch tall, narrow images. -->
+		<div>
+			<h4>Slide {{$index}}</h4>
+			<p>{{slide.text}}</p>
+		</div>
+		<!-- end: custom content here -->
+	</div>
+</div>
+
+controller / js:
+// $scope.myInterval = 5000;
+var slides = $scope.slides = [];
+$scope.addSlide = function() {
+	var newWidth = 200 + ((slides.length + (25 * slides.length)) % 150);
+	slides.push({
+		image: 'http://placekitten.com/' + newWidth + '/200',
+		text: ['More','Extra','Lots of','Surplus'][slides.length % 4] + ' ' +
+		['Cats', 'Kittys', 'Felines', 'Cutes'][slides.length % 4]
+	});
+};
+for (var i=0; i<4; i++) {
+	$scope.addSlide();
+}
+
+//end: EXAMPLE usage
+*/
+
+// 'use strict';
+
+angular.module('ui.directives').directive('uiCarousel', ['uiCarouselResize', '$timeout', function (uiCarouselResize, $timeout) {
+  return {
+		restrict: 'A',
+		transclude: true,
+		scope: {
+			opts: '=?'		//make optional and avoid errors with '?'
+		},
+
+		compile: function(element, attrs) {
+			var defaults ={'sameHeight':'0', 'centerOffset':'0', 'navNumItems':'1', 'alwaysShowNav':'0', 'showArrows':'1', 'hammerSwipe':'0', 'swipeOverlay':'0'};
+			for(var xx in defaults) {
+				if(attrs[xx] ===undefined) {
+					attrs[xx] =defaults[xx];
+				}
+			}
+			//convert to int
+			var attrsToInt =['sameHeight', 'centerOffset', 'navNumItems', 'alwaysShowNav', 'showArrows', 'hammerSwipe', 'swipeOverlay'];
+			for(var ii=0; ii<attrsToInt.length; ii++) {
+				attrs[attrsToInt[ii]] =parseInt(attrs[attrsToInt[ii]], 10);
+			}
+			
+			//set id
+			if(attrs.id ===undefined) {
+				attrs.id ="uiCarousel"+Math.random().toString(36).substring(7);
+			}
+			var id1 =attrs.id;
+			attrs.ids ={
+				'resizeEvt':id1+"ResizeEvt",
+				'content':id1+"Content"
+			};
+			
+			var htmlPrev, htmlNext;
+			if(attrs.htmlPrev) {
+				htmlPrev =attrs.htmlPrev;
+			}
+			else {
+				htmlPrev ="<div class='ui-carousel-arrow'><div class='ui-carousel-arrow-icon icon-chevron-left'></div></div>";
+			}
+			if(attrs.htmlNext) {
+				htmlNext =attrs.htmlNext;
+			}
+			else {
+				htmlNext ="<div class='ui-carousel-arrow'><div class='ui-carousel-arrow-icon icon-chevron-right'></div></div>";
+			}
+			
+			var html="<div class='ui-carousel-cont-outer'>"+		//MUST have outer div otherwise anything (i.e. the hammer swipe directive) will NOT be compiled since compilation does not happen on the element itself!!
+				"<div class='ui-carousel-cont' ";
+				if(attrs.hammerSwipe) {
+					html+="hm-swipeleft='nav(\"next\", {})' hm-swiperight='nav(\"prev\", {})' hm-options='{swipe_velocity: 0.2}' ";
+				}
+				html+=">";
+				if(attrs.showArrows) {
+					html+="<div ng-show='show.prev' class='ui-carousel-prev' ng-click='nav(\"prev\", {})'><div class='ui-carousel-arrow-outer'>"+htmlPrev+"</div></div>";
+				}
+				if(attrs.swipeOverlay) {
+					html+="<div class='ui-carousel-content-swipe'></div>";
+				}
+				html+="<div id='"+attrs.ids.content+"' class='ui-carousel-content' style='width:{{styles.content.width}}px; margin-left:{{styles.content.marginLeft}}px;' ng-transclude></div>";
+				if(attrs.showArrows) {
+					html+="<div ng-show='show.next' class='ui-carousel-next' ng-click='nav(\"next\", {})'><div class='ui-carousel-arrow-outer'>"+htmlNext+"</div></div>";
+				}
+				html+="</div>";
+			html+="</div>";
+			
+			element.replaceWith(html);
+			
+			return function(scope, element, attrs) {
+				/**
+				setup
+				@toc 0.
+				*/
+				scope.show ={
+					prev: true,
+					next: true
+				};
+				scope.styles ={
+					content: {
+						width: 0,
+						marginLeft: 0
+					}
+				};
+				
+				var defaultOpts ={
+					curSlide: 0
+				};
+				if(scope.opts ===undefined) {
+					scope.opts ={};
+				}
+				scope.opts =angular.extend(defaultOpts, scope.opts);
+				
+				var maxSlides;
+				var page =0;		//if navNumItems is greater than 1, this will store the current page / set of slides we're on (otherwise page will be the same as curSlide
+				var maxPages;		//this stores total pages (where pages are a collection of slides equal to navNumSlides - typically the amount of slides that are visible at the same time). If navNumItems is 1, this will be the same as maxSlides
+				var animateInfo, navNumItems =attrs.navNumItems, alwaysShowNav =false;
+				if(attrs.alwaysShowNav) {
+					alwaysShowNav =true;
+				}
+				
+				if(attrs.navNumItems !==undefined && attrs.navNumItems !='width') {
+					navNumItems =attrs.navNumItems;
+				}
+				if(attrs.alwaysShowNav !==undefined) {
+					alwaysShowNav =attrs.alwaysShowNav;
+				}
+				
+				/**
+				@toc 0.5.
+				@method init
+				*/
+				function init(params) {
+					initMaxSlides({'attempt':1});
+					
+					uiCarouselResize.addCallback(attrs.ids.resizeEvt, {'evtName':attrs.ids.resizeEvt, 'args':[]}, {});
+				}
+				
+				/**
+				@toc 0.7.
+				@method scope.$on(attrs.ids.resizeEvt,..
+				*/
+				scope.$on(attrs.ids.resizeEvt, function(evt, params) {
+					// var delayReInit =1000;
+					var delayReInit =500;
+					//console.log('resize');
+					updateAnimateInfo({reNav:true});
+					//call again after timeout just in case content is changing and not done/resized yet..
+					$timeout(function() {
+						updateAnimateInfo({reNav:true});
+					}, delayReInit);
+				});
+				
+				/**
+				Error checks curSlide to ensure it's valid
+				@toc 0.8.
+				@method checkCurSlide
+				*/
+				function checkCurSlide(params) {
+					if(typeof(scope.opts.curSlide) =='number') {
+						if(scope.opts.curSlide <0) {
+							scope.opts.curSlide =0;
+						}
+						else if(scope.opts.curSlide >=maxSlides) {
+							scope.opts.curSlide =(maxSlides-1);		//-1 since 0 indexed
+						}
+					}
+					else if(typeof(scope.opts.curSlide) =='string') {
+						var allowedStrings =['first', 'last', 'next', 'prev', 'all'];		//hardcoded must match what's used in nav
+						if(allowedStrings.indexOf(scope.opts.curSlide) <0) {
+							scope.opts.curSlide =0;
+						}
+					}
+					else {			//invalid catch-all: set to 0
+						// console.log('uiCarousel invalid curSlide value: '+scope.opts.curSlide);
+						scope.opts.curSlide =0;
+					}
+				}
+				
+				/**
+				@toc 1.
+				@method initMaxSlides
+				@param params
+					attempt =int of which attempt (sometimes have loading/timing issue; so set timeout and try again for an attempt or two to see if get some data..)
+				*/
+				function initMaxSlides(params) {
+					var ele =document.getElementById(attrs.ids.content);
+					//maxSlides =ele.children().length-1;		//-1 is because angular inserts an extra "comment" element that I can't seem to filter out with a "div" tag..
+					// maxSlides =$(ele).children().length;
+					maxSlides =angular.element(ele).children().length;
+					// console.log("maxSlides: "+maxSlides);
+					if(maxSlides <1 && params.attempt <3) {		//try again
+						params.attempt++;
+						//setTimeout(function() {
+						$timeout(function() {
+							initMaxSlides(params);
+						}, 200);
+					}
+					else {
+						updateAnimateInfo({});
+					
+						scope.nav(scope.opts.curSlide, {});		//init
+					}
+				}
+				
+				/**
+				@toc 2.
+				@method updateAnimateInfo
+				@param {Object} [params]
+					@param {Boolean} [reNav] True to re-call nav (i.e. for after resize to get back to the correct slide)
+				*/
+				function updateAnimateInfo(params) {
+					var ele =document.getElementById(attrs.ids.content);
+					animateInfo ={
+						'totWidth':$(ele).parent().outerWidth(true)
+						// 'totWidth':angular.element(ele).parent().outerWidth(true)		//no outerWidth function without jQuery
+						// 'width':$(ele).children(":first-child").outerWidth(true),
+					};
+					animateInfo.width =animateInfo.totWidth;		//set each child to width of parent (to only show one at a time)
+					$(ele).children().each(function() {
+						$(this).width(animateInfo.width);
+					});
+						
+					// maxSlides =$(ele).children().length;
+					maxSlides =angular.element(ele).children().length;
+					
+					checkCurSlide({});
+					
+					// scope.styles.content.width =animateInfo.totWidth;		//do NOT set it to parent; needs to be full width of ALL slides side by side
+					scope.styles.content.width =animateInfo.width*maxSlides;
+					// console.log('animateInfo: '+JSON.stringify(animateInfo)+' maxSlides: '+maxSlides);
+					
+					//if num slides is calculated dynamically, do it now
+					if(attrs.navNumItems !==undefined && attrs.navNumItems =='width') {
+						navNumItems =Math.floor(animateInfo.totWidth /animateInfo.width);
+					}
+					
+					//makes them all the same height..
+					if(attrs.sameHeight) {
+						var maxHeight =0;
+						$(ele).children().each(function() {
+							var curHeight =$(this).height();
+							if(curHeight >maxHeight) {
+								maxHeight =curHeight;
+							}
+						});
+						$(ele).children().each(function() {
+							$(this).height(maxHeight);
+						});
+					}
+					//end: make them all same height
+					
+					if(attrs.centerOffset) {
+						animateInfo.centerOffset =attrs.centerOffset*1;
+					}
+					else {		//center
+						animateInfo.centerOffset =animateInfo.totWidth/2 -animateInfo.width/2;		//holds the position of the first slide margin-left when it's centered
+					}
+					
+					//console.log(animateInfo.totWidth+" "+animateInfo.width*maxSlides);
+					//hide nav arrows if content is less than total width; otherwise show them
+					if(!alwaysShowNav && animateInfo.totWidth >animateInfo.width*maxSlides) {		//wider than content = no arrows
+						scope.show.prev =false;
+						scope.show.next =false;
+						//nav to 0 to ensure all content is visible
+						//scope.nav('first', {});
+						scope.nav('all', {});
+					}
+					else {
+						if(attrs.showArrows) {
+							scope.show.prev =true;
+							scope.show.next =true;
+						}
+						if(params.reNav) {
+							scope.nav(scope.opts.curSlide, {});
+						}
+					}
+				}
+				
+				/**
+				@toc 3.
+				@method $scope.$on('lmContentSliderReInit', ..
+				@param args
+					nav =mixed; string of 'prev', 'next', 'first', 'last' OR int of slide to go to
+				*/
+				scope.$on('lmContentSliderReInit', function(evt, args) {
+					updateAnimateInfo({});
+					var ppTemp ={};
+					var to =scope.opts.curSlide;
+					if(args.nav) {
+						to =args.nav;
+					}
+					scope.nav(to, ppTemp);
+				});
+				
+				/**
+				@toc 4.
+				@method scope.nav
+				@param to =mixed; string of 'prev', 'next', 'first', 'last' 'all' (shows all content - this assumes total width is larger than all slides together) OR int of slide to go to
+				*/
+				scope.nav =function(to, params) {
+					var ele =document.getElementById(attrs.ids.content);
+					var marginLeft;
+					//console.log("nav: "+to);
+					if(to =='all') {
+						marginLeft =Math.floor((animateInfo.totWidth - animateInfo.width*maxSlides) /2);
+					}
+					else {
+						if(to =='prev') {
+							if(scope.opts.curSlide >0) {
+								//scope.opts.curSlide--;
+								scope.opts.curSlide =scope.opts.curSlide -navNumItems;
+								if(scope.opts.curSlide <0) {
+									scope.opts.curSlide =0;
+								}
+							}
+						}
+						else if(to =='next') {
+							if(scope.opts.curSlide <(maxSlides-navNumItems)) {
+							//if(scope.opts.curSlide <(maxSlides-1)) {
+								//scope.opts.curSlide++;
+								scope.opts.curSlide =scope.opts.curSlide +navNumItems;
+								if(scope.opts.curSlide >=(maxSlides-1)) {
+									scope.opts.curSlide =(maxSlides-1);
+								}
+							}
+						}
+						else if(to =='first') {
+							scope.opts.curSlide =0;
+						}
+						else if(to =='last') {
+							//scope.opts.curSlide =maxSlides-1;
+							scope.opts.curSlide =maxSlides -navNumItems;
+						}
+						else {		//must be an int of which slide to go to
+							scope.opts.curSlide =to;
+						}
+						marginLeft =-1*(+scope.opts.curSlide*animateInfo.width) +animateInfo.centerOffset;
+					}
+					// $(ele).css({'margin-left':marginLeft+'px'});
+					scope.styles.content.marginLeft =marginLeft;
+					// angular.element(ele).css({'margin-left':marginLeft+'px'});
+				};
+				
+				/**
+				@toc 5.
+				@method $scope.$watch('opts.curSlide',..
+				*/
+				scope.$watch('opts.curSlide', function(newVal, oldVal) {
+					if(!angular.equals(oldVal, newVal)) {		//very important to do this for performance reasons since $watch runs all the time
+						// updateAnimateInfo({});
+						checkCurSlide({});
+						scope.nav(scope.opts.curSlide, {});
+					}
+				});
+				
+				init({});
+			};
+		}
+		
+		// controller: function($scope, $element, $attrs) {
+		// }
+	};
+}])
+.factory('uiCarouselResize', ['$rootScope', function($rootScope){
+var inst ={
+
+	callbacks: {},		//1D array of function callback info ({'evtName' =string of what event name to broadcast, 'args':[]}) to call on each resize
+	timeout: false,
+
+	//0.
+	/*
+	@param params
+		timeout =int of milliseconds to wait between calling resize (for performance to avoid firing every millisecond)
+	*/
+	init: function(params)
+	{
+		var thisObj =this;
+		var defaults ={'timeout':500};
+		params =angular.extend(defaults, params);
+		$(window).resize(function(){
+			if(!thisObj.timeout) {
+				thisObj.timeout =setTimeout(function() {
+					thisObj.resize({});
+					clearTimeout(thisObj.timeout);
+					thisObj.timeout =false;		//reset
+				}, params.timeout);
+			}
+		});
+	},
+	
+	//0.5.
+	destroy: function(params)
+	{
+	},
+
+	//1.
+	resize: function(params)
+	{
+		var thisObj =this;
+		for(var xx in this.callbacks)
+		{
+			// console.log('carousel resize callback: '+xx);
+			if(!$rootScope.$$phase) {		//if not already in apply / in Angular world
+				$rootScope.$apply(function() {
+					$rootScope.$broadcast(thisObj.callbacks[xx].evtName, thisObj.callbacks[xx].args);
+				});
+			}
+			else {
+				$rootScope.$broadcast(thisObj.callbacks[xx].evtName, thisObj.callbacks[xx].args);
+			}
+		}
+	},
+
+	//2.
+	/*
+	@param fxnId =string of associative array key/instance id to use (need this for removing callback later)
+	@param fxnInfo =//1D array of function callback info ({'evtName' =string of what event name to broadcast, 'args':[]}) to call on each resize
+	@param params
+	*/
+	addCallback: function(fxnId, fxnInfo, params)
+	{
+		this.callbacks[fxnId] =fxnInfo;
+	},
+
+	//2.5.
+	removeCallback: function(fxnId, params)
+	{
+		if(this.callbacks[fxnId] && this.callbacks[fxnId] !==undefined)
+			delete this.callbacks[fxnId];
+	}
+
+};
+inst.init();
+return inst;
+}])
+;
 /*global angular, CodeMirror, Error*/
 /**
  * Binds a CodeMirror widget to a <textarea> element.
@@ -377,6 +931,7 @@ scope (attrs that must be defined on the scope (i.e. in the controller) - they c
 	@param {Object} params
 @param {Object} opts
 	@param {Object} pikaday Opts to be used (will extend defaults) for pikaday
+	@param {String} [id] Will over-write attrs.id value if set (used for the input id)
 
 attrs
 @param {String} [placeholder ='Choose a date/time'] Placeholder text for input
@@ -422,6 +977,7 @@ angular.module('ui.directives').directive('uiDatetimepicker', [function () {
 	moment.js apparently does not yet have a function / way to convert a date to a different timezone (other than 'local' and 'UTC'). As of 2013.06.21, see here:
 	http://stackoverflow.com/questions/15347589/moment-js-format-date-in-a-specific-timezone (this says it can be done but it's not working for me - maybe it's only on non-stable branches of the code..)
 	https://github.com/timrwood/moment/issues/482
+	UPDATE: as of 2013.07.10 / moment v2.1 there IS timezone support but it's much bigger than this simple function here so sticking with this to avoid code bloat.
 	
 	@param {Object} dateMoment moment.js date object
 	@param {Number} [tzFromMinutes] Timezone minutes offset from UTC to be converted FROM. If not supplied, the timezone offset will be pulled from the dateMoment object. I.e. 420 for -07:00 (Pacific Time)
@@ -455,11 +1011,15 @@ angular.module('ui.directives').directive('uiDatetimepicker', [function () {
 		
 		//manually add timezone offset
 		var dateFormatted =dateMoment.format('YYYY-MM-DD HH:mm:ss');		//temporary string that will be used to form the final moment date object AFTER timezone conversion is done (since doesn't seem to be a way to change the timezone on an existing moment date object.. - if there was, we wouldn't need this entire function at all!)
-		var hrOffset =Math.floor(tzToMinutes /60).toString();
+		var tzToMinutesAbsVal =tzToMinutes;
+		if(tzToMinutesAbsVal <0) {
+			tzToMinutesAbsVal =tzToMinutesAbsVal *-1;
+		}
+		var hrOffset =Math.floor(tzToMinutesAbsVal /60).toString();
 		if(hrOffset.length ==1) {
 			hrOffset ='0'+hrOffset;
 		}
-		var minutesOffset =(tzToMinutes %60).toString();
+		var minutesOffset =(tzToMinutesAbsVal %60).toString();
 		if(minutesOffset.length ==1) {
 			minutesOffset ='0'+minutesOffset;
 		}
@@ -514,7 +1074,10 @@ angular.module('ui.directives').directive('uiDatetimepicker', [function () {
 			
 			return function(scope, element, attrs) {
 				//if was in an ng-repeat, they'll have have the same compile function so have to set the id here, NOT in the compile function (otherwise they'd all be the same..)
-				if(attrs.id ===undefined) {
+				if(scope.opts.id !==undefined) {
+					attrs.id =scope.opts.id;
+				}
+				else if(attrs.id ===undefined) {
 					attrs.id ="uiDatetimepicker"+Math.random().toString(36).substring(7);
 				}
 				//update the OLD name with the NEW name
@@ -708,6 +1271,7 @@ angular.module('ui.directives').directive('uiEvent', ['$parse',
 
 /**
 @todo
+- checkbox - allow true/false values to be specified in scope (rather than just attrs)
 - add specific input type directives to be included here (checkbox, etc.)
 - add more/customized validation
 
@@ -715,9 +1279,17 @@ Adds consistent layout (inluding input labels) and styling to an input element s
 This directive is typically NOT meant to be used with just one input by itself or for a group of inputs that do NOT have a lot in common - since the whole point of this directive is to make a GROUP of inputs look the same.
 
 SUPPORTED INPUT TYPES:
-text, password, textarea, select, multiSelect, date, datetime
+text, email, tel, number, url,
+password,
+textarea,
+select, multiSelect,
+date, datetime,
+checkbox
 NOT YET SUPPORTED INPUT TYPES:
-checkbox, multiCheckbox, slider, image?
+multiCheckbox,
+slider,
+file/image?,
+datetime-local??, time?
 
 @dependencies
 - ui-datetimepicker directive (for datetime input type only)
@@ -734,9 +1306,12 @@ scope (attrs that must be defined on the scope (i.e. in the controller) - they c
 	@param {Object} opts
 		@param {Function} [ngChange] Will be called AFTER the value is updated
 		@param {Object} [validationMessages] Key-value pairs of validation messages to display (i.e. {minlength: 'Too short!'} )
-	@param {Array} [selectOpts] REQUIRED for 'select' type. These are options for the <select>. Each item is an object of:
+	@param {Array} [selectOpts] REQUIRED for 'select' and 'multiSelect' type. These are options for the <select>. Each item is an object of:
 		@param {String} val Value of this option. NOTE: this should be a STRING, not a number or int type variable. Values will be coerced to 'string' here but for performance and to ensure accurate display, pass these in as strings (i.e. 1 would become '1'). UPDATE: they may not actually have to be strings but this type coercion ensures the ngModel matches the options since 1 will not match '1' and then the select value won't be set properly. So basically types need to match so just keep everything in strings. Again, ngModel type coercion will be done here but it's best to be safe and just keep everything as strings.
 		@param {String} name text/html to display for this option
+	// @param {Object} [checkboxVals] CHECKBOX type only. True and false values:
+		// @param {String} [ngTrueValue =1] The value the ngModel will be equal to if the checkbox is checked
+		// @param {String} [ngFalseValue =0] The value the ngModel will be if the checkbox is NOT checked
 	@param {Object} [optsDatetime] DATE/DATETIME type only. Opts that will be passed through to ui-datetimepicker directive (see there for full documentation)
 		@param {Object} [pikaday] Opts to be used (will extend defaults) for pikaday
 	@param {Function} [validateDatetime] DATE/DATETIME type only. Will be called everytime date changes PRIOR to setting the value of the date. Will pass the following parameters:
@@ -756,9 +1331,10 @@ attrs
 	@param {Number} [noLabel] Set to 1 to not show label
 	
 
-EXAMPLE usage:
+@usage
+//1. text/default input (or password, textarea, email, tel, number, url - just change 'type' appropriately)
 partial / html:
-<div ui-forminput ng-model='formVals.title' opts='opts'></div>
+<div ui-forminput type='text' ng-model='formVals.title' opts='opts'></div>
 
 controller / js:
 $scope.formVals ={
@@ -772,7 +1348,49 @@ $scope.searchTasks =function() {
 	//do something
 };
 
-//end: EXAMPLE usage
+
+
+//2. select, multiSelect
+partial / html:
+<div ui-forminput type='multi-select' ng-model='formVals.tags' select-opts='selectOptsTags' opts=''></div>
+
+controller / js:
+$scope.formVals ={
+	tags: ''
+};
+
+$scope.selectOptsTags =[
+	{val: '1', name: 'one'},
+	{val: 'yes', name: 'Yes'},
+	{val: '83lksdf', name: 'John Smith'}
+];
+
+
+
+//3. date, datetime
+partial / html:
+<div ui-forminput type='datetime' ng-model='formVals.due_date' opts=''></div>
+
+controller / js:
+$scope.formVals ={
+	due_date: ''
+};
+
+
+
+//4. checkbox
+partial / html:
+<div ui-forminput type='checkbox' ng-model='formVals.checkVal' ng-true-value='yes' ng-false-value='off' opts=''></div>
+
+controller / js:
+$scope.formVals ={
+	checkVal: 'yes'
+};
+
+
+
+
+//end: usage
 */
 angular.module('ui.directives').directive('uiForminput', ['ui.config', '$compile', '$http', '$timeout', function (uiConfig, $compile, $http, $timeout) {
   return {
@@ -784,10 +1402,11 @@ angular.module('ui.directives').directive('uiForminput', ['ui.config', '$compile
 		//terminal: true,		//can NOT be set otherwise ngModel value will be blank / not accurrate		//we need this AND priority - otherwise the form will not be $valid on submit
 		scope: {
 			ngModel:'=',
-			// opts:'=?',		//not supported on stable releases of AngularJS yet (as of 2013.04.30)
-			opts:'=',
+			opts:'=?',		//supported on v1.1 versions (but not on stable releases of AngularJS yet (as of 2013.04.30))
+			// opts:'=',
 			selectOpts:'=',
 			optsDatetime: '=?',
+			// checkboxVals: '=?',
 			validateDatetime: '&?',
 			onchangeDatetime: '&?'
 		},
@@ -827,7 +1446,7 @@ angular.module('ui.directives').directive('uiForminput', ['ui.config', '$compile
 			
 			//copy over attributes
 			var customAttrs ='';		//string of attrs to copy over to input
-			var skipAttrs =['uiForminput', 'ngModel', 'label', 'type', 'placeholder', 'opts', 'name', 'optsDatetime', 'validateDatetime', 'onchangeDatetime'];
+			var skipAttrs =['uiForminput', 'ngModel', 'label', 'type', 'placeholder', 'opts', 'name', 'optsDatetime', 'validateDatetime', 'onchangeDatetime', 'checkboxVals'];
 			angular.forEach(attrs, function (value, key) {
 				if (key.charAt(0) !== '$' && skipAttrs.indexOf(key) === -1) {
 					customAttrs+=attrs.$attr[key];
@@ -847,8 +1466,8 @@ angular.module('ui.directives').directive('uiForminput', ['ui.config', '$compile
 			*/
 			var uniqueName ="uiFormInput"+attrs.type+Math.random().toString(36).substring(7);
 			var elementTag ='input';
-			if(attrs.type =='text') {
-				html.input ="<input class='ui-forminput-input' name='"+uniqueName+"' ng-model='ngModel' type='text' placeholder='"+placeholder+"' "+customAttrs+" />";
+			if(attrs.type =='text' || attrs.type =='email' || attrs.type =='tel' || attrs.type =='number' || attrs.type =='url') {
+				html.input ="<input class='ui-forminput-input' name='"+uniqueName+"' ng-model='ngModel' type='"+attrs.type+"' placeholder='"+placeholder+"' "+customAttrs+" />";
 			}
 			else if(attrs.type =='password') {
 				html.input ="<input class='ui-forminput-input' name='"+uniqueName+"' ng-model='ngModel' type='password' placeholder='"+placeholder+"' "+customAttrs+" />";
@@ -856,6 +1475,12 @@ angular.module('ui.directives').directive('uiForminput', ['ui.config', '$compile
 			else if(attrs.type =='textarea') {
 				elementTag ='textarea';
 				html.input ="<textarea class='ui-forminput-input' name='"+uniqueName+"' ng-model='ngModel' placeholder='"+placeholder+"' "+customAttrs+" ></textarea>";
+			}
+			else if(attrs.type =='checkbox') {
+				// html.input ="<input class='ui-forminput-input' name='"+uniqueName+"' ng-model='ngModel' type='checkbox' placeholder='"+placeholder+"' "+customAttrs+" />";
+				//doesn't work - apparently can't set ng-true-value and ng-false-value via scope...
+				// html.input ="<div class='ui-forminput-input ui-forminput-input-checkbox-cont'><input class='ui-forminput-input-checkbox' name='"+uniqueName+"' ng-model='ngModel' ng-true-value='{{checkboxVals.ngTrueValue}}' ng-false-value='{{checkboxVals.ngFalseValue}}' type='checkbox' placeholder='"+placeholder+"' "+customAttrs+" /></div>";
+				html.input ="<div class='ui-forminput-input ui-forminput-input-checkbox-cont'><input class='ui-forminput-input-checkbox' name='"+uniqueName+"' ng-model='ngModel' type='checkbox' placeholder='"+placeholder+"' "+customAttrs+" /></div>";
 			}
 			else if(attrs.type =='select') {
 				elementTag ='select';
@@ -915,6 +1540,21 @@ angular.module('ui.directives').directive('uiForminput', ['ui.config', '$compile
 				
 				if(attrs.type =='multi-select' || attrs.type =='date' || attrs.type =='datetime') {
 					$compile($(element))(scope);
+				}
+				
+				if(attrs.type =='checkbox') {
+					/*
+					//doesn't work - apparently can't set ng-true-value and ng-false-value via scope... 
+					var defaultCheckboxVals ={
+						ngTrueValue: '1',
+						ngFalseValue: '0'
+					};
+					scope.checkboxVals =angular.extend(defaultCheckboxVals, scope.checkboxVals);
+					*/
+					//force to string (otherwise won't match properly and won't start checked even if ngModel equals the integer value of the ng-true-value)
+					if(scope.ngModel !==undefined) {
+						scope.ngModel =scope.ngModel.toString();
+					}
 				}
 				
 				//set up validation
@@ -1727,71 +2367,73 @@ return inst;
 }])
 ;
 /**
-@todo
-- allow optional scope attrs?? i.e. loadMore isn't really necesssary and the logic handles this but the directive throws an error if they're not defined and unit-testing fails.. so just need to figure out syntax / compiler way to allow this..
-
-
 Uses one array and start / end indices (cursor) to set a combination of DOM elements, javascript data, and backend (AJAX) data to handle paging/infinite scroll loading of content (i.e. a list of objects)
 	- handles paging / loading more when scroll to bottom
 	- can be used with a backend lookup call to load more results (if "loadMore" attr/scope function is passed in)
 		- loadMore function is called when have less than full results among current items stored in javascript, which happens 1 way:
 			1. when scroll to end of page / load more results
+			
+NOTE: for jQuery animate, switched all $(window).animate to $('body, html').animate since was getting errors.. see this post:
+http://stackoverflow.com/questions/10846609/ownerdocument-error-when-using-jquerys-scrolltop-animate-functions
+
+Scrolling functions (different ways to scroll the page / div/element)
+1. 'scrollTo('
+2. '.scrollTop =' (or '.scrollTop=' )
+3. '.animate('
 
 //TOC
-//10. add scroll handle to load more
-//0.5. init
-//0.75. resetItems
-//1. setItems
-//1.5. setItemsViewCursor
-//2. scrollToMiddle
-//5. 
-//5.5. 
-//6. $scope.loadMoreDir
-//6.5. changePage
-//7. getMoreItems
-//8. addLoadMoreItems
-//9. checkForScrollBar
+10. add scroll handle to load more
+0.5. init
+0.75. resetItems
+1. setItems
+1.5. setItemsViewCursor
+2. scrollToMiddle
+2.1. scrollAnimate
+5. $scope.$watch('items',..
+5.5. $scope.$on('uiInfinitescrollReInit',..
+5.6. $scope.$on('uiInfinitescrollLoadMore',..
+6. $scope.loadMoreDir
+6.5. changePage
+7. getMoreItems
+8. addLoadMoreItems
+9. checkForScrollBar
 
 scope (attrs that must be defined on the scope (i.e. in the controller) - they can't just be defined in the partial html)
-	REQUIRED
-	@param items {Array} of any initial items to use
-	@param itemsView {Array} of placeholder for final items to display in DOM
-	@param opts {Object}
-		@param cursors {Object} of start and end indices that tell where items are in the scheme of the entire (full) list so can handle loading more to start and/or end. A second object with 
-			@param items {Object}
-				@param start {Number}
-				@param end {Number}
-			@param itemsView {Object}
-				@param current {Number} of what item to start on - this will correspond to the current page and then the start and end will be formed as 1 pageSize forward and 1 pageSize backward
-		@param scrollId {String} of id for element to watch scrolling on (instead of using window/full page scroll bar OR the ui-infinitescroll-content element built in this directive as the default scroll div)
-	@param loadMore =function to call to load more results (this should update $scope.items, which will then update in the directive via $watch). OR '0' if don't have loadMore function at all
+	@param {Array} items Initial items to use (if any)
+	@param {Array} itemsView Placeholder for final items to display in DOM
+	@param {Object} opts
+		@param {Object} cursors of start and end indices that tell where items are in the scheme of the entire (full) list so can handle loading more to start and/or end. A second object with 
+			@param {Object} items
+				@param {Number} start
+				@param {Number} end
+			@param {Object} itemsView
+				@param {Number} current of what item to start on - this will correspond to the current page and then the start and end will be formed as 1 pageSize forward and 1 pageSize backward
+		@param {String} scrollId of id for element to watch scrolling on (instead of using window/full page scroll bar OR the ui-infinitescroll-content element built in this directive as the default scroll div)
+		@param {String} [instId] Unique id for this instance of the directive. Used for calling events (i.e. for reInit) to avoid acting on ALL directives.
+	@param {Function} loadMore Function to call to load more results (this should update $scope.items, which will then update in the directive via $watch). OR '0' if don't have loadMore function at all
 
 attrs
-	REQUIRED
-	OPTIONAL
-	scrollLoad =1 to do paging via scrolling as opposed to with "load more" button to click to load more. NOTE: if set, this you MUST either set pageScroll to 1 OR pass in a scrollId in opts.scrollId scope variable
-		DEFAULT: 0
-	pageScroll =1 to do paging via scrolling for entire window as opposed to a specific div (good for mobile / touch screens where only 1 scroll bar works well)
-		DEFAULT: 0
-	scrollBuffer =int of how much space from top or bottom to start switch the page
-		DEFAULT: 50
-	pageSize =int of how many results to show at a time (will load more in increments of pageSize as scroll down / click "more")
-		DEFAULT: 10
-	loadMorePageSize =int of how many results to load at a time - must be at least as large as pageSize (and typically should be at least 2 times as big as page size?? maybe not? just need to ensure never have to AJAX twice to display 1 page)
-		DEFAULT: 20
-	noStopLoadMore {Number} 1 to not set noMoreLoadMoreItems prev & next to true if don't have enough results returned from load more
-		DEFAULT: 0
+	@param {Number} [scrollLoad =0] 1 to do paging via scrolling as opposed to with "load more" button to click to load more. NOTE: if set, this you MUST either set pageScroll to 1 OR pass in a scrollId in opts.scrollId scope variable
+	@param {Number} [pageScroll =0] 1 to do paging via scrolling for entire window as opposed to a specific div (good for mobile / touch screens where only 1 scroll bar works well)
+	@param {Number} [scrollBuffer =50] How much space from top or bottom to start switching the page
+	@param {Number} [pageSize =10] How many results to show at a time (will load more in increments of pageSize as scroll down / click "more"). NOTE: will show TWO pages at a time - so if want to show 10 TOTAL items, make pageSize be 5.
+	@param {Number} [loadMorePageSize =20] How many results to load at a time - must be at least as large as pageSize (and typically should be at least 2 times as big as page size?? maybe not? just need to ensure never have to AJAX twice to display 1 page)
+	@param {Number} [noStopLoadMore =0] 1 to not set noMoreLoadMoreItems prev & next to true if don't have enough results returned from load more
 	@param {Number} [negativeLoad=0] 1 to try to load more even if at 0 cursor
 	@param {Number} [animateScroll=0] 1 to animate when moving back to middle after load more from top or bottom
 	@param {Number} [animateScrollDuration=1000] Number of milliseconds for scroll duration
-	@param {Number} [itemHeight=0] Number of pixels for an item (if specified, this will keep the current item in the same spot after loading more - otherwise it will go to the middle after loading)
-	@param {Number} [animateAfterItems=0] Number of items to slow pan through (to indicate to user that something has changed) AFTER jump to middle, etc.
+	@param {Number} [itemHeight=0] Number of pixels for an item (if specified, this will keep the current item in the same spot after loading more - otherwise it will go to the middle after loading). NOTE this means ALL items must be the EXACT same height if you want an exact position match!
+	@param {Number} [animateAfterItems=0] Number of items to slow pan through (to indicate to user that something has changed) AFTER jump to middle, etc. NOTE: this must be less than half of pageSize (if it's not, it will be cut to 1/4 of page size) otherwise it will cause loading of next pages leading to infinite auto scrolling through ALL items!
 	@param {Number} [animateAfterDuration=1000] Milliseconds for how long animation is for the after items animate
 	@param {String} [noMoreResultsText =No More Results!] What to display when have no more items to load (i.e. at very bottom)
 
 
 EXAMPLE usage:
-@example 1 - defaults
+Events:
+$scope.$broadcast('uiInfinitescrollReInit', {'instId':$scope.opts.instId});
+$scope.$broadcast('uiInfinitescrollLoadMore', {'instId':$scope.opts.instId, 'type':'prev'});
+
+@usage 1 - defaults
 partial / html:
 	<div ui-infinitescroll items='usersList' items-view='users' load-more='loadMore' opts='scrollOpts'>
 		<!-- custom display code to ng-repeat and display the results (items) goes below -->
@@ -1812,16 +2454,20 @@ controller / js:
 		itemsMore[ii] ={'_id':(ii+1), 'name':(ii+1)+'. Item #'+(ii+1)};
 	}
 	
-	//@param params
-	//	cursor =int of where to load from
-	//	loadMorePageSize =int of how many to return
+	// @param {Object} params
+		// @param {Number} cursor Where to load from
+		// @param {Number} loadMorePageSize How many to return
+		// @param {String} searchText The string of text that was searched
+	// @param {Function} callback Function to pass the results back to - takes the following arguments:
+		// @param {Array} results The new results to add in
+		// @param {Object} [params]
 	$scope.loadMore =function(params, callback) {
 		var results =itemsMore.slice(params.cursor, (params.cursor+params.loadMorePageSize));
 		callback(results, {});
 	};
 
 	
-@example 2 - page scrolling with negative loading (i.e. starting toward the end of a list then scrolling up to see previous entries)
+@usage 2 - page scrolling with negative loading (i.e. starting toward the end of a list then scrolling up to see previous entries)
 partial / html:
 	<div ui-infinitescroll items='usersList' items-view='users' load-more='loadMore' opts='scrollOpts' page-size='40' negative-load='1' scroll-load='1' page-scroll='1'>
 		<!-- custom display code to ng-repeat and display the results (items) goes below -->
@@ -1845,9 +2491,13 @@ controller / js:
 	//var offset =Math.floor(totItems/2);
 	var offset =totItems-100;
 	
-	//@param params
-	//	cursor =int of where to load from
-	//	loadMorePageSize =int of how many to return
+	// @param {Object} params
+		// @param {Number} cursor Where to load from
+		// @param {Number} loadMorePageSize How many to return
+		// @param {String} searchText The string of text that was searched
+	// @param {Function} callback Function to pass the results back to - takes the following arguments:
+		// @param {Array} results The new results to add in
+		// @param {Object} [params]
 	$scope.loadMore =function(params, callback) {
 		var results =itemsMore.slice(offset+params.cursor, (offset+params.cursor+params.loadMorePageSize));
 		callback(results, {});
@@ -1863,13 +2513,11 @@ angular.module('ui.directives').directive('uiInfinitescroll', ['ui.config', '$ti
 			items: '=',
 			itemsView: '=',
 			opts:'=',
-			//watchItemKeys:'=',		//note: this is not required & will throw an error if not set but it still works? @todo fix this so it's not required & doesn't throw error?
-			loadMore:'&'
-			//cursors: '='
+			loadMore:'&?'
 		},
 
 		compile: function(element, attrs) {
-			var defaults ={'pageSize':10, 'scrollLoad':'0', 'loadMorePageSize':20, 'pageScroll':0, 'scrollBuffer':75, 'scrollBufferPercent':33, 'noStopLoadMore':0, 'negativeLoad':0, 'animateLoad':0, 'animateScrollDuration':1000, 'itemHeight':0, 'animateAfterItems':0, 'animateAfterDuration':1000, 'noMoreResultsText':'No More Results!'};
+			var defaults ={'pageSize':10, 'scrollLoad':'0', 'loadMorePageSize':20, 'pageScroll':0, 'scrollBuffer':50, 'scrollBufferPercent':33, 'noStopLoadMore':0, 'negativeLoad':0, 'animateLoad':0, 'animateScrollDuration':1000, 'itemHeight':0, 'animateAfterItems':0, 'animateAfterDuration':1000, 'noMoreResultsText':'No More Results!'};
 			for(var xx in defaults) {
 				if(attrs[xx] ===undefined) {
 					attrs[xx] =defaults[xx];
@@ -1892,6 +2540,12 @@ angular.module('ui.directives').directive('uiInfinitescroll', ['ui.config', '$ti
 			if(attrs.loadMorePageSize <attrs.pageSize) {
 				attrs.loadMorePageSize =attrs.pageSize;
 			}
+			//ensure animateAfterItems is less than pageSize (otherwise will have infinite auto scrolling since the animate will trigger loading the next page!
+			if(attrs.animateAfterItems >=(Math.floor(attrs.pageSize/2))) {
+				attrs.animateAfterItems =Math.floor(attrs.pageSize/4);
+			}
+			// console.log('attrs.animateAfterItems: '+attrs.animateAfterItems);
+			
 			if(attrs.id ===undefined) {
 				attrs.id ="uiInfinitescroll"+Math.random().toString(36).substring(7);
 			}
@@ -1905,11 +2559,11 @@ angular.module('ui.directives').directive('uiInfinitescroll', ['ui.config', '$ti
 			
 			var html="<div class='ui-infinitescroll'>"+
 				"<div class='ui-infinitescroll-top'>"+
-					//"<div>page: {{page}} cursors: items.start: {{opts.cursors.items.start}} items.end: {{opts.cursors.items.end}} itemsView.start: {{opts.cursors.itemsView.start}} itemsView.end: {{opts.cursors.itemsView.end}} itemsView.current: {{opts.cursors.itemsView.current}} items.length: {{items.length}}</div>"+		//TESTING
+					//"<div>page: {{page}} cursors: items.start: {{opts.cursors.items.start}} items.end: {{opts.cursors.items.end}} itemsView.start: {{opts.cursors.itemsView.start}} itemsView.end: {{opts.cursors.itemsView.end}} itemsView.current: {{opts.cursors.itemsView.current}} negative: {{opts.cursors.negative}} items.length: {{items.length}}</div>"+		//TESTING
 					//"<div>hasScrollbar: {{hasScrollbar}} | scrollLoad: {{scrollLoad}}</div>"+		//TESTING
 					//"<div ng-show='itemsFiltered.length <1'>No matches</div>"+
 					"<div ng-hide='(noMoreLoadMoreItems.prev) || (opts.cursors.itemsView.start <=0 && !negativeLoad) || (scrollLoad && hasScrollbar)' class='ui-infinitescroll-more' ng-click='loadMoreDir({\"prev\":true})'>Load More</div>"+
-					//"<div ng-show='noMoreLoadMoreItemsPrev && queuedItemsPrev.length <1' class='ui-lookup-no-more'>No More Results!</div>"+
+					//"<div ng-show='noMoreLoadMoreItemsPrev && queuedItemsPrev.length <1' class='ui-infinitescroll-no-more'>No More Results!</div>"+
 				"</div>"+
 				"<div id='"+attrs.ids.scrollContent+"' class='ui-infinitescroll-content' ng-transclude></div>"+
 				"<div id='"+attrs.ids.contentBottom+"'>"+
@@ -1925,7 +2579,6 @@ angular.module('ui.directives').directive('uiInfinitescroll', ['ui.config', '$ti
 		
 		controller: function($scope, $element, $attrs) {
 			var defaultsOpts ={
-				//'watchItemKeys':['main'],
 				'cursors':{
 					'items':{
 						'start':0,
@@ -1936,6 +2589,7 @@ angular.module('ui.directives').directive('uiInfinitescroll', ['ui.config', '$ti
 					}
 				},
 				'scrollId':false
+				// 'instId':$attrs.id
 			};
 			if($scope.opts ===undefined) {
 				$scope.opts ={};
@@ -1974,7 +2628,7 @@ angular.module('ui.directives').directive('uiInfinitescroll', ['ui.config', '$ti
 					var height1 =eleAng.css('height');
 					var overflow1 =eleAng.css('overflow');
 					if(!height1 || !overflow1) {
-						eleAng.addClass('ui-lookup-content-scroll');
+						eleAng.addClass('ui-infinite-content-scroll');
 					}
 				}
 				
@@ -1988,23 +2642,66 @@ angular.module('ui.directives').directive('uiInfinitescroll', ['ui.config', '$ti
 				}
 			};
 			
-			//10.
-			//add scroll handle to load more
+			var triggers ={
+				skipWatch: false		//to avoid triggering $watch items reset on load more
+			};
+			
+			//init / set this instance in the service (so can check for 'exists', 'destroy', etc. later). Need to do this immediately (i.e. NOT after timeout)
+			uiInfinitescrollData.initInst($attrs.id, {'attrs':$attrs, 'timeoutInfo':timeoutInfo});
+			
+			/**
+			add scroll handle to load more
+			@toc 10.
+			*/
 			if($attrs.scrollLoad) {
 				//don't add right away (otherwise the initial load can duplicate load and jump around - need to let it initialize first)
 				$timeout(function() {
-					if($attrs.pageScroll) {
-						if(1) {
-							uiInfinitescrollData.addScrollEvt($attrs.id, {'attrs':$attrs, 'timeoutInfo':timeoutInfo, 'callback':function() {
-								//console.log('window onscroll: id: '+$attrs.ids.scrollContent+' element: '+document.getElementById($attrs.ids.scrollContent));
-								$timeout.cancel(timeoutInfo.scrolling.trig);
+					// console.log('uiInfinitescroll if($attrs.scrollLoad) { timeout callback');		//TESTING
+					if(uiInfinitescrollData.exists($attrs.id, {})) {
+						// console.log('uiInfinitescroll if($attrs.scrollLoad) { timeout callback exists');		//TESTING
+					
+						if($attrs.pageScroll) {
+							if(1) {
+								uiInfinitescrollData.addScrollEvt($attrs.id, {'attrs':$attrs, 'timeoutInfo':timeoutInfo, 'callback':function() {
+									//console.log('window onscroll: id: '+$attrs.ids.scrollContent+' element: '+document.getElementById($attrs.ids.scrollContent));
+									$timeout.cancel(timeoutInfo.scrolling.trig);
+									timeoutInfo.scrolling.trig =$timeout(function() {
+										//console.log('uiInfinitescroll timeout scrolling loading');
+										var buffer =$attrs.scrollBuffer;
+										var scrollPos =$(window).scrollTop();
+										var scrollHeight =$(document).height();
+										var viewportHeight =$(window).height();
+										//console.log("pos: "+scrollPos+" height: "+scrollHeight+" height: "+viewportHeight);
+										var percentTop =scrollPos /scrollHeight *100;
+										var percentBottom =(scrollPos +viewportHeight) /scrollHeight *100;
+										$scope.scrollInfo ={
+											'scrollPos':scrollPos,
+											'scrollHeight':scrollHeight,
+											'viewportHeight':viewportHeight,
+											'diff':(scrollHeight-viewportHeight-buffer),
+											'percentTop':percentTop,
+											'percentBottom':percentBottom
+										};
+										//if(scrollPos >=(scrollHeight-viewportHeight-buffer) || (percentBottom > (100-$attrs.scrollBufferPercent)) ) {
+										if(scrollPos >5 && scrollPos >=(scrollHeight-viewportHeight-buffer)) {		//don't load more if 0 scrollPos (this specificlly fixes an initial double load issue)
+											$scope.loadMoreDir({'noDelay':true, 'next':true});
+										}
+										//prev version
+										//if(scrollPos <=buffer || (percentTop <$attrs.scrollBufferPercent) ) {
+										if(scrollPos <=buffer ) {
+											$scope.loadMoreDir({'noDelay':true, 'prev':true});
+										}
+									}, timeoutInfo.scrolling.delay);
+								}
+								});
+							}
+							else {
+							window.onscroll =function() {
 								timeoutInfo.scrolling.trig =$timeout(function() {
-									//console.log('uiLookup timeout scrolling loading');
 									var buffer =$attrs.scrollBuffer;
 									var scrollPos =$(window).scrollTop();
 									var scrollHeight =$(document).height();
 									var viewportHeight =$(window).height();
-									//console.log("pos: "+scrollPos+" height: "+scrollHeight+" height: "+viewportHeight);
 									var percentTop =scrollPos /scrollHeight *100;
 									var percentBottom =(scrollPos +viewportHeight) /scrollHeight *100;
 									$scope.scrollInfo ={
@@ -2025,63 +2722,37 @@ angular.module('ui.directives').directive('uiInfinitescroll', ['ui.config', '$ti
 										$scope.loadMoreDir({'noDelay':true, 'prev':true});
 									}
 								}, timeoutInfo.scrolling.delay);
+							};
 							}
-							});
 						}
 						else {
-						window.onscroll =function() {
-							timeoutInfo.scrolling.trig =$timeout(function() {
-								var buffer =$attrs.scrollBuffer;
-								var scrollPos =$(window).scrollTop();
-								var scrollHeight =$(document).height();
-								var viewportHeight =$(window).height();
-								var percentTop =scrollPos /scrollHeight *100;
-								var percentBottom =(scrollPos +viewportHeight) /scrollHeight *100;
-								$scope.scrollInfo ={
-									'scrollPos':scrollPos,
-									'scrollHeight':scrollHeight,
-									'viewportHeight':viewportHeight,
-									'diff':(scrollHeight-viewportHeight-buffer),
-									'percentTop':percentTop,
-									'percentBottom':percentBottom
-								};
-								//if(scrollPos >=(scrollHeight-viewportHeight-buffer) || (percentBottom > (100-$attrs.scrollBufferPercent)) ) {
-								if(scrollPos >5 && scrollPos >=(scrollHeight-viewportHeight-buffer)) {		//don't load more if 0 scrollPos (this specificlly fixes an initial double load issue)
-									$scope.loadMoreDir({'noDelay':true, 'next':true});
-								}
-								//prev version
-								//if(scrollPos <=buffer || (percentTop <$attrs.scrollBufferPercent) ) {
-								if(scrollPos <=buffer ) {
-									$scope.loadMoreDir({'noDelay':true, 'prev':true});
-								}
-							}, timeoutInfo.scrolling.delay);
-						};
+							document.getElementById(scrollId).onscroll =function() {
+								$timeout.cancel(timeoutInfo.scrolling.trig);
+								timeoutInfo.scrolling.trig =$timeout(function() {
+									var buffer =$attrs.scrollBuffer;
+									var ele =document.getElementById(scrollId);
+									var scrollPos =ele.scrollTop;
+									var scrollHeight =ele.scrollHeight;
+									//var viewportHeight =$(ele).height();
+									var viewportHeight =ele.clientHeight;
+									if(scrollPos >=(scrollHeight-viewportHeight-buffer)) {
+										$scope.loadMoreDir({'noDelay':true, 'next':true});
+									}
+									//prev version
+									if(scrollPos <=buffer) {
+										$scope.loadMoreDir({'noDelay':true, 'prev':true});
+									}
+								}, timeoutInfo.scrolling.delay);
+							};
 						}
 					}
-					else {
-						document.getElementById(scrollId).onscroll =function() {
-							$timeout.cancel(timeoutInfo.scrolling.trig);
-							timeoutInfo.scrolling.trig =$timeout(function() {
-								var buffer =$attrs.scrollBuffer;
-								var ele =document.getElementById(scrollId);
-								var scrollPos =ele.scrollTop;
-								var scrollHeight =ele.scrollHeight;
-								//var viewportHeight =$(ele).height();
-								var viewportHeight =ele.clientHeight;
-								if(scrollPos >=(scrollHeight-viewportHeight-buffer)) {
-									$scope.loadMoreDir({'noDelay':true, 'next':true});
-								}
-								//prev version
-								if(scrollPos <=buffer) {
-									$scope.loadMoreDir({'noDelay':true, 'prev':true});
-								}
-							}, timeoutInfo.scrolling.delay);
-						};
-					}
-				}, 1000);
+				}, 750);
 			}
 			
-			//0.5.
+			/**
+			@toc 0.5.
+			@method init
+			*/
 			function init(params) {
 				//$scope.page =1;		//will store what page (broken up by pageSize attr) we're on
 				$scope.page =Math.floor($scope.opts.cursors.itemsView.current / $attrs.pageSize);
@@ -2093,64 +2764,101 @@ angular.module('ui.directives').directive('uiInfinitescroll', ['ui.config', '$ti
 				}
 			}
 			
-			//0.75.
-			function resetItems(params) {
-				/*
-				@todo
-				$scope.page =1;		//reset
-				checkForScrollBar({});
-				$scope.noMoreLoadMoreItems =false;
-				cursors ={
-					//'extra':0,
-				};
-				cursors[$attrs.loadMoreItemsKey] =0;
-				$scope.itemsRaw[$attrs.loadMoreItemsKey].items =[];
-				document.getElementById(scrollId).scrollTop =0;
-				*/
-				var dummy =1;
-			}
-			
-			//1.
 			/**
-			Updates viewable (DOM) items (sets the range)
-			@param params
+			@toc 0.75.
 			*/
-			function setItems(params) {
-				var cursorSave, diff, height1;
-				var ppSend ={};
-				if($attrs.itemHeight) {		//save current cursor positions so can calculate change later
-					height1 =$attrs.itemHeight;
-					cursorsSave ={
-						'start':$scope.opts.cursors.itemsView.start,
-						'end':$scope.opts.cursors.itemsView.end
-					};
-				}
-				$scope.opts.cursors.itemsView.end =$scope.page*$attrs.pageSize +$attrs.pageSize;
-				setItemsViewCursor({});
-				$scope.itemsView =$scope.items.slice($scope.opts.cursors.itemsView.start, $scope.opts.cursors.itemsView.end);
-				
-				if($attrs.itemHeight) {
-					if(params.prev) {
-						ppSend.prev =true;
-						diff =cursorsSave.start -$scope.opts.cursors.itemsView.start;
+			function resetItems(params) {
+				// console.log('uiInfinitescroll resetItems');		//TESTING
+				if(uiInfinitescrollData.exists($attrs.id, {})) {
+					// console.log('uiInfinitescroll resetItems exists');		//TESTING
+					//reset cursors
+					$scope.opts.cursors.items.start =0;
+					$scope.opts.cursors.items.end =$scope.items.length;
+					// $scope.opts.cursors.itemsView.start =0;
+					// $scope.opts.cursors.itemsView.end =0;
+					$scope.opts.cursors.itemsView.current =0;
+					$scope.opts.cursors.negative =0;
+					
+					//update / reset triggers
+					$scope.trigs.loading =false;
+					
+					$scope.noMoreLoadMoreItems.prev =false;
+					$scope.noMoreLoadMoreItems.next =false;
+					
+					timeoutInfo.scrolling.trig =false;
+					
+					//update scrolling
+					checkForScrollBar({});
+					if($attrs.pageScroll) {
+						window.scrollTo(0, 0);
 					}
 					else {
-						ppSend.prev =false;
-						diff =$scope.opts.cursors.itemsView.end -cursorsSave.end;
+						document.getElementById(scrollId).scrollTop =0;
 					}
-					var diffHeight =diff*height1;
-					if(diffHeight <0) {
-						diffHeight =diffHeight *-1;
-					}
-					//alert('diffHeight: '+diffHeight);
-					ppSend.diffHeight =diffHeight;
 				}
-				
-				scrollToMiddle(ppSend);
-				checkForScrollBar({});
 			}
 			
-			//1.5.
+			/**
+			Updates viewable (DOM) items (sets the range)
+			@toc 1.
+			@param params
+				@param {Number} [cursorViewStart] If set, will over-ride page and just go to this item. cursor view end will be set to this plus 1 page size
+			*/
+			function setItems(params) {
+				// console.log('uiInfinitescroll setItems');		//TESTING
+				if(uiInfinitescrollData.exists($attrs.id, {})) {
+					// console.log('uiInfinitescroll setItems exists');		//TESTING
+					var cursorSave, diff, height1;
+					var ppSend ={};
+					if($attrs.itemHeight) {		//save current cursor positions so can calculate change later
+						height1 =$attrs.itemHeight;
+						cursorsSave ={
+							'start':$scope.opts.cursors.itemsView.start,
+							'end':$scope.opts.cursors.itemsView.end
+						};
+					}
+					
+					if(params.cursorViewStart !==undefined) {
+						$scope.opts.cursors.itemsView.start =params.cursorViewStart;
+						$scope.opts.cursors.itemsView.end =$scope.opts.cursors.itemsView.start +$attrs.pageSize;
+						if($scope.opts.cursors.itemsView.end >$scope.items.length) {
+							$scope.opts.cursors.itemsView.end =$scope.items.length;
+						}
+						//make sure to set page appropriately so next scroll/load works
+						$scope.page =Math.ceil($scope.opts.cursors.itemsView.start /$attrs.pageSize);
+					}
+					else {
+						$scope.opts.cursors.itemsView.end =$scope.page*$attrs.pageSize +$attrs.pageSize;
+						setItemsViewCursor({});
+					}
+					$scope.itemsView =$scope.items.slice($scope.opts.cursors.itemsView.start, $scope.opts.cursors.itemsView.end);
+					// console.log('$scope.opts.cursors.itemsView.start: '+$scope.opts.cursors.itemsView.start+' $scope.page: '+$scope.page);		//TESTING
+					
+					if($attrs.itemHeight) {
+						if(params.prev) {
+							ppSend.prev =true;
+							diff =cursorsSave.start -$scope.opts.cursors.itemsView.start;
+						}
+						else {
+							ppSend.prev =false;
+							diff =$scope.opts.cursors.itemsView.end -cursorsSave.end;
+						}
+						var diffHeight =diff*height1;
+						if(diffHeight <0) {
+							diffHeight =diffHeight *-1;
+						}
+						//alert('diffHeight: '+diffHeight);
+						ppSend.diffHeight =diffHeight;
+					}
+					
+					scrollToMiddle(ppSend);
+					checkForScrollBar({});
+				}
+			}
+			
+			/**
+			@toc 1.5.
+			*/
 			function setItemsViewCursor(params) {
 				var end =$scope.page*$attrs.pageSize +$attrs.pageSize;
 				if(end >$scope.items.length) {
@@ -2165,177 +2873,210 @@ angular.module('ui.directives').directive('uiInfinitescroll', ['ui.config', '$ti
 			}
 			
 			/**
-			//2.
+			@toc 2.
 			@param {Object} params
 				@param {Boolean} [prev] True if loading a previous page (i.e. scrolling up)
 				@param {Number} [diffHeight] Pixels of where to scroll to (instead of just going to middle)
 				@param {Boolean} [alreadyTimedOut] true to avoid infinite loop if already waited for previous items to load
 			*/
 			function scrollToMiddle(params) {
-				var scrollPos, scrollHeight, viewportHeight, middle, newMiddle;
-				if($attrs.pageScroll) {
-					if(0) {		//@todo - need a better solution than this.. see below
-					//if($scope.opts.cursors.itemsView.start ==0) {		//if at top, just go to top (specifically this addresses a double initial load issue that causes the first time to show halfway down rather than at the top - could probably find a better fix - i.e. also check what the last cursor was at?)
-						if($attrs.animateScroll) {
-							$(window).animate({scrollTop: 0+'px'}, $attrs.animateScrollDuration);		//animate the scrolling
-						}
-						else {
-							window.scrollTo(0, 0);
-						}
-					}
-					else {
-						scrollPos =$(window).scrollTop();
-						scrollHeight =$(document).height();
-						viewportHeight =$(window).height();
-						middle =Math.floor((scrollHeight/2) -viewportHeight/2);
-						
-						if(params.diffHeight) {
-							if(params.prev) {
-								middle =params.diffHeight;
-							}
-							else {
-								middle =scrollHeight -params.diffHeight -viewportHeight;
-							}
-						}
-						
-						//if on first pages without full content, need to wait until content is loaded first (NOTE - theoretically should ALWAYS wait for load content before re-scroll BUT if do, it's a bit jumpy so ONLY do it when necessary - otherwise using old data keeps it smooth as is a workaround..)
-						if((params.alreadyTimedOut ===undefined || !params.alreadyTimedOut) && (middle >scrollHeight || scrollHeight <$attrs.itemHeight*$attrs.pageSize*2)) {
-							$timeout(function() {
-								params.alreadyTimedOut =true;
-								scrollToMiddle(params);
-							}, 100);
-						}
-						else {
+				// console.log('uiInfinitescroll scrollToMiddle');		//TESTING
+				if(uiInfinitescrollData.exists($attrs.id, {})) {
+					// console.log('uiInfinitescroll scrollToMiddle exists');		//TESTING
+					var scrollPos, scrollHeight, viewportHeight, middle, newMiddle;
+					if($attrs.pageScroll) {
+						if(0) {		//@todo - need a better solution than this.. see below
+						//if($scope.opts.cursors.itemsView.start ==0) {		//if at top, just go to top (specifically this addresses a double initial load issue that causes the first time to show halfway down rather than at the top - could probably find a better fix - i.e. also check what the last cursor was at?)
 							if($attrs.animateScroll) {
-								$(window).animate({scrollTop: middle+'px'}, $attrs.animateScrollDuration);		//animate the scrolling
+								scrollAnimate(false, 0, {duration:$attrs.animateScrollDuration}, {});
 							}
 							else {
-								window.scrollTo(0, middle);
+								window.scrollTo(0, 0);
 							}
+						}
+						else {
+							scrollPos =$(window).scrollTop();
+							scrollHeight =$(document).height();
+							viewportHeight =$(window).height();
+							middle =Math.floor((scrollHeight/2) -viewportHeight/2);
 							
-							if($attrs.animateAfterItems) {
+							if(params.diffHeight) {
 								if(params.prev) {
-									newMiddle =middle -$attrs.itemHeight*$attrs.animateAfterItems;
+									middle =params.diffHeight;
 								}
 								else {
-									newMiddle =middle +$attrs.itemHeight*$attrs.animateAfterItems;
+									middle =scrollHeight -params.diffHeight -viewportHeight;
 								}
-								$(window).animate({scrollTop: newMiddle+'px'}, $attrs.animateAfterDuration);		//animate the scrolling
-							}
-						}
-					}
-					//console.log('scrollPos: '+$(window).scrollTop());
-				}
-				else {
-					if(0) {		//@todo - need a better solution than this.. see below
-					//if($scope.opts.cursors.itemsView.start ==0) {		//if at top, just go to top (specifically this addresses a double initial load issue that causes the first time to show halfway down rather than at the top - could probably find a better fix - i.e. also check what the last cursor was at?)
-						if($attrs.animateScroll) {
-							$("#"+scrollId).animate({scrollTop: 0+'px'}, $attrs.animateScrollDuration);		//animate the scrolling
-						}
-						else {
-							document.getElementById(scrollId).scrollTop =0;
-						}
-					}
-					else {
-						var ele =document.getElementById(scrollId);
-						scrollPos =ele.scrollTop;
-						scrollHeight =ele.scrollHeight;
-						//viewportHeight =$(ele).height();
-						viewportHeight =ele.clientHeight;
-						middle =Math.floor((scrollHeight/2) -viewportHeight/2);
-						
-						if(params.diffHeight) {
-							if(params.prev) {
-								middle =params.diffHeight;
-							}
-							else {
-								//middle =scrollHeight -params.diffHeight +viewportHeight -$attrs.itemHeight;
-								//middle =scrollHeight -params.diffHeight -$attrs.itemHeight;
-								middle =scrollHeight -params.diffHeight -viewportHeight;
-							}
-						}
-						
-						//if on first pages without full content, need to wait until content is loaded first (NOTE - theoretically should ALWAYS wait for load content before re-scroll BUT if do, it's a bit jumpy so ONLY do it when necessary - otherwise using old data keeps it smooth as is a workaround..)
-						//console.log('scrollHeight: '+scrollHeight+' 2 pages items height: '+$attrs.itemHeight*$attrs.pageSize*2);
-						if((params.alreadyTimedOut ===undefined || !params.alreadyTimedOut) && (middle >scrollHeight || scrollHeight <$attrs.itemHeight*$attrs.pageSize*2)) {
-							//console.log('middle: '+middle+' scrollHeight: '+scrollHeight);
-							$timeout(function() {
-								params.alreadyTimedOut =true;
-								scrollToMiddle(params);
-							}, 100);
-						}
-						else {
-							if($attrs.animateScroll) {
-								$("#"+scrollId).animate({scrollTop: middle+'px'}, $attrs.animateScrollDuration);		//animate the scrolling
-							}
-							else {
-								document.getElementById(scrollId).scrollTop =middle;
 							}
 							
-							if($attrs.animateAfterItems) {
-								if(params.prev) {
-									newMiddle =middle -$attrs.itemHeight*$attrs.animateAfterItems;
+							//if on first pages without full content, need to wait until content is loaded first (NOTE - theoretically should ALWAYS wait for load content before re-scroll BUT if do, it's a bit jumpy so ONLY do it when necessary - otherwise using old data keeps it smooth as is a workaround..)
+							if((params.alreadyTimedOut ===undefined || !params.alreadyTimedOut) && (middle >scrollHeight || scrollHeight <$attrs.itemHeight*$attrs.pageSize*2)) {
+								$timeout(function() {
+									params.alreadyTimedOut =true;
+									scrollToMiddle(params);
+								}, 100);
+							}
+							else {
+								if($attrs.animateScroll) {
+									scrollAnimate(false, middle, {duration:$attrs.animateScrollDuration}, {});
 								}
 								else {
-									newMiddle =middle +$attrs.itemHeight*$attrs.animateAfterItems;
+									window.scrollTo(0, middle);
 								}
-								$("#"+scrollId).animate({scrollTop: newMiddle+'px'}, $attrs.animateAfterDuration);		//animate the scrolling
+								
+								if($attrs.animateAfterItems) {
+									if(params.prev) {
+										newMiddle =middle -$attrs.itemHeight*$attrs.animateAfterItems;
+									}
+									else {
+										newMiddle =middle +$attrs.itemHeight*$attrs.animateAfterItems;
+									}
+									scrollAnimate(false, newMiddle, {duration:$attrs.animateAfterDuration}, {});
+								}
 							}
 						}
+						//console.log('scrollPos: '+$(window).scrollTop());
 					}
-					//console.log('scrollPos: '+ele.scrollTop);
+					else {
+						if(0) {		//@todo - need a better solution than this.. see below
+						//if($scope.opts.cursors.itemsView.start ==0) {		//if at top, just go to top (specifically this addresses a double initial load issue that causes the first time to show halfway down rather than at the top - could probably find a better fix - i.e. also check what the last cursor was at?)
+							if($attrs.animateScroll) {
+								scrollAnimate("#"+scrollId, 0, {duration:$attrs.animateScrollDuration}, {});
+							}
+							else {
+								document.getElementById(scrollId).scrollTop =0;
+							}
+						}
+						else {
+							var ele =document.getElementById(scrollId);
+							scrollPos =ele.scrollTop;
+							scrollHeight =ele.scrollHeight;
+							//viewportHeight =$(ele).height();
+							viewportHeight =ele.clientHeight;
+							middle =Math.floor((scrollHeight/2) -viewportHeight/2);
+							
+							if(params.diffHeight) {
+								if(params.prev) {
+									middle =params.diffHeight;
+								}
+								else {
+									//middle =scrollHeight -params.diffHeight +viewportHeight -$attrs.itemHeight;
+									//middle =scrollHeight -params.diffHeight -$attrs.itemHeight;
+									middle =scrollHeight -params.diffHeight -viewportHeight;
+								}
+							}
+							
+							//if on first pages without full content, need to wait until content is loaded first (NOTE - theoretically should ALWAYS wait for load content before re-scroll BUT if do, it's a bit jumpy so ONLY do it when necessary - otherwise using old data keeps it smooth as is a workaround..)
+							//console.log('scrollHeight: '+scrollHeight+' 2 pages items height: '+$attrs.itemHeight*$attrs.pageSize*2);
+							if((params.alreadyTimedOut ===undefined || !params.alreadyTimedOut) && (middle >scrollHeight || scrollHeight <$attrs.itemHeight*$attrs.pageSize*2)) {
+								//console.log('middle: '+middle+' scrollHeight: '+scrollHeight);
+								$timeout(function() {
+									params.alreadyTimedOut =true;
+									scrollToMiddle(params);
+								}, 100);
+							}
+							else {
+								if($attrs.animateScroll) {
+									scrollAnimate("#"+scrollId, middle, {duration:$attrs.animateScrollDuration}, {});
+								}
+								else {
+									document.getElementById(scrollId).scrollTop =middle;
+								}
+								
+								if($attrs.animateAfterItems) {
+									if(params.prev) {
+										newMiddle =middle -$attrs.itemHeight*$attrs.animateAfterItems;
+									}
+									else {
+										newMiddle =middle +$attrs.itemHeight*$attrs.animateAfterItems;
+									}
+									scrollAnimate("#"+scrollId, newMiddle, {duration:$attrs.animateAfterDuration}, {});
+								}
+							}
+						}
+						//console.log('scrollPos: '+ele.scrollTop);
+					}
 				}
 			}
 			
-			//5.
-			/*
-			//doesn't work - have to watch a sub array piece
-			$scope.$watch('itemsRaw', function(newVal, oldVal) {
-				if(!angular.equals(oldVal, newVal)) {		//very important to do this for performance reasons since $watch runs all the time
-					formItems({});
+			/**
+			@toc 2.1
+			@method scrollAnimate
+			@param {String|Boolean} scrollEle the element selector (i.e. '#my-id') to scroll OR false to scroll window/whole page
+			@param {Number} scrollTo Pixel top to scroll to
+			@param {Object} scrollParams jQuery animate params
+				@param {Number} duration
+			*/
+			function scrollAnimate(scrollEle, scrollTo, scrollParams, params) {
+				var defaults ={
+					queue: false		//VERY IMPORTANT otherwise they lag and animations happen randomly later (even on different pages when not even viewing the infinitescroll directive anymore if used pageScroll!!!
+				};
+				scrollParams =angular.extend(defaults, scrollParams);
+				if(!scrollEle) {
+					//$(window).animate({scrollTop: scrollTo+'px'}, scrollParams);		//ERRORS, need to use 'body, html' instead..
+					scrollEle ='body, html';
+				}
+				$(scrollEle).animate({scrollTop: scrollTo+'px'}, scrollParams);
+			}
+			
+			/**
+			Watch for updates on items
+			@toc 5.
+			@method $scope.$watch('items',..
+			*/
+			$scope.$watch('items', function(newVal, oldVal) {
+				// console.log('$scope.$watch items');
+				if(!angular.equals(oldVal, newVal) && !triggers.skipWatch) {		//very important to do this for performance reasons since $watch runs all the time
+					// console.log('$scope.$watch items !angular.equals');
+					resetItems({});
+					init({});
 				}
 			});
+			
+			/**
+			Used in place of updating $scope.items to have the $watch fire if want to update the directive WITHOUT changing the items (i.e. to change types or backend data to load different items but don't have them yet so need the directive to fire to initiate loadMore)
+			@toc 5.5.
+			@param {Object} params
+				@param {String} instId Identifies the directive to update (only that one will be re-initialized)
 			*/
-			if(0) {
-			//@todo ?
-			//for(var xx in $scope.itemsRaw) {
-			for(var ii =0; ii<$scope.opts.watchItemKeys.length; ii++) {
-				xx =$scope.opts.watchItemKeys[ii];
-				//$scope.$watch('itemsRaw', function(newVal, oldVal) {
-				//$scope.$watch('itemsRaw['+xx+'].items[0]', function(newVal, oldVal) {
-				//$scope.$watch('itemsRaw.extra.items[0]', function(newVal, oldVal) {
-				//$scope.$watch('itemsRaw.extra', function(newVal, oldVal) {
-				//$scope.$watch('itemsRaw.'+xx, function(newVal, oldVal) {
-				$scope.$watch('itemsRaw.'+xx+'.items', function(newVal, oldVal) {
-					if(!angular.equals(oldVal, newVal)) {		//very important to do this for performance reasons since $watch runs all the time
-						if($scope.totFilteredItems <$scope.page*$attrs.pageSize) {		//if only on first page, reset (otherwise load more button / triggers will be set to false since there's no more in queue / from backend)
-							resetItems({});
-						}
-						formItems({});
-						/*
-						if($scope.queuedItems.length <$attrs.pageSize && $scope.totFilteredItems <$scope.page*$attrs.pageSize) {		//load more externally if don't have enough
-							$scope.loadMoreDir({});
-						}
-						*/
+			$scope.$on('uiInfinitescrollReInit', function(evt, params) {
+				if($scope.opts.instId !==undefined && params.instId !==undefined && $scope.opts.instId ==params.instId) {		//only update if the correct instance
+					//if have items, blank them out; this alone will trigger a reset due to the watch
+					if($scope.items.length >0) {
+						$scope.items =[];
 					}
-				});
-			}
-			}
-			
-			/*
-			//@todo ?
-			//5.5. $watch not firing all the time... @todo figure out & fix this.. (also this will reform ALL instances - should pass in an instance id - which means the directive would have to pass an instance back somehow..)
-			$scope.$on('uiLookupReformItems', function(evt, params) {
-				formItems({});
+					else {
+						resetItems({});
+						init({});
+					}
+				}
 			});
-			*/
 			
-			//6.
-			/*
+			/**
+			Used to programmatically load more (prev or next)
+			@toc 5.6.
+			@param {Object} params
+				@param {String} instId Identifies the directive to update (only that one will be re-initialized)
+				@param {String} type One of 'prev' or 'next'
+			*/
+			$scope.$on('uiInfinitescrollLoadMore', function(evt, params) {
+				if($scope.opts.instId !==undefined && params.instId !==undefined && $scope.opts.instId ==params.instId) {		//only update if the correct instance
+					var params1 ={};
+					if(params.type !==undefined && params.type =='prev') {
+						params1.prev =true;
+					}
+					$scope.loadMoreDir(params1);
+				}
+			});
+			
+			/**
 			Starts the load more process - checks if need to load more (may already have more items in the existing javascript items array, in which case can just load more internally) and IF need to load more external items, sets a timeout to do so (for performance to avoid rapid firing external calls)
 				This is paired with the getMoreItems function below - which handles actually getting the items AFTER the timeout
+			@toc 6.
 			@param params
-				noDelay =boolean true to skip the timeout before loading more (i.e. if coming from scroll, in which case already have waited)
+				@param {Boolean} [noDelay] True to skip the timeout before loading more (i.e. if coming from scroll, in which case already have waited)
+				@param {Boolean} [next]
+				@param {Boolean} [prev]
 			*/
 			$scope.loadMoreDir =function(params) {
 				var getMoreItemsTrig =false;
@@ -2365,8 +3106,8 @@ angular.module('ui.directives').directive('uiInfinitescroll', ['ui.config', '$ti
 				}
 			};
 			
-			//6.5.
 			/**
+			@toc 6.5.
 			@param params
 				prev {Boolean} true if loading previous (i.e. scrolling toward beginning)
 			*/
@@ -2380,10 +3121,10 @@ angular.module('ui.directives').directive('uiInfinitescroll', ['ui.config', '$ti
 				setItems(params);
 			}
 			
-			//7.
-			/*
+			/**
 			Handles loading items from the queue and calling the external loadMore function to pre-fill the queue for the next page (this is the function that runs AFTER the timeout set in $scope.loadMoreDir function)
 			If have items in queue, they're added to itemsRaw and then formItems is re-called to re-form filtered items & update display
+			@toc 7.
 			@param params
 				prev
 				next
@@ -2395,6 +3136,7 @@ angular.module('ui.directives').directive('uiInfinitescroll', ['ui.config', '$ti
 					if(params.prev) {
 						ppTemp.prev =true;
 						if(($scope.opts.cursors.items.start >0 || $scope.negativeLoad) && !$scope.noMoreLoadMoreItems.prev) {		//only try to load more if have more left to load
+							triggers.skipWatch =true;		//prevent $watch from resetting items!
 							loadPageSize =$attrs.loadMorePageSize;
 							cursor =$scope.opts.cursors.items.start +$scope.opts.cursors.negative -loadPageSize;
 							$scope.loadMore()({'cursor':cursor, 'loadMorePageSize':loadPageSize, 'searchText':''}, function(results, ppCustom) {
@@ -2405,6 +3147,7 @@ angular.module('ui.directives').directive('uiInfinitescroll', ['ui.config', '$ti
 					else {
 						ppTemp.next =true;
 						if(!$scope.noMoreLoadMoreItems.next) {		//only try to load more if have more left to load
+							triggers.skipWatch =true;		//prevent $watch from resetting items!
 							loadPageSize =$attrs.loadMorePageSize;
 							cursor =$scope.opts.cursors.items.end;
 							$scope.loadMore()({'cursor':cursor, 'loadMorePageSize':loadPageSize, 'searchText':''}, function(results, ppCustom) {
@@ -2415,13 +3158,14 @@ angular.module('ui.directives').directive('uiInfinitescroll', ['ui.config', '$ti
 				}
 			}
 			
-			//8.
-			/*
+			/**
 			This is the callback function that is called from the outer (non-directive) controller with the externally loaded items. These items are added to the queue and the cursor is updated accordingly.
 				- Additionally, the noMoreLoadMoreItems trigger is set if the returned results are less than the loadMorePageSize
 				- Also, it immediately will load from queue if the current page isn't full yet (if params.partialLoad & params.numToFillCurPage are set)
+			@toc 8.
 			@param results =array [] of items (will be appended to queue)
 			@param ppCustom =params returned from callback
+				@param {Number} [numPrevItems] Number of previous items that are mixed in (so can update cursor appropriately) - this is typically for a first load where may want to load some previous items as well as next items
 			@param params
 				prev {Boolean}
 				next {Boolean}
@@ -2439,13 +3183,27 @@ angular.module('ui.directives').directive('uiInfinitescroll', ['ui.config', '$ti
 							$scope.opts.cursors.items.end += ($scope.opts.cursors.items.start *-1);		//have to push up items.end the same amount we're removing from items.start
 							$scope.opts.cursors.items.start =0;
 						}
+						changePage(params);
 					}
 					else {
 						$scope.items =$scope.items.concat(results);
 						$scope.opts.cursors.items.end +=results.length;		//don't just add $attrs.loadMorePageSize in case there weren't enough items on the backend (i.e. results could be LESS than this)
+						if(ppCustom !==undefined && ppCustom.numPrevItems !==undefined) {
+							$scope.opts.cursors.negative -=ppCustom.numPrevItems;
+							//shift page number up accordingly since added items to beginning
+							// console.log('$scope.page before: '+$scope.page);
+							// $scope.page +=Math.ceil(ppCustom.numPrevItems /$attrs.pageSize);
+							// console.log('$scope.page after: '+$scope.page);
+							
+							var ppSend ={
+								cursorViewStart: ppCustom.numPrevItems
+							};
+							setItems(ppSend);		//go to specific item
+						}
+						else {
+							changePage(params);
+						}
 					}
-					
-					changePage(params);
 				}
 				else {
 					if( (params.prev && $scope.opts.cursors.items.start < $scope.opts.cursors.itemsView.start) || (params.next && $scope.opts.cursors.items.end > $scope.opts.cursors.itemsView.end)) {		//display last ones from javascript
@@ -2465,9 +3223,17 @@ angular.module('ui.directives').directive('uiInfinitescroll', ['ui.config', '$ti
 						}
 					}
 				}
+				
+				//need to use a timeout otherwise it will be reset BEFORE the $watch fires, making it useless..
+				$timeout(function() {
+					triggers.skipWatch =false;		//reset
+					// console.log('triggers.skipWatch: '+triggers.skipWatch);
+				}, 100);
 			}
 			
-			//9.
+			/**
+			@toc 9.
+			*/
 			function checkForScrollBar(params) {
 				var scrollHeight, scrollPos, viewportHeight;
 				if($scope.scrollLoad) {
@@ -2517,11 +3283,42 @@ var inst ={
 	},
 	
 	/**
+	Check to see if this instance is still valid / still on page / still exists (otherwise should destroy it / not act on it)
+	@method exists
 	*/
-	removeScrollEvt: function(instId, params) {
+	exists:function(instId, params) {
+		var exists =false;
+		if(this.data[instId] !==undefined) {
+			var eleId =this.data[instId].attrs.ids.scrollContent;
+			if(document.getElementById(eleId)) {
+				exists =true;
+			}
+		}
+		return exists;
+	},
+	
+	/**
+	@param {String} instId Unique key for this scrolling event (so don't have multiple events firing on the same element/page and so can cancel/remove the event listeners when destroyed)
+	@param {Object} params
+		@param {Object} attrs Pass through of attrs of directive (more than what's detailed below - see directive above for what attributes it has)
+			@param {Number} pageScroll 1 if want to use window / full page scroll (otherwise will scroll based on an element id)
+	*/
+	initInst: function(instId, params) {
+		this.data[instId] =params;
+	},
+	
+	/**
+	*/
+	destroy: function(instId, params) {
 		if(this.data[instId] !==undefined) {
 			delete this.data[instId];
 		}
+	},
+	
+	/**
+	*/
+	removeScrollEvt: function(instId, params) {
+		this.destroy(instId, params);
 	},
 	
 	/**
@@ -2532,28 +3329,135 @@ var inst ={
 	*/
 	addScrollEvt: function(instId, params) {
 		var thisObj =this;
+		var eleId;
 		if(!this.inited) {
 			window.onscroll =function() {
 				for(var xx in thisObj.data) {
+					// eleId =xx;
+					eleId =thisObj.data[xx].attrs.ids.scrollContent;
 					//see if infinite scroll element is still defined / on page (remove event listener otherwise)
-					if(document.getElementById(thisObj.data[xx].attrs.ids.scrollContent)) {
+					// console.log('uiInfinitescroll addScrollEvt window.onscroll: eleId: '+eleId+' eleId exists: '+document.getElementById(eleId));		//TESTING
+					if(document.getElementById(eleId)) {
 						thisObj.windowScroll(xx, thisObj.data[xx], {});
 					}
 					else {		//remove
+						// console.log('uiInfinitescroll removeScrollEvt eleId: '+eleId);		//TESTING
 						thisObj.removeScrollEvt(xx, {});
+						// thisObj.destroy(instId, {});
 					}
 				}
 			};
 		}
 		this.inited =true;
-
-		thisObj.data[params.attrs.id] =params;
+		
+		if(this.data[instId] !==undefined) {		//ONLY if defined, update it (add the callback)
+			this.data[instId] =params;
+		}
 	}
 	
 };
 return inst;
 }])
 ;
+/**
+//@todo - FINISH (form select opts)
+
+
+Allows selecting a timezone
+
+@dependencies:
+- moment.js
+
+//TOC
+
+scope (attrs that must be defined on the scope (i.e. in the controller) - they can't just be defined in the partial html)
+@param {String} ngModel Timezone (z) in format '[+/-]hh:mm'. I.e. '-07:00' or '+05:30'
+@param {Object} opts
+
+attrs
+@param {String} [placeholder ='Choose a timezone'] Placeholder text for input
+
+
+EXAMPLE usage:
+partial / html:
+<div ui-inputtimzeone ng-model='ngModel' opts=''></div>
+
+controller / js:
+$scope.ngModel ='';
+
+//end: EXAMPLE usage
+*/
+
+//'use strict';
+
+angular.module('ui.directives').directive('uiInputtimzeone', [function () {
+
+	return {
+		restrict: 'A',
+		scope: {
+			ngModel: '=',
+			opts: '=?'
+		},
+
+		// template: "",
+		compile: function(element, attrs) {
+			if(!attrs.placeholder) {
+				attrs.placeholder ='Choose a timezone';
+			}
+			
+			var html ="<div>"+
+				"<div ui-forminput type='select' ng-model='ngModel' select-opts='selectOpts' opts=''></div>"+
+			"</div>";
+			element.replaceWith(html);
+			
+			return function(scope, element, attrs) {
+			};
+		},
+		
+		controller: function($scope, $element, $attrs) {
+			//@todo - switch to timezone names because those incorporate daylight savings times
+			//UPDATE: this is incomplete - switched to using jstz 3rd party script: https://bitbucket.org/pellepim/jstimezonedetect/src/f9e3e30e1e1f53dd27cd0f73eb51a7e7caf7b378/jstz.js?at=default
+				//can/should finish this input but make it match those timezone names
+				
+				/*
+				'Pacific/Honolulu', '(UTC-10) Hawaii, United States'
+				'America/Juneau', '(UTC-9) Alaska, United States'
+				'America/Los_Angeles', '(UTC-8) California, United States'
+				'America/Phoenix', '(UTC-7) Arizona, United States'
+				'America/Denver', '(UTC-7) Colorado, United States'
+				'America/Chicago', '(UTC-6) Texas, United States'
+				'America/New_York', '(UTC-5) New York, United States'
+				'America/La_Paz', '(UTC-4) La Paz, Bolivia'
+				'America/Buenos_Aires', '(UTC-3) Buenos Aires, Argentina'
+				'Europe/London', '(UTC+0) London, England'
+				'Europe/Paris', '(UTC+1) Paris, France'
+				'Africa/Cairo', '(UTC+2) Cairo, Egypt'
+				'Europe/Moscow', '(UTC+3) Moscow, Russia'
+				'Asia/Dubai', '(UTC+4) Dubai, Dubai'
+				'Asia/Tashkent', '(UTC+5) Tashkent, Uzbekistan'
+				'Asia/Kolkata', '(UTC+5.5) Mumbai, India'
+				'Asia/Bangkok', '(UTC+7) Bangkok, Thailand'
+				'Asia/Hong_Kong', '(UTC+8) Hong Kong, China'
+				'Asia/Tokyo', '(UTC+9) Tokyo, Japan'
+				'Australia/Sydney', '(UTC+10) Sydney, Australia'
+				'Pacific/Samoa', '(UTC-11) Pago Pago, Samoa'
+				'America/Noronha', '(UTC-2) Noronha, Bazil'
+				'Atlantic/Azores', '(UTC-1) Azores, Portugal'
+				'Asia/Omsk', '(UTC+6) Omsk, Russia'
+				'Pacific/Ponape', '(UTC+11) Ponape, Micronesia'
+				'Pacific/Fiji', '(UTC+12) Fiji'
+				*/
+				
+			$scope.selectOpts =[
+				{val: '-10:00', name:'(UTC-10) Hawaii, United States'},
+				{val: '-09:00', name: '(UTC-9) Alaska, United States'},
+				{val: '-08:00', name: '(UTC-8) California, United States'},
+				{val: '-07:00', name: '(UTC-7) Arizona, United States'},
+				{val: '-07:00', name: '(UTC-7) Colorado, United States'}
+			];
+		}
+	};
+}]);
 /**
  * General-purpose jQuery wrapper. Simply pass the plugin name as the expression.
  *
@@ -2744,8 +3648,11 @@ Uses one associative array (raw data) to build a concatenated scalar (final/disp
 //1. formItems
 //2. $scope.filterItems
 //3. $scope.clickInput
+//3.5. $scope.clearInput
 //4. $scope.changeInput
 //5. $scope.$watch('itemsRaw',..
+//5.1. $scope.$watch('opts.searchText',..
+//5.5. $scope.$on('uiLookupReformItems',..
 //6. $scope.loadMoreDir
 //7. getMoreItems
 //8. addLoadMoreItems
@@ -2818,12 +3725,12 @@ controller / js:
 				{'_id':'d4', 'name':'ron artest'},
 				{'_id':'d5', 'name':'kobe bryant'},
 				{'_id':'d6', 'name':'steve balls'},
-			],
+			]
 		},
 		'extra':{
 			'items':[
-			],
-		},
+			]
+		}
 	};
 	
 	//handle load more (callbacks)
@@ -2958,6 +3865,7 @@ angular.module('ui.directives').directive('uiLookup', ['ui.config', '$filter', '
 				"<div class='ui-lookup-top'>"+
 					"<div class='ui-lookup-input-div "+attrs.classInputCont+"'>"+
 						"<input type='text' ng-change='changeInput({})' placeholder='"+attrs.placeholder+"' class='ui-lookup-input "+attrs.classInput+"' ng-model='opts.searchText' ng-click='clickInput({})' />"+
+						"<div class='ui-lookup-input-x' ng-click='clearInput({})'>X</div>"+
 					"</div>"+
 					//"<div>page: {{page}} totFilteredItems: {{totFilteredItems}} queuedItems: {{queuedItems.length}}</div>"+		//TESTING
 					//"<div>hasScrollbar: {{hasScrollbar}} | scrollLoad: {{scrollLoad}}</div>"+		//TESTING
@@ -2995,7 +3903,9 @@ angular.module('ui.directives').directive('uiLookup', ['ui.config', '$filter', '
 			//copy some attributes onto scope for use in html
 			$scope.minSearchLength =$attrs.minSearchLength;
 
-			$scope.trigs ={'loading':false};
+			$scope.trigs ={'loading':false,
+				skipWatch: false		//used for skipping $watch updating/resetting when load more items (i.e. 'extra' key)
+			};
 			$scope.items =[];
 			$scope.page =1;		//will store what page (broken up by pageSize attr) we're on
 			$scope.totFilteredItems =0;
@@ -3203,6 +4113,15 @@ angular.module('ui.directives').directive('uiLookup', ['ui.config', '$filter', '
 				$scope.filterItems({});
 			};
 			
+			/**
+			@toc 3.5.
+			@method $scope.clearInput
+			*/
+			$scope.clearInput =function(params) {
+				$scope.opts.searchText ='';
+				$scope.changeInput({});
+			};
+			
 			//4.
 			$scope.changeInput =function(params) {
 				resetItems({});
@@ -3243,7 +4162,7 @@ angular.module('ui.directives').directive('uiLookup', ['ui.config', '$filter', '
 				//$scope.$watch('itemsRaw.extra', function(newVal, oldVal) {
 				//$scope.$watch('itemsRaw.'+xx, function(newVal, oldVal) {
 				$scope.$watch('itemsRaw.'+xx+'.items', function(newVal, oldVal) {
-					if(!angular.equals(oldVal, newVal)) {		//very important to do this for performance reasons since $watch runs all the time
+					if(!$scope.trigs.skipWatch && !angular.equals(oldVal, newVal)) {		//very important to do this for performance reasons since $watch runs all the time
 						if($scope.totFilteredItems <$scope.page*$attrs.pageSize) {		//if only on first page, reset (otherwise load more button / triggers will be set to false since there's no more in queue / from backend)
 							resetItems({});
 						}
@@ -3257,10 +4176,18 @@ angular.module('ui.directives').directive('uiLookup', ['ui.config', '$filter', '
 				});
 			}
 			
+			//5.1.
+			$scope.$watch('opts.searchText', function(newVal, oldVal) {
+				if(!angular.equals(oldVal, newVal)) {
+					$scope.changeInput({});
+				}
+			});
+			
 			//5.5. $watch not firing all the time... @todo figure out & fix this.. (also this will reform ALL instances - should pass in an instance id - which means the directive would have to pass an instance back somehow..)
 			$scope.$on('uiLookupReformItems', function(evt, params) {
 				formItems({});
 			});
+
 			
 			//6.
 			/*
@@ -3368,8 +4295,12 @@ angular.module('ui.directives').directive('uiLookup', ['ui.config', '$filter', '
 						numFromQueue =$scope.queuedItems.length;
 					}
 					retArray.numItemsAdded =numFromQueue;
+					$scope.trigs.skipWatch =true;		//skip watch on this itemsRaw update
 					//add to itemsRaw then update filtered items
 					$scope.itemsRaw[$attrs.loadMoreItemsKey].items =$scope.itemsRaw[$attrs.loadMoreItemsKey].items.concat($scope.queuedItems.slice(0, numFromQueue));
+					$timeout(function() {
+						$scope.trigs.skipWatch =false;		//reset
+					}, 250);
 					if(params.partialLoad ===undefined || !params.partialLoad || numFromQueue ==$attrs.pageSize) {		//partial load can be set if need to load a new page so may still need to increment page if loading same number of items as page size
 						$scope.page++;
 						//checkForScrollBar({});
@@ -3927,6 +4858,465 @@ angular.module('ui.directives').directive('uiMask', [
   }
 ]);
 
+/**
+@todo
+- remove jQuery dependency (currently only for non FormData supported browsers?)
+- perhaps remove/replace this plugin with a full implementation of file upload (i.e. INCLUDING the file selection - since we need the form for iFrame fallbacks anyway). OR make this plugin NOT have fallback support and ONLY be for FormData supported browsers?
+	- OR modularize out these fallbacks INCLUDING TriggerIO & Phonegap solutions BUT would have to figure out how to conditionally include services/directives? Maybe try ng-if?
+
+NOTE: for cross browser and mobile wrapper (i.e. TriggerIO, Phonegap) support, there's basically 2 distinctions that define the different methods that need to be used:
+1. if FormData is supported ( http://caniuse.com/#search=formdata ) - basically Android <=2.3 and IE <=9.0 do NOT support this
+2. if a form (with file input fields) are accessible (all non mobile wrapper pages).
+
+File input fields are READ ONLY as it's a security issue to allow writing to / filling a file input field so the ONLY way to take a file as an input parameter then send it somewhere (i.e. to a server) is with FormData. Without that, even with standard form submission, we can't take a file, put it in a new form and submit it (since we can't write to the new file input field).
+Fallbacks (if FormData isn't supported) are generally iFrame and Flash. iFrame is more cross browser and requires less dependencies. An example of the iFrame fallback is here ( https://github.com/blueimp/jQuery-File-Upload/blob/master/js/jquery.iframe-transport.js ).
+Basically, since you can't copy the file data itself, they append/copy the entire HTML wrapper (which then removes it from it's original form location) then they append it back to the original form when it's done. The iFrame method REQUIRES access to a form (or at least to file input fields created OUTSIDE the plugin (since this plugin/directive) is meant only to upload the files, NOT to actually handle selection of those files.
+Other iFrame references:
+- http://viralpatel.net/blogs/ajax-style-file-uploading-using-hidden-iframe/
+- http://stackoverflow.com/questions/168455/how-do-you-post-to-an-iframe
+- http://blog.w3villa.com/programming/upload-image-without-submitting-form-works-on-all-browsers/
+- http://stackoverflow.com/questions/9251301/how-add-new-hidden-input-fields-to-the-form-on-submit
+- http://stackoverflow.com/questions/6435146/using-javascript-to-set-the-value-of-a-form-element
+
+So the 3 options for file upload, based on FormData support and file input fields are:
+1. FormData - AJAX file upload with progress indicators, etc.
+	1. conditions: have FormData support. This works whether or not there's access to file input fields.
+	2. use cases: everything BUT Android <=2.3 and IE <=9. This DOES work on iOS even inside mobile wrappers such as TriggerIO, Phonegap which don't have form fields (i.e. for native file selection methods).
+2. iFrame
+	1. conditions: NO FormData but DO have file input fields
+	2. use cases: Android <=2.3 and IE <=9 NOT within a mobile wrapper such as TriggerIO, Phonegap
+3. native/mobile wrapper file upload solution (NOT handled in this plugin currently)
+
+Uses a $scope.$on('uiMultiFileUploadGo', {instId:xxx, files:[{file:xx}, {file:yy}]}) to initiate uploading one or more files and displays progress (bar). The server response is passed back via a callback function.
+
+//TOC
+1. init
+2. $scope.$on('uiMultiFileUploadGo',..
+4. $scope.uploadFile =function
+5. function uploadProgress
+6. function uploadComplete
+6.25. function ajaxUploadComplete
+6.5. function afterComplete
+7. function uploadFailed
+8. function uploadCanceled
+
+
+scope (attrs that must be defined on the scope (i.e. in the controller) - they can't just be defined in the partial html)
+@param {Object} opts
+	@param {String} instId Unique identifer for this instance - used for triggering the $scope.$on to initiate the upload
+	// @param {Array} files Array of files to upload	//UPDATE: these will be passed in on each $scope.$on
+	@param {String} uploadPath Path to upload file to (backend script)
+	@param {Object} [serverParamNames] Form names to submit (so can interact with any server).
+		@param {String} [files ='files'] The key to use for passing back the files. This will be an array of files.
+	@param {Object} [otherData] Key pairs of additional data to send to backend with the request (i.e. {type: 'image'}). NOTE: this SHOULD be a simple / non-nested object.
+@param {Function} uploadComplete Function to call after successful upload (all data from server will be passed back as is
+
+attrs
+
+ALSO SEE DOCUMENATION FOR THE 'uiMultiFileUploadGo' function for which parameters it takes as this is the event to call to actually trigger the file upload to start!
+
+
+@usage
+//1. FormData supported browsers
+partial / html:
+<div ui-multi-file-upload opts='opts' upload-complete='uploadComplete' ></div>
+
+controller / js:
+$scope.opts ={
+	instId: 'yes',
+	uploadPath: '/api/image/upload'
+};
+
+$scope.uploadComplete =function(data, params) {
+	//do something here
+};
+
+//call this function to start the upload
+function startUpload() {
+	//trigger the upload to start
+	$scope.$broadcast('uiMultiFileUploadGo', {instId: $scope.opts.instId, files:[{file:xx}, {file:yy}]});
+}
+
+
+
+
+
+//2. no FormData supported - iFrame used instead
+partial / html:
+<div ui-multi-file-upload opts='opts' upload-complete='uploadComplete' ></div>
+
+<form id='{{ids.form}}'>
+	<input id='{{ids.inputs.file1}}' type='file' />
+	<input id='{{ids.inputs.file2}}' type='file' />
+</form>
+
+controller / js:
+$scope.opts ={
+	instId: 'yes',
+	uploadPath: '/api/image/upload'
+};
+
+$scope.uploadComplete =function(data, params) {
+	//do something here
+};
+
+$scope.ids ={
+	form: 'formId',
+	inputs: {
+		file1: 'fileInput1',
+		file2: 'fileInput2'
+	}
+};
+
+//call this function to start the upload
+function startUpload() {
+	//trigger the upload to start
+	$scope.$broadcast('uiMultiFileUploadGo', {instId: $scope.opts.instId, formId:$scope.ids.form, files:[{fileInputId: $scope.ids.inputs.file1}, {fileInputId: $scope.ids.inputs.file2}]});
+}
+
+//end: EXAMPLE usage
+*/
+
+// 'use strict';
+
+angular.module('ui.directives').directive('uiMultiFileUpload', [function () {
+  return {
+		restrict: 'A',
+		scope: {
+			opts: '=',
+			uploadComplete: '&'
+		},
+
+		compile: function(element, attrs) {
+			var defaults ={
+				showProgress:true
+			};
+			var xx;
+			// attrs =angular.extend(defaults, attrs);		//doesn't work.. attrs.id is undefined
+			for(xx in defaults) {
+				if(attrs[xx] ===undefined) {
+					attrs[xx] =defaults[xx];
+				}
+			}
+			
+			if(attrs.id ===undefined) {		//would use scope.opts.instId but don't have access to scope yet..
+				attrs.id ="uiMultiFileUpload"+Math.random().toString(36).substring(7);
+			}
+			var id1 =attrs.id;
+			var ids ={
+				'progress':{
+					'barInner':id1+"ProgressBarInner",
+					'bar':id1+"ProgressBar"
+				},
+				'form':{
+					// 'form': id1+"Form",
+					'input': id1+"FormInput",
+					'iframe': id1+"IFrame"
+				}
+			};
+			attrs.ids =ids;		//save for later
+			
+			var html ="<div>"+
+				//hidden iFrame for browsers that don't support formData (Android <=2.3 and IE <=9)
+				"<div style='display:none;'>"+
+					/*
+					//can't copy over file input values/files so have to use EXISTING form (outside this plugin - where the files were actually selected)
+					"<form id='"+attrs.ids.form.form+"' action='{{opts.uploadPath}}' method='post' enctype='multipart/form-data' target='"+attrs.ids.form.iframe+"'>"+
+						// "<input type='file' ng-repeat='file in files' id='{{file.id}}' name='{{file.name}}' />"+		//doesn't work - you can't set file input values due to security reasons..
+						"<input type='text' ng-repeat='(key, value) in opts.otherData' name='{{key}}' value='{{value}}' />"+
+					"</form>"+
+					*/
+					"<iframe id='"+attrs.ids.form.iframe+"' name='"+attrs.ids.form.iframe+"' style='display:none;'></iframe>"+
+				"</div>"+
+				"<div ng-show='showLoading' class='ui-multi-file-upload-loading center'>Loading..</div>"+
+				"<div id='"+attrs.ids.progress.bar+"' class='ui-multi-file-upload-progress-bar'><div id='"+attrs.ids.progress.barInner+"' class='ui-multi-file-upload-progress-bar-inner'>&nbsp;</div></div>"+
+				"<div>{{progressNumber}}</div>"+
+				// "<div>{{fileInfo.name}}</div>"+
+				// "<div>{{fileInfo.size}}</div>"+
+				// "<div>{{fileInfo.type}}</div>"+
+			"</div>";
+			element.replaceWith(html);
+		},
+		
+		controller: function($scope, $element, $attrs) {
+			var defaultOpts ={
+				serverParamNames:{
+					files: 'files'
+				}
+			};
+			$scope.opts =angular.extend(defaultOpts, $scope.opts);
+			
+			$scope.showLoading =false;
+				
+			/**
+			@toc 1.
+			@method init
+			*/
+			function init(params) {
+			}
+			
+			/**
+			@toc 2.
+			$scope.$on('uiMultiFileUploadGo',..
+			@param {Object} params
+				@param {String} instId
+				@param {Array} files Array of objects with at least a 'file' key for the files to upload (should be an array of local file names OR file data). Each item is an object of:
+					@param {String|File} file The file to upload. Not actually required for iFrame implementation.
+					@param {String} [fileInputId] [IFRAME ONLY] The string of the input element where the file is (if given, will set the 'name' of this input according $scope.opts.serverParamNames.files). Otherwise, the form will be submitted with the names given for the form inputs ('name' field MUST exist for each input!).
+				@param {String} [formId] [IFRAME ONLY - REQUIRED FOR IFRAME] The id of the form where the files were selected; this form will be altered then submitted (to an iFrame defined here).
+			*/
+			$scope.$on('uiMultiFileUploadGo', function(evt, params) {
+				if($scope.opts.instId !==undefined && params.instId !==undefined && $scope.opts.instId ==params.instId) {		//only update if the correct instance
+					if(params.files.length >0) {
+						$scope.uploadFiles(params);
+					}
+					else {
+						console.log('multiFileUpload: no files selected');
+					}
+				}
+			});
+			
+			/**
+			IFRAME ONLY
+			@method addHiddenInput
+			*/
+			function addHiddenInput(form, key, value) {
+				// Create a hidden input element, and append it to the form:
+				var input = document.createElement('input');
+				input.type = 'hidden';
+				input.name = key;
+				input.value = value;
+				form.appendChild(input);
+			}
+			
+			/**
+			@toc 4.
+			@method $scope.uploadFiles
+			@param {Object} params
+				@param {Array} files Array of objects with at least a 'file' key for the files to upload (should be an array of local file names OR file data). Each item is an object of:
+					@param {String|File} file The file to upload
+					@param {String} [fileInputId] [IFRAME ONLY] The string of the input element where the file is (if given, will set the 'name' of this input according $scope.opts.serverParamNames.files). Otherwise, the form will be submitted with the names given for the form inputs ('name' field MUST exist for each input!).
+				@param {String} [formId] [IFRAME ONLY - REQUIRED FOR IFRAME] The id of the form where the files were selected; this form will be altered then submitted (to an iFrame defined here).
+			*/
+			$scope.uploadFiles =function(params) {
+				var ii, xx;
+				// if(FormData ===undefined || !FormData) {		//throws error
+				if(!window.FormData || window.FormData ===undefined) {
+				// if(1) {		//TESTING
+					if(params.formId ===undefined || !params.formId) {
+						console.log('multiFileUpload: ERROR: no FormData; params.formId is REQUIRED');
+					}
+					else {		//valid
+						console.log('multiFileUpload: no FormData, using iFrame');
+						
+						var form =document.getElementById(params.formId);
+						console.log('form: '+form);
+						
+						//can't set files via javascript due to security so have to just use existing file input's and set their 'name' attribute correctly
+						//form input id's/name's of fields IF fileInputId param is set
+						for(ii =0; ii<params.files.length; ii++) {
+							if(params.files[ii].fileInputId !==undefined) {
+								angular.element(document.getElementById(params.files[ii].fileInputId)).attr('name', $scope.opts.serverParamNames.files+'['+ii+']');
+							}
+						}
+						
+						//add other data (if any)
+						if($scope.opts.otherData !==undefined) {
+							for(xx in $scope.opts.otherData) {
+								if(form[xx] !==undefined) {
+									form[xx].value =$scope.opts.otherData[xx];
+								}
+								else {		//have to add input to the form
+									addHiddenInput(form, xx, $scope.opts.otherData[xx]);
+								}
+							}
+						}
+						
+						//set/update form properties (action, target, etc.)
+						//"<form id='"+attrs.ids.form.form+"' action='{{opts.uploadPath}}' method='post' enctype='multipart/form-data' target='"+attrs.ids.form.iframe+"'>"+
+						form.setAttribute('target', $attrs.ids.form.iframe);
+						form.setAttribute('action', $scope.opts.uploadPath);
+						form.setAttribute('method', 'post');
+						form.setAttribute('enctype', 'multipart/form-data');
+						// form.setAttribute('encoding', 'multipart/form-data');
+						
+						form.submit();
+						
+						$scope.showLoading =true;
+
+						var iframeId =document.getElementById($attrs.ids.form.iframe);
+						
+						// Add event...
+						var eventHandler = function () {
+
+							var content;
+							if (iframeId.detachEvent) iframeId.detachEvent("onload", eventHandler);
+							else iframeId.removeEventListener("load", eventHandler, false);
+
+							// Message from server...
+							if (iframeId.contentDocument) {
+								content = iframeId.contentDocument.body.innerHTML;
+							} else if (iframeId.contentWindow) {
+								content = iframeId.contentWindow.document.body.innerHTML;
+							} else if (iframeId.document) {
+								content = iframeId.document.body.innerHTML;
+							}
+
+							//strip any bad leading/trailing characters
+							if(content[0] !=='{' || content[(content.length-1)] !='}') {		//check first & last characters
+								content =content.slice(content.indexOf('{'), content.lastIndexOf('}')+1);
+							}
+					
+							var data = JSON.parse(content);  // Content of the iframe will be the response sent from the server. Parse the response as the JSON object
+							console.log('result: '+JSON.stringify(data));
+							afterComplete({}, data);
+						};
+
+						if (iframeId.addEventListener) iframeId.addEventListener("load", eventHandler, true);
+						if (iframeId.attachEvent) iframeId.attachEvent("onload", eventHandler);
+
+						/*
+						$('#'+$attrs.ids.form.iframe).unbind().load(function() {  // This block of code will execute when the response is sent from the server.
+							var data = JSON.parse($(this).contents());  // Content of the iframe will be the response sent from the server. Parse the response as the JSON object
+							console.log('result: '+JSON.stringify(data));
+							afterComplete({}, data);
+						});
+						*/
+					}
+				}
+				else {
+					$scope.showLoading =true;
+					//show progress / loading
+					angular.element(document.getElementById($attrs.ids.progress.barInner)).css({'width':'0%'});
+					if($attrs.showProgress) {
+						var eleProgressBar =angular.element(document.getElementById($attrs.ids.progress.bar));
+						eleProgressBar.removeClass('complete');
+						eleProgressBar.addClass('loading');
+					}
+					else {
+						$scope.showLoading =true;
+					}
+				
+					var fd = new FormData();
+					//add files data
+					for(ii =0; ii<params.files.length; ii++) {
+						fd.append($scope.opts.serverParamNames.files+'['+ii+']', params.files[ii].file);
+					}
+					
+					//add other data (if any)
+					if($scope.opts.otherData !==undefined) {
+						for(xx in $scope.opts.otherData) {
+							fd.append(xx, $scope.opts.otherData[xx]);
+						}
+					}
+					
+					var xhr = new XMLHttpRequest();
+					if($attrs.showProgress) {
+						xhr.upload.addEventListener("progress", uploadProgress, false);
+					}
+					xhr.onload =function(ee){uploadComplete(ee, params); };
+					//xhr.addEventListener("load", uploadComplete, false);
+					xhr.onerror =function(ee){uploadFailed(ee, params); };		//doesn't seem to work..
+					//xhr.addEventListener("error", uploadFailed, false);		//doesn't seem to work..
+					xhr.addEventListener("abort", uploadCanceled, false);
+					xhr.open("POST", $scope.opts.uploadPath);
+					xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+					xhr.onreadystatechange =function(){
+						if(xhr.readyState ==4 && xhr.status !=200)
+						{
+							uploadFailed('', params);
+						}
+					};
+					xhr.send(fd);
+				}
+			};
+			
+			/**
+			@toc 5.
+			@method uploadProgress
+			*/
+			function uploadProgress(evt) {
+				if (evt.lengthComputable) {
+					var percentComplete = Math.round(evt.loaded * 100 / evt.total);
+					$scope.progressNumber =percentComplete.toString() + '%';
+					document.getElementById($attrs.ids.progress.barInner).style.width = percentComplete.toString() +'%';
+				}
+				else {
+					$scope.progressNumber = 'unable to compute';
+				}
+			}
+			
+			/**
+			@toc 6.
+			@method uploadComplete
+			@param params
+				callback =array {'evtName':string, 'args':[]}
+				uploadFileSimple =boolean true if no display
+			*/
+			function uploadComplete(evt, params) {
+				/* This event is raised when the server send back a response */
+				//alert(evt.target.responseText);
+				
+				document.getElementById($attrs.ids.progress.barInner).style.width = '100%';
+				
+				var ele1 =angular.element(document.getElementById($attrs.ids.progress.bar));
+				ele1.addClass('complete');
+				
+				$scope.progressNumber ='';
+
+				var data =JSON.parse(evt.target.responseText);
+				afterComplete(params, data);
+			}
+			
+			/**
+			@toc 6.25.
+			@method ajaxUploadComplete
+			*/
+			function ajaxUploadComplete(params, data) {
+				if(typeof(data) =='string') {
+					data =$.parseJSON(data);
+				}
+				afterComplete(params, data);
+			}
+			
+			/**
+			@toc 6.5.
+			@method afterComplete
+			*/
+			function afterComplete(params, data) {
+				$scope.showLoading =false;
+				
+				//call callback function passed in (if exists)
+				if($scope.uploadComplete !==undefined && $scope.uploadComplete() !==undefined && typeof($scope.uploadComplete()) =='function') {		//this is an optional scope attr so don't assume it exists
+					$scope.uploadComplete()(data, params);
+				}
+				
+				//ensure back in angular world so events fire now
+				if(!$scope.$$phase) {
+					$scope.$apply();
+				}
+			}
+			
+			/**
+			@toc 7.
+			@method uploadFailed
+			*/
+			function uploadFailed(evt) {
+				alert("There was an error attempting to upload the file. Please try again or try a different file.");
+				//LLoading.close({});
+			}
+
+			/**
+			@toc 8.
+			@method uploadCanceled
+			*/
+			function uploadCanceled(evt) {
+				alert("The upload has been canceled by the user or the browser dropped the connection.");
+				//LLoading.close({});
+			}
+		}
+	};
+}]);
 /**
 @todo2:
 - load more / calling function to load more opts & then update them (i.e. when scroll to bottom or click "more")

@@ -28,4 +28,21 @@ angular.module('myApp').controller('TestCtrl', ['$scope', '$timeout', 'svcHttp',
 		}
 	];
 	
+	$scope.optsCarousel ={
+		curSlide: 0
+	};
+	
+	function changeSlide() {
+		$timeout(function() {
+			if($scope.optsCarousel.curSlide >=($scope.slides.length-1)) {
+				$scope.optsCarousel.curSlide =0;
+			}
+			else {
+				$scope.optsCarousel.curSlide++;
+			}
+			changeSlide();		//call itself
+		}, 2000);
+	}
+	
+	changeSlide();
 }]);

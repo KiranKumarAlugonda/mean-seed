@@ -12,11 +12,12 @@
 4. Install MongoDB ( http://www.mongodb.org/downloads )
 	1. Follow the instructions to intall: http://docs.mongodb.org/manual/tutorial/install-mongodb-on-windows/
 		1. Add `[path to your mongo installation folder]\mongodb\bin` to your environmet so you can type `mongod.exe` and `mongo` from any location and it will work.
-		2. NOTE: `mongod.exe` may only work when specifying the `--dbpath [path to mongodb]\data` command line option. You SHOULD be able to add that to the `mongod.cfg` file so you don't have to type it every time but for some reason it wasn't working unless typed on the command prompt sometimes... UPDATE: Try restarting your computer then opening a command prompt and typing `mongo` and it may work now! :)
-	2. NOTE: Windows XP is NOT supported as of MongoDB 2.2 so use 2.0.9
+		2. NOTE: `mongod.exe` may only work when specifying the `--dbpath [path to mongodb]\data` command line option. You SHOULD be able to add that to the `mongod.cfg` file so you don't have to type it every time but for some reason it wasn't working unless typed on the command prompt sometimes... UPDATE: Try restarting your computer then opening a command prompt and typing `mongo` and it may work now! :) If not, just create the folders in the default location... create a 'data' folder on 'C:' drive then create a 'db' folder in the 'C:\data' folder and then it should work..
+	2. NOTE: Windows XP is NOT supported as of MongoDB 2.2 (or actually 2.1.2?) so use 2.0.9 - http://docs.mongodb.org/ecosystem/platforms/windows
 	3. NOTE: make sure to match the build (i.e. 64 bit vs 32 bit) to your computer. Ideally use a 64 bit build since the 32 bit builds of mongo/ubuntu have a 2GB memory limit! http://www.mongodb.org/downloads#32-bit-limit.
 	4. install it as a service so you don't have to run 2 command windows every time (it will start when your computer starts and run in the background).
 		1. MongoDB requires 2 windows to run manually - one to run the service `mongod` and another to run the actual `mongo` command to get into the database. But if you install as a service, `mongod` will always be running so you can skip that first step.
+		2. restart your computer for this to work if you're having issues.. After restart you should just be able to type 'mongo' from a command prompt and it should work.
 		
 ## Mac setup / installing
 ### General notes

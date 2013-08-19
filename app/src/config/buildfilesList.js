@@ -103,7 +103,8 @@ var inst ={
 					"loginForm/LoginFormCtrl.js",
 					"signupForm/SignupFormCtrl.js",
 
-					"test/TestCtrl.js"
+					"test/TestCtrl.js",
+					"design/DesignCtrl.js"
 				],
 			}
 		},
@@ -125,7 +126,8 @@ var inst ={
 					'loginForm/login-form.html',
 					'signupForm/signup-form.html',
 					
-					'test/test.html'
+					'test/test.html',
+					'design/design.html'
 				],
 				directives: [
 				],

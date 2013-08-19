@@ -110,6 +110,14 @@ config(['$routeProvider', '$locationProvider', 'LGlobalsProvider', '$compileProv
 			}
 		}
 	});
+	
+	$routeProvider.when(appPathRoute+'design', {templateUrl: pagesPath+'design/design.html',
+		resolve: {
+			auth: function(svcAuth) {
+				return svcAuth.checkSess({noLoginRequired:true});
+			}
+		}
+	});
 
 	
 	/**

@@ -36,6 +36,14 @@ angular.module('myApp').controller('LayoutCtrl', ['$scope', 'libResize', 'LGloba
 	$scope.appPathLocation =LGlobals.dirPaths.appPathLocation;
 	
 	/**
+	For use with displaying images that are located in the common/img folder (where all images should be) inside <img> tags in the HTML/partial. This is so all children controllers/partials (which is every one since LayoutCtrl is the parent controller to everything) can access this without having to set it in each one.
+	@property $scope.appPathImg
+	@type String
+	@usage <img ng-src='{{appPathImg}}/ie-chrome-logo.png' />		<!-- assumes there's an image file named 'ie-chrome-logo.png' in the common/img folder -->
+	*/
+	$scope.appPathImg =LGlobals.dirPaths.appPath+'src/common/img';
+	
+	/**
 	For use in referencing static files like partials
 	@property $scope.staticPath
 	@type String

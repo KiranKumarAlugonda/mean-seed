@@ -16,6 +16,8 @@ moment.js - http://momentjs.com/
 
 'use strict';
 
+var moment = require('moment');
+
 var self;
 
 /**

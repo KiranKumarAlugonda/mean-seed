@@ -9,6 +9,7 @@ Each button generally has the following properties (but check the corresponding 
 	- `html` of the content to display, i.e. "Title Here" or "<span class='icon-bell'></span>" or "&nbsp;"
 	- either an `href` or `click`. For the `click`, it's generally a $rootScope.$broadcast that can be listened for in the appropriate controller for that page.
 	- `classes` which is an object that has style classes to apply for different parts of the nav item (i.e. `cont` is usually the class for the outer-most container)
+		- use classes.cont ='hidden' as a special class to HIDE (display:none) the entire header and/or footer
 	
 @example
 buttons: [
@@ -201,6 +202,16 @@ var inst ={
 					}
 				]
 			}
+		};
+		
+		
+		//test
+		this.pages.test =libArray.copyArray(this.components.defaultNav);
+		this.pages.test.header.classes ={
+			cont: 'hidden'
+		};
+		this.pages.test.footer.classes ={
+			cont: 'hidden'
 		};
 		
 		//end: CUSTOM nav definitions

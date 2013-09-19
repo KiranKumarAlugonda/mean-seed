@@ -8,15 +8,33 @@
 angular.module('myApp').controller('HeaderCtrl', ['$scope', 'svcNav', function($scope, svcNav) {
 	$scope.nav ={};
 	
+	$scope.classes ={
+		cont: ''
+	};
+	
+	/**
+	@method setNav
+	*/
+	function setNav(nav, params) {
+		$scope.nav =nav;
+		if($scope.nav.classes !==undefined && $scope.nav.classes.cont !==undefined && $scope.nav.classes.cont =='hidden') {
+			$scope.classes.cont =$scope.nav.classes.cont;
+		}
+		else {
+			$scope.classes.cont ='';		//reset to default
+		}
+	}
+	
 	/**
 	@param {Object} params
 		@param {Object} nav
 	*/
 	$scope.$on('svcNavHeaderUpdate', function(evt, params) {
-		$scope.nav =params.nav.header;
+		setNav(params.nav.header, {});
 	});
 	
 	//init (since first load the $scope.$on may not be called)
 	var nav =svcNav.getNav({});
-	$scope.nav =nav.header;
+	setNav(nav.header, {});
+	
 }]);

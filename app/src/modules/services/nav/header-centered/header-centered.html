@@ -1,4 +1,4 @@
-<div class='nav-header flexbox row'>
+<div class='nav-header flexbox row {{nav.classes.cont}}'>
 	<div class='nav-header-left-cont'>
 		<div ng-repeat='button in nav.buttons.left' class='{{button.classes.cont}}'>
 			<a ng-show='button.href' class='nav-header-button' ng-href = '{{button.href}}' ng-bind-html-unsafe='button.html'></a>

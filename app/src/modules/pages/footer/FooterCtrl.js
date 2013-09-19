@@ -16,12 +16,14 @@ angular.module('myApp').controller('FooterCtrl', ['$scope', 'svcNav', function($
 	@method setNav
 	*/
 	function setNav(nav, params) {
-		$scope.nav =nav;
-		if($scope.nav.classes !==undefined && $scope.nav.classes.cont !==undefined && $scope.nav.classes.cont =='hidden') {
-			$scope.classes.cont =$scope.nav.classes.cont;
-		}
-		else {
-			$scope.classes.cont ='';		//reset to default
+		if(nav !==undefined && nav) {		//avoid errors (on init??)
+			$scope.nav =nav;
+			if($scope.nav.classes !==undefined && $scope.nav.classes.cont !==undefined && $scope.nav.classes.cont =='hidden') {
+				$scope.classes.cont =$scope.nav.classes.cont;
+			}
+			else {
+				$scope.classes.cont ='';		//reset to default
+			}
 		}
 	}
 	

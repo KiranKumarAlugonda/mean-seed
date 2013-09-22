@@ -41,7 +41,7 @@ angular.module('myApp').controller('SignupFormCtrl', ['$scope', 'LGlobals', '$ro
 					};
 				}
 				
-				var promise1 =svcHttp.go({method:'Auth.create'}, {data:vals}, {});
+				var promise1 =svcHttp.go({}, {url:'auth/create', data:vals}, {});
 				promise1.then(function(response) {
 					var user =response.result.user;
 					UserModel.save(user);

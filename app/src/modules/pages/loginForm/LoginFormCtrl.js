@@ -37,7 +37,7 @@ angular.module('myApp').controller('LoginFormCtrl', ['$scope', 'LGlobals', 'svcH
 		$scope.forgotPassVisible =true;
 		//if($scope.loginForm.email.$valid) {		//doesn't work with new form directive..
 		if($scope.formVals.email !==undefined && $scope.formVals.email.length >1) {
-			var promise =svcHttp.go({method:'Auth.forgotPassword'}, {data: {email:$scope.formVals.email} }, {});
+			var promise =svcHttp.go({}, {url:'auth/forgotPassword', data: {email:$scope.formVals.email} }, {});
 			promise.then(function(response) {
 				$location.url(LGlobals.dirPaths.appPathLocation+"password-reset");
 			});

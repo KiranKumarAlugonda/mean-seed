@@ -24,7 +24,7 @@ angular.module('myApp').controller('PasswordResetCtrl', ['$scope', 'LGlobals', '
 			$scope.$emit('evtAppalertAlert', {close:true});		//clear existing messages
 			
 			$scope.formVals.reset_key =$scope.formVals.password_reset_key;
-			var promise =svcHttp.go({method:'Auth.resetPassword'}, {data:$scope.formVals}, {});
+			var promise =svcHttp.go({}, {url:'auth/resetPassword', data:$scope.formVals}, {});
 			promise.then(function(response) {
 				// $location.url(LGlobals.dirPaths.appPathLocation+"home");
 				var user =response.result.user;

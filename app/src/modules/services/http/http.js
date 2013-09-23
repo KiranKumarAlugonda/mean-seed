@@ -12,8 +12,8 @@ $http wrapper for making (backend) calls and handling notifications (in addition
 
 'use strict';
 
-angular.module('svc').factory('svcHttp', ['$http', '$q', '$rootScope', 'libCookie', 'LGlobals', '$timeout',
-	function($http, $q, $rootScope, libCookie, LGlobals, $timeout){
+angular.module('svc').factory('svcHttp', ['$http', '$q', '$rootScope', 'libCookie', 'LGlobals', '$timeout', 'svcStorage',
+	function($http, $q, $rootScope, libCookie, LGlobals, $timeout, svcStorage){
 
 	var inst = {
 	
@@ -64,9 +64,10 @@ angular.module('svc').factory('svcHttp', ['$http', '$q', '$rootScope', 'libCooki
 				$timeout.cancel(self.timeoutTrig);
 			}
 			
-			httpOpts =this.formConfig(rpcOpts, httpOpts, params);
+			this.formConfig(rpcOpts, httpOpts, params)
+			.then(function(httpOpts) {
 			
-			$http(httpOpts)
+				$http(httpOpts)
 				.success(function(response) {
 					$timeout.cancel(self.timeoutTrig);
 					// response =MobileWrapper.httpParse(response, {});		//handle any mobile native wrapper quirks for malformed responses..
@@ -122,6 +123,7 @@ angular.module('svc').factory('svcHttp', ['$http', '$q', '$rootScope', 'libCooki
 				if(!$rootScope.$$phase) {
 					$rootScope.$apply();		//AngularJS 1.1.4 fix (otherwise $httpBackend tests give "no pending requests to flush" error and potentially there are other (non-test) issues as well. See: https://github.com/angular/angular.js/issues/2371	https://github.com/angular/angular.js/issues/2431
 				}
+			});
 
 			// return promise; caller should handle success/error callbacks with `.then()`
 			return deferred.promise;
@@ -139,6 +141,8 @@ angular.module('svc').factory('svcHttp', ['$http', '$q', '$rootScope', 'libCooki
 		@return {Object} httpOpts Now updated / complete httpOpts to be used in $http call
 		*/
 		formConfig: function(rpcOpts, httpOpts, params) {
+			var deferred = $q.defer();
+			
 			if(rpcOpts.method !==undefined) {
 				//default url part to be the lowercase version of the first part of the rpc method (i.e. 'Auth.login' means 'auth/' will be the url part)
 				httpOpts.url =rpcOpts.method.slice(0, rpcOpts.method.indexOf('.')).toLowerCase()+'/';
@@ -155,26 +159,30 @@ angular.module('svc').factory('svcHttp', ['$http', '$q', '$rootScope', 'libCooki
 			var urlPrefix =this.formHost({})+'api/';
 			httpOpts.url =urlPrefix+httpOpts.url;
 			
-			httpOpts =this.addParams(httpOpts, {});		//add params - should be BEFORE converting to rpc format
+			this.addParams(httpOpts, {})		//add params - should be BEFORE converting to rpc format
+			.then(function(httpOpts) {
 			
-			//make data / params into rpc format
-			httpOpts.data = {
-				jsonrpc: '2.0',
-				id: 1,
-				method: rpcOpts.method,
-				params: httpOpts.data || httpOpts.params || {}
-			};
-			// GET requests require that RPC input be placed under rpc namespace
-			if( httpOpts.method === 'GET' ) {
-				httpOpts.params = {
-					rpc: httpOpts.data
+				//make data / params into rpc format
+				httpOpts.data = {
+					jsonrpc: '2.0',
+					id: 1,
+					method: rpcOpts.method,
+					params: httpOpts.data || httpOpts.params || {}
 				};
-			}
-			else {		//remove params since these are only used for GET method calls and if left as blank object, it will cause an extra "?" to be appended to the url
-				delete httpOpts.params;
-			}
+				// GET requests require that RPC input be placed under rpc namespace
+				if( httpOpts.method === 'GET' ) {
+					httpOpts.params = {
+						rpc: httpOpts.data
+					};
+				}
+				else {		//remove params since these are only used for GET method calls and if left as blank object, it will cause an extra "?" to be appended to the url
+					delete httpOpts.params;
+				}
+				
+				deferred.resolve(httpOpts);
+			});
 			
-			return httpOpts;
+			return deferred.promise;
 		},
 		
 		/**
@@ -186,13 +194,17 @@ angular.module('svc').factory('svcHttp', ['$http', '$q', '$rootScope', 'libCooki
 		@return {Object} httpOpts Now updated with additional params/data
 		*/
 		addParams: function(httpOpts, params) {
+			var deferred = $q.defer();
+			
+			var authObj =false;
+			
 			//required for most calls
 			var cookieSess =libCookie.get('sess_id', {});
 			var cookieUser =libCookie.get('user_id', {});
 			//var sessId =LGlobals.load('session_id', {});
 			if(cookieSess && cookieUser)
 			{
-				var authObj ={
+				authObj ={
 					'user_id':cookieUser,
 					'sess_id':cookieSess
 				};
@@ -202,8 +214,30 @@ angular.module('svc').factory('svcHttp', ['$http', '$q', '$rootScope', 'libCooki
 				if(httpOpts.data !==undefined) {
 					httpOpts.data.authority_keys =authObj;
 				}
+				deferred.resolve(httpOpts);
 			}
-			return httpOpts;
+			else {
+				//try localstorage - some devices (i.e. android 4.2?) don't seem to be working with cookies..
+				var promiseStorage =svcStorage.read('user', {});
+				promiseStorage.then(function(user) {
+					authObj ={
+						'user_id':user._id,
+						'sess_id':user.sess_id
+					};
+					if(httpOpts.params !==undefined) {
+						httpOpts.params.authority_keys =authObj;
+					}
+					if(httpOpts.data !==undefined) {
+						httpOpts.data.authority_keys =authObj;
+					}
+					deferred.resolve(httpOpts);
+				
+				}, function(err) {
+					deferred.resolve(httpOpts);
+				});
+			}
+			
+			return deferred.promise;
 		},
 		
 		/**

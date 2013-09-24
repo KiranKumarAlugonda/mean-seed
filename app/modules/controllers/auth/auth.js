@@ -1084,20 +1084,37 @@ function updateSession(db, user, params) {
 	//update session info in database
 	user.sess_id =StringMod.random(16,{});
 	user.last_login =moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
-	db.user.update({email:user.email}, {$set: {sess_id:user.sess_id, last_login:user.last_login} }, function(err, valid) {
-		if(err) {
-			ret.msg +='Error: '+err;
-			deferred.reject(ret);
-		}
-		else if(!valid) {
-			ret.msg +='Invalid query ';
-			deferred.reject(ret);
-		}
-		else {
-			ret.user =user;
-			deferred.resolve(ret);
-		}
-	});
+	
+	//may not have email so need to check by _id too
+	var valid =true;
+	var query ={};
+	if(user.email !==undefined) {
+		query.email =user.email;
+	}
+	else if(user._id !==undefined) {
+		query._id =MongoDBMod.makeIds({'id': user._id});
+	}
+	else {
+		valid =false;
+		ret.msg +='A valid user email or _id must be specified ';
+		deferred.reject(ret);
+	}
+	if(valid) {
+		db.user.update(query, {$set: {sess_id:user.sess_id, last_login:user.last_login} }, function(err, valid) {
+			if(err) {
+				ret.msg +='Error: '+err;
+				deferred.reject(ret);
+			}
+			else if(!valid) {
+				ret.msg +='Invalid query ';
+				deferred.reject(ret);
+			}
+			else {
+				ret.user =user;
+				deferred.resolve(ret);
+			}
+		});
+	}
 	return deferred.promise;
 }
 

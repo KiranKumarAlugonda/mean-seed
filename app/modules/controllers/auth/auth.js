@@ -526,6 +526,8 @@ Auth.prototype.formatAlternateContact = function(user, params)
 	
 	if(user.email !== undefined)
 	{
+		user.email =user.email.toLowerCase();		//ensure lowercase
+		
 		if(user.emails_all === undefined)
 		{
 			user.emails_all = [ { 'email': user.email, 'confirmed': 0, 'primary': 1 } ];
@@ -535,6 +537,7 @@ Auth.prototype.formatAlternateContact = function(user, params)
 			found = false;
 			for(ii = 0; ii < user.emails_all.length; ii++)
 			{
+				user.emails_all[ii].email =user.emails_all[ii].email.toLowerCase();		//ensure lowercase
 				if(user.email == user.emails_all[ii].email)
 				{
 					found = true;

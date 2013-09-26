@@ -119,11 +119,11 @@ angular.module('svc').factory('svcHttp', ['$http', '$q', '$rootScope', 'libCooki
 					deferred.reject({msg:'call timeout - taking too long'});
 					$rootScope.$broadcast('evtLoadingDone', {});
 				}, params.maxMilliseconds);
-				
-				if(!$rootScope.$$phase) {
-					$rootScope.$apply();		//AngularJS 1.1.4 fix (otherwise $httpBackend tests give "no pending requests to flush" error and potentially there are other (non-test) issues as well. See: https://github.com/angular/angular.js/issues/2371	https://github.com/angular/angular.js/issues/2431
-				}
 			});
+			
+			if(!$rootScope.$$phase) {
+				$rootScope.$apply();		//AngularJS 1.1.4 fix (otherwise $httpBackend tests give "no pending requests to flush" error and potentially there are other (non-test) issues as well. See: https://github.com/angular/angular.js/issues/2371	https://github.com/angular/angular.js/issues/2431
+			}
 
 			// return promise; caller should handle success/error callbacks with `.then()`
 			return deferred.promise;

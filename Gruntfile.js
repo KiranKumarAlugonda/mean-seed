@@ -446,6 +446,17 @@ module.exports = function(grunt) {
 			},
 			karma: {
 				unit: {
+					configFile:     publicPathRelativeRoot+'config/karma.conf.js',
+					singleRun: true,
+					browsers: ['PhantomJS']
+				},
+				e2e: {
+					configFile:     publicPathRelativeRoot+'config/karma-e2e.conf.js',
+					singleRun: true,
+					browsers: ['PhantomJS']
+				}
+				/*
+				unit: {
 					options: {
 						keepalive:      true,
 						//singleRun:      true,
@@ -455,6 +466,7 @@ module.exports = function(grunt) {
 						runnerPort:     9877
 					}
 				}
+				*/
 			},
 			yuidoc: {
 				// NOTE: paths and outdir options (in yuidoc.json file AND/OR in options here) are apparently REQUIRED otherwise it doesn't work!

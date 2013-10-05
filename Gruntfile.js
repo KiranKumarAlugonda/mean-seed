@@ -40,6 +40,8 @@ Lint, concat, & minify (uglify) process (since ONLY want to lint & minify files 
 
 'use strict';
 
+var fs = require('fs');
+
 /**
 Config versioning setup and defaults
 @toc 1.
@@ -55,11 +57,29 @@ So each time package.json or config.json is changed, increment the version both 
 @type Object
 */
 var curVersions ={
-	"cfg": "0.6",
+	"cfg": "0.7",
 	"pkg": "0.0.7"
 };
-// var configFile = require('./configs/config.json');
-var configFile ='./configs/config.json';
+// var configFile = require('./app/configs/config.json');
+var configFile ='./app/configs/config.json';
+
+/*
+//path setting not working (on Windows at least) so don't use environment variables; just use a simpler (optional) config file that sets what config file to use
+console.log("process.env['ENV_CONFIG']: "+process.env['ENV_CONFIG']);
+if(process.env['ENV_CONFIG'] !==undefined) {
+	configFile ='./app/configs/config-'+process.env['ENV_CONFIG']+'.json';
+}
+*/
+
+//check to see if config_environment file exists and use it to load the appropriate config.json file if it does
+var configFileEnv ='./config_environment.json';
+if(fs.existsSync(configFileEnv)) {
+	var cfgJsonEnv =require(configFileEnv);
+	if(cfgJsonEnv && cfgJsonEnv !==undefined && cfgJsonEnv.environment !==undefined && cfgJsonEnv.environment.length >0) {
+		configFile ='./app/configs/config-'+cfgJsonEnv.environment+'.json';
+	}
+};
+
 var dirpath = __dirname;
 
 module.exports = function(grunt) {
@@ -100,7 +120,7 @@ module.exports = function(grunt) {
 		//allow changing config file based on comman line options
 		if(grunt.option('config')) {
 			// grunt.log.writeln('config: '+grunt.option('config'));
-			configFile ='./configs/config-'+grunt.option('config')+'.json';
+			configFile ='./app/configs/config-'+grunt.option('config')+'.json';
 		}
 		grunt.log.writeln('configFile: '+configFile);
 

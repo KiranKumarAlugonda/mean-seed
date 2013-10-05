@@ -1,57 +1,49 @@
 {
-    "versions":{
-        "cfg": "0.6",
-        "pkg": "0.0.6"
-    },
-    "env": "development",
-    "app": {
-        "name": "project",
-        "title": "Project"
-    },
+	"versions":{
+		"cfg": "0.6",
+		"pkg": "0.0.6"
+	},
+	"env": "development",
+	"app": {
+		"name": "project",
+		"title": "Project"
+	},
 	"platform":"phonegap",
-    "server": {
-        "domain": "localhost",
-        "port": "",
-        "httpsPort": 443,
-        "socketPort": "",
-        "serverPath": "",
-        "appPath": "",
-        "staticFilePath": "",
-        "staticPath": ""
-    },
-    "cors": {
-        "domains": ["localhost"],
+	"server": {
+		"domain": "localhost",
+		"port": "",
+		"httpsPort": 443,
+		"socketPort": "",
+		"serverPath": "",
+		"appPath": "",
+		"staticFilePath": "",
+		"staticPath": ""
+	},
+	"cors": {
+		"domains": ["localhost"],
 		"frontendUseCors": 1
-    },
-    "db": {
+	},
+	"db": {
 		"fullURI": "",
-        "host": "localhost",
-        "port": 27017,
-        "database": "project",
-        "username": false,
-        "password": false
-    },
-    "logKey": "dev",
-    "cookie": {
-        "secret": "o@:&M<ZN PF(s.T)3?*;^1~TDjNE}=3xy$SpB7dE%dA-}fAn.b[RRU{cg+P#[):/"
-    },
-    "session": {
-        "maxAge": 3600000,
-        "store": {
-            "db": "project",
-            "collection": "session",
-            "auto_reconnect": true
-        }
-    },
-    "ssl": {
-        "enabled": false,
-        "key": "/etc/apache2/conf.d/ssl.key",
-        "cert": "/etc/apache2/conf.d/ssl.crt"
-    },
-    "rpc": {
-        "autoDoc": true,
-        "autoDocUrl": "help"
-    },
+		"host": "localhost",
+		"port": 27017,
+		"database": "project",
+		"username": false,
+		"password": false
+	},
+	"logKey": "dev",
+	"cookie": {
+		"secret": "o@:&M<ZN PF(s.T)3?*;^1~TDjNE}=3xy$SpB7dE%dA-}fAn.b[RRU{cg+P#[):/"
+	},
+	"ssl": {
+		"enabled": false,
+		"key": "/etc/apache2/conf.d/ssl.key",
+		"cert": "/etc/apache2/conf.d/ssl.crt"
+	},
+	"rpc": {
+		"autoDoc": true,
+		"autoDocUrl": "help"
+	},
 	"email":{
 		"from": "Admin <admin@project.com>",
 		"transport":{

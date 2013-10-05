@@ -1,6 +1,12 @@
 # MEAN (Mongo Express Angular Node) seed
 *MongoDB, Express.js, AngularJS, Node.js + Grunt, Jasmine*
 
+## Quick setup
+1. setup server environment (install node.js, mongoDB, git, etc., install global npm modules, clone the repo to get the website files)
+	- see `README-server_setup_windows_mac` (and/or `README-server_setup` for linux) and below for more details
+2. run `npm install` and `grunt q` from the root directory
+3. run node (and mongo if not already running) - `node run.js` and then view the site in a browser at `http://localhost:3000`
+
 This is project is meant to be a starting point for full stack javascript (Angular + Node) HTML5 websites and mobile apps (cross platform, responsive, can optionally be wrapped with TriggerIO, Phonegap, etc.).
 - It's meant to be:
 	- more specific than barebones language specific seeds such as angular-seed so you can start out with core functionality such as user login, sign up, forgot password, etc. out of the box, BUT:
@@ -40,7 +46,7 @@ Any suggestions for improvement are welcome!
 
 1. [ONCE PER MACHINE/ENVIRONMENT] Make sure that the server environment is properly set up first. This only needs to be done once per machine. Thus, some of this may already be done and may therefore be skipped.
 	- Install git, nodejs, and mongodb.
-		- See other README's (i.e. `README-server_setup`) or just google search for steps on how to do this.
+		- See other README's (i.e. `README-server_setup_windows_mac`) or just google search for steps on how to do this.
 	- Configure git (required for pushing and pulling)
 		- `git config --global user.name "<your name>"`
 		- `git config --global user.email "<your email>"`
@@ -48,7 +54,7 @@ Any suggestions for improvement are welcome!
 	- Install global NPM packages.
 		- `sudo npm install -g grunt-cli jasmine-node less karma yuidocjs forever`
 		- NOTE: IF new global npm packages are installed, you'll need to run this again.
-	- Clone the project to your desired folder location with git.
+	- Clone the project to your desired folder location with git (i.e. `git clone [remote location]`)
 	
 2. [ONCE PER APPLICATION - THIS SHOULD ONLY BE DONE BY THE INITIAL/CORE DEVELOPER ONCE. IF YOU DON'T KNOW WHAT THIS MEANS, SKIP IT] Update all default configuration properties in the following configuration files. Typically you want to replace all `project` references with your application name - typical fields to update include `name`, `title`, and `database` and `db`.
 	- package.json
@@ -68,15 +74,23 @@ cd /path/to/project
 npm install email-templates
 ```
 
-5. Copy the default configuration file into the project root directory and edit as needed. This only needs to be done once, but must be updated every time the file is updated.
+5. [OPTIONAL] Use a different / non-default config.json file
+All the config.json files for ALL environments should be in version control in the `app/configs` folder. To determine which file is used, the `config_environment.json` file is checked and IF it exists AND the `environment` key exists, that environment will be used. The naming conventions are: `config-[your environment].json` for the config (i.e. `config-triggerio.json`) and `config-[your environment].test.json` for the accompanying test config (for running tests, which should run on a DIFFERENT, dummy database as it will be wiped clean each time!). So if you want to use the non-default environment, do the following 3 steps:
 ```bash
 # cd to root project directory
-# copy the whole directory (to get alternate configs - i.e. for phonegap, triggerio, heroku)
-cp -R app/configs configs
-# Copy test configuration (for backend tests) then UPDATE it (SEE BELOW).
-cp app/configs/config.json app/test/config.json
-# Update your new, copied test config for the test environment - specifically, change 'db.database' and 'session.store.db' to a different testing database, such as 'test_temp'. Also change the `server.port` so that way both the test server and the non-test server can run at the same time.
+cd /path/to/project
+# copy the config_environment.json file
+cp app/config_environment.json config_environment.json
+# Copy then EDIT your new config file
+cp app/config.json app/config-[your environment].json
+# Copy then EDIT your new config file for its test configuration (for backend tests)
+cp app/config-[your environment].json app/config-[your environment].test.json
+# Update your new, copied test config for the test environment - specifically, change 'db.database' and 'session.store.db' to a different testing database, such as 'test_temp'. Also, optionally, change the `server.port` so that way both the test server and the non-test server can run at the same time.
 ```
+FYI, the config.json file is used in the following files:
+- Gruntfile.js
+- run.js
+- app/test/apiTestHelpers.js
 
 6. Run grunt from the root project folder (the folder that has "Gruntfile.js" in it) to build all files. Grunt should be run after most file changes and prior to any commits. NOTE: there are other "quick" grunt commands and if you're just trying to run the app rather than develop on it, you can use `grunt q` instead.
 NOTE: grunt runs tests (backend and frontend) and for this to work, you need to have a node process running on the TEST CONFIG environment AND you'll need to open a CHROME web browser to http://localhost:9876 for the frontend tests to run. See the 'Grunt' section below for more details. If you want to skip the tests for now, you can run `grunt q` instead.
@@ -167,7 +181,7 @@ grunt docs
 
 ### Versioning
 The manual setup tasks (such as copying and updating `configs` or running `npm install`) need to be periodically updated. To ensure each server is up to date, grunt will not run unless the versions match accordingly.
-- If you change `package.json` or a `configs` file, increment the `versions` key accordingly in `app/configs/config.json` and `configs/config.json`, and also update the `curVersions` object in `Gruntfile.js` to match. This will then prevent grunt from running until the local environment is brought up to date by re-syncing config.json or running npm install.
+- If you change `package.json` or a `configs` file, increment the `versions` key accordingly in `app/configs/config.json` and also update the `curVersions` object in `Gruntfile.js` to match. This will then prevent grunt from running until the local environment is brought up to date by re-syncing config.json or running npm install.
 - After pulling code: Follow the console instructions upon running `grunt` if it says your files are out of date.
 
 
@@ -225,9 +239,6 @@ NOTE: frontend non-modularized files (in `src` folder) are documented in the `sr
 	- src Frontend code. See the frontend's README file.
 	- configs		Holds predefined configuration(s).
 		- config.json	Example configuration(s) to be copied to the root directory and then used by the app.
-		- tests
-		- index.js
-		- load.js
 	- modules	Holds modularized code pieces. The bulk of the files are here.
 		- controllers	Holds route / api controller files and their associated model files and tests. Most new files will go here.
 			- [module_name]	Folder for this module (controller + model + tests)
@@ -252,18 +263,17 @@ NOTE: frontend non-modularized files (in `src` folder) are documented in the `sr
 	- depdendency.js	Holds paths to backend folders so modules can be require'd in each file as needed without hardcoding "../" in each file.
 	- index.js
 	- server.js
-- configs	Holds local copies of the configuration file(s) for this environment. This folder must be manually copied over from the default configs above. It is not tracked in version control.
+- config_environment.json	[optional] Holds the environment configuration that will be used to determine which `app/configs` config file to use. This file should by copied from `app/config_environment.json` if it is used. It is not tracked in version control.
 - .gitignore
 - Gruntfile.js	Grunt tasks. Build configuration for linting, testing, concating, minifying, generating documentation
 - makefile
 - package.json	Used for npm install
 - README.md
 - README-server_setup.md
+README-server_setup_windows_mac.md
 - run.js	This is the node.js entry script. Run `node run.js` from the command line in the root app directory to start the server.
 - yuidoc-backend.json	Config for YUI auto docs for backend.
 - yuidoc-frontend.json	Config for YUI auto docs for frontend.
-
-**NOTE: Copy the `/app/configs/config.json` file to `/configs/config.json` and to `/app/test/config.json` and update it for your environment. The root-level configs/config.json is the main configuration file that grunt and the server application use.**
 
 ## Code standards and expectations
 

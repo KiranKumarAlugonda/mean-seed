@@ -7,6 +7,8 @@ Alternate usage:
 
 'use strict';
 
+var fs = require('fs');
+
 //check for any command line arguments
 var args =process.argv.splice(2);
 var argsObj ={};
@@ -24,15 +26,27 @@ args.forEach(function (val, index, array) {
 // }
 
 var env = 'normal';
-var configFile = './configs/config.json';
+var configFile = './app/configs/config.json';
+
+//check to see if config_environment file exists and use it to load the appropriate config.json file if it does
+var configFileEnv ='./config_environment.json';
+if(fs.existsSync(configFileEnv)) {
+	var cfgJsonEnv =require(configFileEnv);
+	if(cfgJsonEnv && cfgJsonEnv !==undefined && cfgJsonEnv.environment !==undefined && cfgJsonEnv.environment.length >0) {
+		configFile ='./app/configs/config-'+cfgJsonEnv.environment+'.json';
+	}
+};
+
 //see if command line args for (test) config file
 if(argsObj.config !==undefined) {
 	if(argsObj.config =='test') {
-		configFile ='./app/test/config.json';
+		//insert a '.test' at the end of the config as the test config naming convention
+		configFile =configFile.slice(0, configFile.lastIndexOf('.'))+'.test'+configFile.slice(configFile.lastIndexOf('.'), configFile.length);
+		// configFile ='./app/test/config.json';
 		env = 'test';
 	}
 	else {
-		configFile ='./configs/config-'+argsObj.config+'.json';
+		configFile ='./app/configs/config-'+argsObj.config+'.json';
 	}
 }
 console.log('configFile: '+configFile);

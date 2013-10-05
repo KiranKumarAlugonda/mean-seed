@@ -1,33 +1,33 @@
 {
 	"versions":{
 		"cfg": "0.6",
-		"pkg": "0.0.6"
+		"pkg": "0.0.7"
 	},
 	"env": "development",
 	"app": {
 		"name": "project",
 		"title": "Project"
 	},
-	"platform":"triggerio",
+	"platform":"",
 	"server": {
 		"domain": "localhost",
-		"port": "",
+		"port": 3005,
 		"httpsPort": 443,
-		"socketPort": "",
-		"serverPath": "",
-		"appPath": "",
-		"staticFilePath": "",
-		"staticPath": ""
+		"socketPort": 3006,
+		"serverPath": "/",
+		"appPath": "/",
+		"staticFilePath": "/src/",
+		"staticPath": "/src/"
 	},
 	"cors": {
 		"domains": ["localhost"],
-		"frontendUseCors": 1
+		"frontendUseCors": 0
 	},
 	"db": {
 		"fullURI": "",
 		"host": "localhost",
 		"port": 27017,
-		"database": "project",
+		"database": "test_temp",
 		"username": false,
 		"password": false
 	},

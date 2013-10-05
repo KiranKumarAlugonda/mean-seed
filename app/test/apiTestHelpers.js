@@ -21,8 +21,8 @@ var Database = require('../database.js');
 var db =false;
 
 var path = require('path');
-// var configFile = '../../configs/config.json';		//live db config
-var configFile = './config.json';		//test config - should NOT connect to the live database to do tests (both for data safety and because search and other api calls won't test properly with existing data)
+// var configFile = '../configs/config.json';		//live db config
+var configFile = '../configs/config.test.json';		//test config - should NOT connect to the live database to do tests (both for data safety and because search and other api calls won't test properly with existing data)
 // var cfg = require('../conf')(configFile, path.resolve(__dirname, '../../')).cfg;
 var cfg = require(configFile);
 // console.log('cfg.db.port: '+cfg.db.port);

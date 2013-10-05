@@ -17,6 +17,10 @@ results
 npm-debug.log
 node_modules
 
+# testing stuff
+## selenium server
+selenium
+
 # configuration files
 /configs
 app/test/config.json

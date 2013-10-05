@@ -33,6 +33,8 @@ angular.module('myApp').controller('TestCtrl', ['$scope', '$timeout', 'svcHttp',
 	};
 	
 	function changeSlide() {
+	/*
+		//this breaks Protractor E2E tests since it never completes since it waits for $timeout to finish.. - https://github.com/angular/protractor/issues/49
 		$timeout(function() {
 			if($scope.optsCarousel.curSlide >=($scope.slides.length-1)) {
 				$scope.optsCarousel.curSlide =0;
@@ -42,6 +44,7 @@ angular.module('myApp').controller('TestCtrl', ['$scope', '$timeout', 'svcHttp',
 			}
 			changeSlide();		//call itself
 		}, 2000);
+		*/
 	}
 	
 	changeSlide();

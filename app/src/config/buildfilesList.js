@@ -98,6 +98,7 @@ var inst ={
 					"login/LoginCtrl.js",
 					"loginSignup/LoginSignupCtrl.js",
 					"logout/LogoutCtrl.js",
+					"userDelete/UserDeleteCtrl.js",
 					"passwordReset/PasswordResetCtrl.js",
 
 					"loginForm/LoginFormCtrl.js",
@@ -122,6 +123,7 @@ var inst ={
 					'login/login.html',
 					'loginSignup/login-signup.html',
 					'logout/logout.html',
+					'userDelete/user-delete.html',
 					'passwordReset/password-reset.html',
 					'loginForm/login-form.html',
 					'signupForm/signup-form.html',

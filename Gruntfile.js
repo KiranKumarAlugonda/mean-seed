@@ -25,8 +25,8 @@ The core call(s) to always do before commiting any changes:
 Other calls (relatively in order of importantance / most used)
 `grunt q` for quick compiles (doesn't run tests or build docs)
 `grunt noMin` a quick compile that also builds main.js and main.css (instead of main-min versions) - good for debugging/development.
-`grunt server` - runs Karma frontend tests (note this will keep the task running so use Ctrl+C to close when it's done. Also make sure to have a browser open to http://localhost:9876 for the tests to run)
-`grunt test` - runs any other tests (i.e. backend tests)
+`grunt test-frontend` - runs Karma frontend tests
+`grunt test` - runs ALL tests
 `grunt docs` - generate YUIDoc auto documentation
 `grunt test-backend` to just test backend
 `grunt lint-backend` to just lint backend
@@ -56,7 +56,7 @@ So each time package.json or config.json is changed, increment the version both 
 */
 var curVersions ={
 	"cfg": "0.6",
-	"pkg": "0.0.6"
+	"pkg": "0.0.7"
 };
 // var configFile = require('./configs/config.json');
 var configFile ='./configs/config.json';
@@ -81,6 +81,8 @@ module.exports = function(grunt) {
 	// grunt.loadNpmTasks('grunt-html2js');
 	grunt.loadNpmTasks('grunt-angular-templates');
 	grunt.loadNpmTasks('grunt-contrib-copy');
+	grunt.loadNpmTasks('grunt-shell');
+	grunt.loadNpmTasks('grunt-parallel');
 	
 
 	/**
@@ -107,6 +109,9 @@ module.exports = function(grunt) {
 		// global.cfgJson = cfgJson;
 
 		// hardcoded paths
+		var protractorPath ='node_modules/protractor/bin/protractor';		//non-Windows
+		var protractorPath ='node_modules\\.bin\\protractor';		//Windows
+		
 		var publicPathRelativeRoot ="app/src/";
 		var buildfilesListObj = require('./'+publicPathRelativeRoot+'config/buildfilesList');
 		var publicPathRelative = publicPathRelativeRoot;
@@ -449,12 +454,15 @@ module.exports = function(grunt) {
 					configFile:     publicPathRelativeRoot+'config/karma.conf.js',
 					singleRun: true,
 					browsers: ['PhantomJS']
-				},
+				}
+				/*
+				//e2e now handled with Protractor (which uses grunt-shell), NOT Karma
 				e2e: {
 					configFile:     publicPathRelativeRoot+'config/karma-e2e.conf.js',
 					singleRun: true,
 					browsers: ['PhantomJS']
 				}
+				*/
 				/*
 				unit: {
 					options: {
@@ -467,6 +475,25 @@ module.exports = function(grunt) {
 					}
 				}
 				*/
+			},
+			//e2e tests (with Protractor)
+			shell: {
+				protractor: {
+					options: {
+						stdout: true
+					},
+					command: protractorPath+' '+publicPathRelativeRoot+'config/protractor.conf.js'
+				}
+			},
+			parallel: {
+				sauce: {
+					options: {
+						grunt: true
+					},
+					tasks: [
+						//add grunt tasks to run here (i.e. for Selenium SauceLabs tests to run in parallel)
+					]
+				}
 			},
 			yuidoc: {
 				// NOTE: paths and outdir options (in yuidoc.json file AND/OR in options here) are apparently REQUIRED otherwise it doesn't work!
@@ -544,16 +571,11 @@ module.exports = function(grunt) {
 		@toc 6.
 		*/
 		grunt.registerTask('test-backend', ['jasmine_node']);
-		//grunt.registerTask('test', ['jasmine_node', 'karma']);		//karma tests stay open so need to be run on their own - backend tests moved to default task
+		
+		grunt.registerTask('test-frontend', ['karma', 'shell:protractor']);
 
-		//start karma server
-		grunt.registerTask('server', 'run karma server and tests', function() {
-			grunt.log.subhead('Make sure you have a browser open to http://localhost:9876/\nYou can quit this task with `Ctrl+C` once the tests are complete.\n');
-			grunt.task.run(['karma']);
-		});
-
-		grunt.registerTask('test', 'run (backend) tests', function() {
-			grunt.task.run(['test-backend']);
+		grunt.registerTask('test', 'run all tests', function() {
+			grunt.task.run(['test-backend', 'test-frontend']);
 		});
 
 		grunt.registerTask('docs', ['yuidoc']);
@@ -584,7 +606,7 @@ module.exports = function(grunt) {
 			}
 
 			if(validVersion) {
-				grunt.task.run(['buildfiles', 'ngtemplates:main', 'jshint:backend', 'jshint:beforeconcat', 'uglify:build', 'less:development', 'concat:devJs', 'concat:devCss', 'test', 'server']);		//NOTE: 'server' task MUST be run last since it keeps running / never completes
+				grunt.task.run(['buildfiles', 'ngtemplates:main', 'jshint:backend', 'jshint:beforeconcat', 'uglify:build', 'less:development', 'concat:devJs', 'concat:devCss', 'test']);
 			} else {
 				throw new Error('invalid project versions.');
 			}
@@ -603,6 +625,9 @@ module.exports = function(grunt) {
 		});
 		
 		grunt.registerTask('noMin', ['buildfiles', 'ngtemplates:main', 'less:development', 'concat:devJsNoMin', 'concat:devCss']);
+		
+		//sauce labs tests
+		grunt.registerTask('sauce', ['parallel:sauce']);
 	
 	}
 	init({});		//initialize here for defaults (init may be called again later within a task)

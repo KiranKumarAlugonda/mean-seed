@@ -7,6 +7,7 @@ NOTE: "it" blocks with modularized/nested function and async code can be finicky
 
 @toc
 1. outer describe & it wrappers and initialize api/db connection
+4. clearDB
 2. initModules
 3. start
 */
@@ -16,6 +17,9 @@ NOTE: "it" blocks with modularized/nested function and async code can be finicky
 var https = require("https");
 var request = require('request');
 // var async = require('async');
+var Q = require('q');
+
+var DBSchema =require('../db_schema.json');
 
 var api =require('./apiTestHelpers.js');
 
@@ -48,13 +52,62 @@ describe('all tests', function() {
 		promise.then(function(ret1) {
 			db =ret1.db;
 			
-			start({});
-			done();
+			clearDB({}).then(function(ret1) {
+				start({});
+				done();
+			}, function(err) {
+				expect('ERROR with clearDB - check the logs above to fix the problem then try again').toBe(false);		//force error
+				done();
+			});
 		}, function(err) {
 			// console.log('Error: '+err);
 			expect('ERROR - check the logs above to fix the problem then try again').toBe(false);		//force error
 			done();
 		});
+		
+		/**
+		Clears the db first (to ensure no leftover data from last time, errors, or from frontend E2E tests)
+		@toc 4.
+		@method clearDB
+		*/
+		var clearDB =function(params) {
+			var deferred =Q.defer();
+			
+			console.log('clearing out database..');
+			
+			var promises =[], deferreds =[], ii;
+			var dbCollections =[];
+			var xx;
+			for(xx in DBSchema) {
+				dbCollections.push(xx);
+			}
+			
+			for(ii =0; ii<dbCollections.length; ii++) {
+				(function(ii) {
+					deferreds[ii] =Q.defer();
+					
+					db[dbCollections[ii]].remove({}, function(err, numRemoved) {
+						if(err) {
+							console.log('clearDB remove collection: '+dbCollections[ii]+' error ');
+							deferreds[ii].reject({});
+						}
+						else {
+							deferreds[ii].resolve({});
+						}
+					});
+					
+					promises[ii] =deferreds[ii].promise;
+				})(ii);
+			}
+			
+			Q.all(promises).then(function(ret1) {
+				deferred.resolve({});
+			}, function(err) {
+				deferred.reject({});
+			});
+			
+			return deferred.promise;
+		};
 
 		/**
 		Modules are functions so need to call them with the necessary objects to init them and get an object back

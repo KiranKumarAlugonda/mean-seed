@@ -1,7 +1,7 @@
 {
     "versions":{
         "cfg": "0.6",
-        "pkg": "0.0.6"
+        "pkg": "0.0.7"
     },
     "env": "development",
     "app": {

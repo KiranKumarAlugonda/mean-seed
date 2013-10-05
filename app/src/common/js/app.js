@@ -94,6 +94,14 @@ config(['$routeProvider', '$locationProvider', 'LGlobalsProvider', '$compileProv
 			}
 		}
 	});
+	$routeProvider.when(appPathRoute+'user-delete', {templateUrl: pagesPath+'userDelete/user-delete.html',
+		resolve: {
+			auth: function(svcAuth) {
+				return svcAuth.checkSess({'noLoginRequired':true});
+			}
+		}
+	});
+		
 	$routeProvider.when(appPathRoute+'password-reset', {templateUrl: pagesPath+'passwordReset/password-reset.html',
 		resolve: {
 			auth: function(svcAuth) {

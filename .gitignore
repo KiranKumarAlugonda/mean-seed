@@ -22,7 +22,7 @@ node_modules
 selenium
 
 # configuration files
-config_environment.json
+/config_environment.json
 
 # ignore auto generated documentation (YUIDoc) files
 docs

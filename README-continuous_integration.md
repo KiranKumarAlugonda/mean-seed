@@ -11,6 +11,7 @@ An "agile" process of rapid iteration and frequent commits (daily) and tests (au
 		- you can do this with a Github "Webhook" which basically auto pings your server after a Git push so you can then run these scripts and "auto-deploy" remotely on every Git push. So you ONE command to deploy (build, run tests, etc.) just becomes 'git push [remote] [branch]'
 			- http://stackoverflow.com/questions/9132144/how-can-i-automatically-deploy-my-app-after-a-git-push-github-and-node-js
 			- http://fideloper.com/node-github-autodeploy
+			- basically there's 'pre-commit', 'post-commit', etc. files that you can run (shell) commands from before/after certain git actions so you can just have those run your scripts/grunt and you're all set (without any additional tools)
 		- so the only thing that a 'Continuous Integration tool' does for you is provide a web interface (and notifications on failures) to display the output/results (for tracking and public viewing by your entire team so they can see if/when it fails) of the deploys and to setup that Git webhook for you. While it can do more, with Grunt, it really just provides visibility/tracking; Grunt + Github can do all the actual work already without any Continuous Integration tool at all. And this fits with the saying that "continuous integration is a mindset and workflow more than a tool". At least as far as I'm aware..
 
 ## Tools (to get that last 5% more easily)

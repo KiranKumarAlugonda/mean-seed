@@ -1,0 +1,66 @@
+{
+	"versions":{
+		"cfg": "0.7",
+		"pkg": "0.0.7"
+	},
+	"env": "development",
+	"app": {
+		"name": "project",
+		"title": "Project"
+	},
+	"platform":"",
+	"server": {
+		"domain": "lukemadera.com",
+		"port": 3200,
+		"httpsPort": 443,
+		"socketPort": 3201,
+		"serverPath": "/",
+		"appPath": "/",
+		"staticFilePath": "/src/",
+		"staticPath": "/src/"
+	},
+	"cors": {
+		"domains": ["localhost"],
+		"frontendUseCors": 0
+	},
+	"db": {
+		"fullURI": "",
+		"host": "localhost",
+		"port": 27017,
+		"database": "project",
+		"username": false,
+		"password": false
+	},
+	"logKey": "dev",
+	"cookie": {
+		"secret": "o@:&M<ZN PF(s.T)3?*;^1~TDjNE}=3xy$SpB7dE%dA-}fAn.b[RRU{cg+P#[):/"
+	},
+	"ssl": {
+		"enabled": false,
+		"key": "/etc/apache2/conf.d/ssl.key",
+		"cert": "/etc/apache2/conf.d/ssl.crt"
+	},
+	"rpc": {
+		"autoDoc": true,
+		"autoDocUrl": "help"
+	},
+	"email":{
+		"from": "Admin <admin@project.com>",
+		"transport":{
+			"sendmail":{
+			}
+		}
+	},
+	"sms":{
+	},
+	"facebook":{
+		"appId": ""
+	},
+	"less":{
+		"dirPathRootPrefix": ""
+	},
+	"google":{
+		"clientId": "",
+		"clientSecret": ""
+	}
+}

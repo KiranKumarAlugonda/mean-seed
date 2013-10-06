@@ -30,6 +30,8 @@ There's LOTS of different testing definitions but in general we use 5:
 
 ### Jasmine / Protractor for end-to-end (E2E) tests
 - Protractor
+	- install Selenium server (for standalone / local running)
+		- `./node_modules/protractor/bin/install_selenium_standalone`
 	- 3 ways to use with Selenium
 		- standalone (local)
 			- `node_modules/protractor/bin/protractor app/src/config/protractor.conf.js`

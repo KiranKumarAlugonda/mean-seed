@@ -55,6 +55,8 @@ Any suggestions for improvement are welcome!
 		- `sudo npm install -g grunt-cli jasmine-node less karma yuidocjs forever`
 		- NOTE: IF new global npm packages are installed, you'll need to run this again.
 	- Clone the project to your desired folder location with git (i.e. `git clone [remote location]`)
+	- Install Selenium server (for local Protractor tests - note this must be done AFTER `npm install` below since it requires Protractor first)
+		- `./node_modules/protractor/bin/install_selenium_standalone`
 	
 2. [ONCE PER APPLICATION - THIS SHOULD ONLY BE DONE BY THE INITIAL/CORE DEVELOPER ONCE. IF YOU DON'T KNOW WHAT THIS MEANS, SKIP IT] Update all default configuration properties in the following configuration files. Typically you want to replace all `project` references with your application name - typical fields to update include `name`, `title`, and `database` and `db`.
 	- package.json

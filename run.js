@@ -35,7 +35,7 @@ if(fs.existsSync(configFileEnv)) {
 	if(cfgJsonEnv && cfgJsonEnv !==undefined && cfgJsonEnv.environment !==undefined && cfgJsonEnv.environment.length >0) {
 		configFile ='./app/configs/config-'+cfgJsonEnv.environment+'.json';
 	}
-};
+}
 
 //see if command line args for (test) config file
 if(argsObj.config !==undefined) {

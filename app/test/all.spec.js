@@ -23,9 +23,6 @@ var DBSchema =require('../db_schema.json');
 
 var api =require('./apiTestHelpers.js');
 
-var paths ={
-	'modules':'../modules'
-};
 //include modules
 var dependency =require('../dependency.js');
 var pathParts =dependency.buildPaths(__dirname, {});
@@ -34,9 +31,9 @@ var MongoDBMod =require(pathParts.services+'mongodb/mongodb.js');
 
 //include/require all individual tests
 //site-specific
-var AuthTests = require(paths.modules+'/controllers/auth/auth.test.js');
-var UserTests = require(paths.modules+'/controllers/user/user.test.js');
-var FollowTests = require(paths.modules+'/controllers/follow/follow.test.js');
+var AuthTests = require(pathParts.modules+'/controllers/auth/auth.test.js');
+var UserTests = require(pathParts.modules+'/controllers/user/user.test.js');
+var FollowTests = require(pathParts.modules+'/controllers/follow/follow.test.js');
 
 var db =false;
 

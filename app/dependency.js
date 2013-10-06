@@ -28,7 +28,8 @@ function Dependency(options) {
 			modules: pathSep+'modules',
 			controllers: pathSep+'modules'+pathSep+'controllers',
 			services: pathSep+'modules'+pathSep+'services',
-			routes: pathSep+'routes'
+			routes: pathSep+'routes',
+			root: '',
 		}
 	};
 	//end: hardcoded

@@ -78,7 +78,7 @@ if(fs.existsSync(configFileEnv)) {
 	if(cfgJsonEnv && cfgJsonEnv !==undefined && cfgJsonEnv.environment !==undefined && cfgJsonEnv.environment.length >0) {
 		configFile ='./app/configs/config-'+cfgJsonEnv.environment+'.json';
 	}
-};
+}
 
 var dirpath = __dirname;
 

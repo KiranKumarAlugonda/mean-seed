@@ -21,19 +21,22 @@ var fs = require('fs');
 var Database = require('../database.js');
 var db =false;
 
-var path = require('path');
-
 //find the config to use and THEN add '.test' to it to ensure it's a test config - should NOT connect to the live database to do tests (both for data safety and because search and other api calls won't test properly with existing data)
-var configFile = '../configs/config.json';
+// var configFile = '../configs/config.json';		//doesn't work with fs.exists.. need __dirname apparently..
+var configFile =__dirname+'/../configs/config.json';
 
 //check to see if config_environment file exists and use it to load the appropriate config.json file if it does
-var configFileEnv ='../../config_environment.json';
+var configFileEnv =__dirname+'/../../config_environment.json';		//need __dirname or it won't work for fs.exists (does work for require() though)
 if(fs.existsSync(configFileEnv)) {
+	// console.log('configFileEnv: '+configFileEnv+' DOES exist');
 	var cfgJsonEnv =require(configFileEnv);
 	if(cfgJsonEnv && cfgJsonEnv !==undefined && cfgJsonEnv.environment !==undefined && cfgJsonEnv.environment.length >0) {
 		configFile ='../configs/config-'+cfgJsonEnv.environment+'.json';
 	}
-};
+}
+// else {
+	// console.log('configFileEnv: '+configFileEnv+' does NOT exist');
+// }
 
 //insert a '.test' at the end of the config as the test config naming convention
 configFile =configFile.slice(0, configFile.lastIndexOf('.'))+'.test'+configFile.slice(configFile.lastIndexOf('.'), configFile.length);

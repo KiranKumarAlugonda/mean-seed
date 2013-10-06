@@ -24,4 +24,4 @@ When possible, use vectors (icon font, svg) instead of rasterized images (jpg, p
 - steps
 	- 'export to Web and Devices' from Adobe Illustrator to save the image file
 	- copy / move the file (or save directly) into `app/src/common/img` folder
-	- use the image by referencing it in HTML with <img ng-src='{{appPath
+	- use the image by referencing it in HTML with <img ng-src='{{appPathImg}}/my-image.png' />

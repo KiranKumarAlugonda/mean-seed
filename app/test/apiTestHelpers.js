@@ -16,16 +16,30 @@ Common helper functions getting the database connection and for making the http 
 var lodash = require('lodash');
 var Q = require('q');
 var request = require('request');
+var fs = require('fs');
 
 var Database = require('../database.js');
 var db =false;
 
 var path = require('path');
-// var configFile = '../configs/config.json';		//live db config
-var configFile = '../configs/config.test.json';		//test config - should NOT connect to the live database to do tests (both for data safety and because search and other api calls won't test properly with existing data)
-// var cfg = require('../conf')(configFile, path.resolve(__dirname, '../../')).cfg;
+
+//find the config to use and THEN add '.test' to it to ensure it's a test config - should NOT connect to the live database to do tests (both for data safety and because search and other api calls won't test properly with existing data)
+var configFile = '../configs/config.json';
+
+//check to see if config_environment file exists and use it to load the appropriate config.json file if it does
+var configFileEnv ='../../config_environment.json';
+if(fs.existsSync(configFileEnv)) {
+	var cfgJsonEnv =require(configFileEnv);
+	if(cfgJsonEnv && cfgJsonEnv !==undefined && cfgJsonEnv.environment !==undefined && cfgJsonEnv.environment.length >0) {
+		configFile ='../configs/config-'+cfgJsonEnv.environment+'.json';
+	}
+};
+
+//insert a '.test' at the end of the config as the test config naming convention
+configFile =configFile.slice(0, configFile.lastIndexOf('.'))+'.test'+configFile.slice(configFile.lastIndexOf('.'), configFile.length);
+
 var cfg = require(configFile);
-// console.log('cfg.db.port: '+cfg.db.port);
+console.log('TEST configFile: '+configFile);
 
 var inst ={
 

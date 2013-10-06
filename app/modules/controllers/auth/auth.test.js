@@ -381,12 +381,10 @@ function go(params) {
 			},
 			'type': 'test_type'
 		};
-		console.log('3');
 		api.expectRequest({method:'Auth.socialLogin'}, {data:params }, {}, {})
 		.then(function(res)
 		{
 			var data =res.data.result;
-			console.log(data);
 			expect(data.already_exists).toEqual(false);
 			expect(data.user.social.test_type).toBeDefined();
 			expect(data.user.social.test_type).toEqual(params.socialData);

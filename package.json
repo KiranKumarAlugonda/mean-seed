@@ -18,7 +18,6 @@
 		"karma":"~0.10.2",
 		"karma-jasmine":"~0.1.3",
 		"karma-phantomjs-launcher":"~0.1.0",
-		"karma-ng-scenario":"~0.1",
 		"protractor":"~0.10.0",
 		"grunt": "~0.4.1",
 		"grunt-contrib-concat": "~0.1.3",

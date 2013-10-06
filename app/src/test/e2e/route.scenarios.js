@@ -40,7 +40,7 @@ describe("E2E: Testing Routes", function() {
 		// ptor.waitForAngular();		//trying to get PhantomJS browser to work.. Angular is not defined/ready yet?..
 	});
 
-	it('should jump to the /events path when / is accessed', function() {
+	it('should jump to the default page path when / is accessed', function() {
 		ptor.get('/');
 		expect(ptor.getCurrentUrl()).toContain('/'+defaultPage);
 	});

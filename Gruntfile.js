@@ -57,7 +57,7 @@ So each time package.json or config.json is changed, increment the version both 
 @type Object
 */
 var curVersions ={
-	"cfg": "0.7",
+	"cfg": "0.8",
 	"pkg": "0.0.7"
 };
 // var configFile = require('./app/configs/config.json');
@@ -127,10 +127,18 @@ module.exports = function(grunt) {
 		// var cfgJson = configFile;
 		var cfgJson =require(configFile);
 		// global.cfgJson = cfgJson;
+		
+		//get test config as well
+		//insert a '.test' at the end of the config as the test config naming convention
+		var configTestFile =configFile.slice(0, configFile.lastIndexOf('.'))+'.test'+configFile.slice(configFile.lastIndexOf('.'), configFile.length);
+		var cfgTestJson =require(configTestFile);
+		
 
 		// hardcoded paths
 		var protractorPath ='node_modules/protractor/bin/protractor';		//non-Windows
-		var protractorPath ='node_modules\\.bin\\protractor';		//Windows
+		if(cfgJson.operatingSystem !==undefined && cfgJson.operatingSystem =='windows') {
+			protractorPath ='node_modules\\.bin\\protractor';		//Windows
+		}
 		
 		var publicPathRelativeRoot ="app/src/";
 		var buildfilesListObj = require('./'+publicPathRelativeRoot+'config/buildfilesList');
@@ -212,6 +220,7 @@ module.exports = function(grunt) {
 			lintFilesJs:        [],
 			//cfgJson: grunt.file.readJSON('package.json'),
 			cfgJson:            cfgJson,
+			cfgTestJson:            cfgTestJson,
 			//will be filled/created in buildfiles task
 			filePathsJs:        '',
 			//will be filled/created in buildfiles task
@@ -342,11 +351,15 @@ module.exports = function(grunt) {
 					less: {
 						src:        publicPathRelative+"common/less/variables/_dir-paths.tpl",
 						dest:       publicPathRelative+"common/less/variables/_dir-paths.less"
-					}
+					},
 					// scss: {
 						// src:        publicPathRelative+"1scss/partials/_dir-paths.tpl",
 						// dest:       publicPathRelative+"1scss/partials/_dir-paths.scss"
 					// },
+					protractorDefault: {
+						src: publicPathRelative+"config/protractor.conf-grunt.js",
+						dest: publicPathRelative+"config/protractor/protractor.conf.js"
+					}
 				}
 			},
 			concat: {
@@ -502,7 +515,7 @@ module.exports = function(grunt) {
 					options: {
 						stdout: true
 					},
-					command: protractorPath+' '+publicPathRelativeRoot+'config/protractor.conf.js'
+					command: protractorPath+' '+publicPathRelativeRoot+'config/protractor/protractor.conf.js'
 				}
 			},
 			parallel: {

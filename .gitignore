@@ -33,6 +33,7 @@ app/src/modules/services/LGlobals.js
 app/src/config/karma.conf.js
 _dir-paths.less
 app/src/index.html
+app/src/config/protractor/*
 
 # ignore deploys (i.e. PhoneGap, TriggerIO build folder/files)
 app/src/deploys

@@ -1,9 +1,10 @@
 {
 	"versions":{
-		"cfg": "0.6",
+		"cfg": "0.8",
 		"pkg": "0.0.7"
 	},
 	"env": "development",
+	"operatingSystem":"windows",
 	"app": {
 		"name": "project",
 		"title": "Project"
@@ -62,5 +63,9 @@
 	"google":{
 		"clientId": "",
 		"clientSecret": ""
+	},
+	"sauceLabs":{
+		"user": "",
+		"key": ""
 	}
 }

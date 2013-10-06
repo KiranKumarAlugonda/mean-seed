@@ -1,9 +1,10 @@
 {
 	"versions":{
-		"cfg": "0.7",
+		"cfg": "0.8",
 		"pkg": "0.0.7"
 	},
 	"env": "development",
+	"operatingSystem":"linux",
 	"app": {
 		"name": "project",
 		"title": "Project"
@@ -62,5 +63,9 @@
 	"google":{
 		"clientId": "",
 		"clientSecret": ""
+	},
+	"sauceLabs":{
+		"user":"lukemad",
+		"key":"48bd6b2e-42ed-4b96-8162-aa1de02b6597"
 	}
 }

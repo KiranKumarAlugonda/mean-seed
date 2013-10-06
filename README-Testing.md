@@ -23,9 +23,11 @@ There's LOTS of different testing definitions but in general we use 5:
 	- PhantomJS
 - Protractor (AngularJS E2E tests)
 	- Selenium
+		- install: AFTER installing Protractor (locally - run `npm install`) - `./node_modules/protractor/bin/install_selenium_standalone`
 - Browsers / browser drivers
 	- PhantomJS
-	- ChromeDriver
+		- install: download it from the web or for linux: npm install phantomjs (may need to do it locally - in which case put it in package.json)
+	- ChromeDriver (comes/auto installed with selenium standalone installation)
 
 ## Backend
 ### Jasmine Node

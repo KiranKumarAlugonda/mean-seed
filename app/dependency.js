@@ -29,7 +29,7 @@ function Dependency(options) {
 			controllers: pathSep+'modules'+pathSep+'controllers',
 			services: pathSep+'modules'+pathSep+'services',
 			routes: pathSep+'routes',
-			root: '',
+			root: ''
 		}
 	};
 	//end: hardcoded

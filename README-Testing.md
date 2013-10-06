@@ -20,7 +20,12 @@ There's LOTS of different testing definitions but in general we use 5:
 ### Tools
 - Jasmine (both for backend and frontend)
 - Karma (test runner - now only used for AngularJS unit tests)
+	- PhantomJS
 - Protractor (AngularJS E2E tests)
+	- Selenium
+- Browsers / browser drivers
+	- PhantomJS
+	- ChromeDriver
 
 ## Backend
 ### Jasmine Node

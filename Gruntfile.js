@@ -105,6 +105,7 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-parallel');
 	// grunt.loadNpmTasks('grunt-forever');
 	grunt.loadNpmTasks('grunt-forever-multi');
+	grunt.loadNpmTasks('grunt-wait');
 	
 
 	/**
@@ -570,6 +571,13 @@ module.exports = function(grunt) {
 					options: ["config=test", "-m '"+cfgJson.app.name+" port "+cfgTestJson.server.port+"'"]
 				}
 			},
+			wait: {
+				afterForever: {
+					options: {
+						delay: 5000
+					}
+				}
+			},
 			yuidoc: {
 				// NOTE: paths and outdir options (in yuidoc.json file AND/OR in options here) are apparently REQUIRED otherwise it doesn't work!
 				backend:    grunt.file.readJSON('yuidoc-backend.json'),
@@ -686,7 +694,7 @@ module.exports = function(grunt) {
 				var tasks =['build', 'test'];
 				//see if we want to run forever or not
 				if(cfgJson.forever !==undefined && cfgJson.forever) {
-					tasks =['build', 'foreverMulti', 'test'];
+					tasks =['build', 'foreverMulti', 'wait:afterForever', 'test'];		//need to wait after restart server to give a chance to initialize before the tests are attempted (otherwise will just error and fail because the server isn't up/restarted yet)
 				}
 				// grunt.task.run(['buildfiles', 'ngtemplates:main', 'jshint:backend', 'jshint:beforeconcat', 'uglify:build', 'less:development', 'concat:devJs', 'concat:devCss', 'test']);
 				grunt.task.run(tasks);

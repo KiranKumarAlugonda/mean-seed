@@ -558,6 +558,18 @@ module.exports = function(grunt) {
 				}
 			},
 			*/
+			foreverMulti: {
+				appServer: {
+					action: 'restart',
+					file: 'run.js',
+					options: ["-m '"+cfgJson.app.name+" port "+cfgJson.server.port+"'"]
+				},
+				testServer: {
+					// action: 'restart',		//default is restart if none specified
+					file: 'run.js',
+					options: ["config=test", "-m '"+cfgJson.app.name+" port "+cfgTestJson.server.port+"'"]
+				}
+			},
 			yuidoc: {
 				// NOTE: paths and outdir options (in yuidoc.json file AND/OR in options here) are apparently REQUIRED otherwise it doesn't work!
 				backend:    grunt.file.readJSON('yuidoc-backend.json'),

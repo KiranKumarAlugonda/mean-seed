@@ -1,10 +1,11 @@
 {
 	"versions":{
-		"cfg": "0.8",
+		"cfg": "0.81",
 		"pkg": "0.0.7"
 	},
 	"env": "development",
 	"operatingSystem":"linux",
+	"forever": 1,
 	"app": {
 		"name": "project",
 		"title": "Project"

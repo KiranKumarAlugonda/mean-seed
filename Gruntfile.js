@@ -57,7 +57,7 @@ So each time package.json or config.json is changed, increment the version both 
 @type Object
 */
 var curVersions ={
-	"cfg": "0.8",
+	"cfg": "0.81",
 	"pkg": "0.0.7"
 };
 // var configFile = require('./app/configs/config.json');
@@ -683,8 +683,13 @@ module.exports = function(grunt) {
 			}
 
 			if(validVersion) {
+				var tasks =['build', 'test'];
+				//see if we want to run forever or not
+				if(cfgJson.forever !==undefined && cfgJson.forever) {
+					tasks =['build', 'foreverMulti', 'test'];
+				}
 				// grunt.task.run(['buildfiles', 'ngtemplates:main', 'jshint:backend', 'jshint:beforeconcat', 'uglify:build', 'less:development', 'concat:devJs', 'concat:devCss', 'test']);
-				grunt.task.run(['build', 'test']);
+				grunt.task.run(tasks);
 			} else {
 				throw new Error('invalid project versions.');
 			}

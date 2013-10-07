@@ -517,17 +517,25 @@ module.exports = function(grunt) {
 					},
 					command: protractorPath+' '+publicPathRelativeRoot+'config/protractor/protractor.conf.js'
 				},
-				forever: {
+				/*
+				foreverStop: {
 					options: {
 						stdout: true
 					},
 					command: "forever start run.js -m '"+cfgJson.app.name+" port "+cfgJson.server.port+"'"
 				},
+				*/
+				forever: {
+					options: {
+						stdout: true
+					},
+					command: "forever restart run.js -m '"+cfgJson.app.name+" port "+cfgJson.server.port+"'"
+				},
 				foreverTest: {
 					options: {
 						stdout: true
 					},
-					command: "forever start run.js config=test -m '"+cfgJson.app.name+" port "+cfgTestJson.server.port+"'"
+					command: "forever restart run.js config=test -m '"+cfgJson.app.name+" port "+cfgTestJson.server.port+"'"
 				}
 			},
 			parallel: {

@@ -524,7 +524,6 @@ module.exports = function(grunt) {
 					},
 					command: "forever start run.js -m '"+cfgJson.app.name+" port "+cfgJson.server.port+"'"
 				},
-				*/
 				forever: {
 					options: {
 						stdout: true
@@ -537,6 +536,7 @@ module.exports = function(grunt) {
 					},
 					command: "forever restart run.js config=test -m '"+cfgJson.app.name+" port "+cfgTestJson.server.port+"'"
 				}
+				*/
 			},
 			parallel: {
 				sauce: {
@@ -546,6 +546,12 @@ module.exports = function(grunt) {
 					tasks: [
 						//add grunt tasks to run here (i.e. for Selenium SauceLabs tests to run in parallel)
 					]
+				}
+			},
+			forever: {
+				options: {
+					index: 'run.js',
+					options: ["-m '"+cfgJson.app.name+" port "+cfgJson.server.port+"'"]
 				}
 			},
 			yuidoc: {

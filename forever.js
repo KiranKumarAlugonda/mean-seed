@@ -45,7 +45,7 @@ function stop(params) {
 			// console.log('Forever data: '+JSON.stringify(data));
 			var ii, xx, msg ='';
 			for(ii =0; ii<data.length; ii++) {
-				msg+='NEW ii: '+ii+'\n\n';
+				msg+='\nNEW ii: '+ii+'\n';
 				for(xx in data[ii]) {
 					msg+=xx+': '+data[ii][xx]+'\n';
 				}

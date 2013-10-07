@@ -509,13 +509,25 @@ module.exports = function(grunt) {
 				}
 				*/
 			},
-			//e2e tests (with Protractor)
 			shell: {
+				//e2e tests (with Protractor)
 				protractor: {
 					options: {
 						stdout: true
 					},
 					command: protractorPath+' '+publicPathRelativeRoot+'config/protractor/protractor.conf.js'
+				},
+				forever: {
+					options: {
+						stdout: true
+					},
+					command: "forever start run.js -m '"+cfgJson.app.name+" port "+cfgJson.server.port+"'"
+				},
+				foreverTest: {
+					options: {
+						stdout: true
+					},
+					command: "forever start run.js config=test -m '"+cfgJson.app.name+" port "+cfgTestJson.server.port+"'"
 				}
 			},
 			parallel: {
@@ -614,6 +626,8 @@ module.exports = function(grunt) {
 		grunt.registerTask('docs', ['yuidoc']);
 
 		grunt.registerTask('lint-backend', ['jshint:backend']);
+		
+		grunt.registerTask('build', ['buildfiles', 'ngtemplates:main', 'jshint:backend', 'jshint:beforeconcat', 'uglify:build', 'less:development', 'concat:devJs', 'concat:devCss']);
 
 		// Default task(s).
 		// grunt.registerTask('default', ['buildfiles', 'jshint:beforeconcat', 'uglify:build', 'less:development', 'concat:devJs', 'concat:devCss', 'jshint:backend', 'yuidoc', 'jasmine_node']);
@@ -639,7 +653,8 @@ module.exports = function(grunt) {
 			}
 
 			if(validVersion) {
-				grunt.task.run(['buildfiles', 'ngtemplates:main', 'jshint:backend', 'jshint:beforeconcat', 'uglify:build', 'less:development', 'concat:devJs', 'concat:devCss', 'test']);
+				// grunt.task.run(['buildfiles', 'ngtemplates:main', 'jshint:backend', 'jshint:beforeconcat', 'uglify:build', 'less:development', 'concat:devJs', 'concat:devCss', 'test']);
+				grunt.task.run(['build', 'test']);
 			} else {
 				throw new Error('invalid project versions.');
 			}

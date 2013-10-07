@@ -51,13 +51,13 @@ function stop(params) {
 function start(params) {
 	//start app
 	var opts =["-m '"+cfg.app.name+" port "+cfg.server.port+"'"];
-	forever.start('run.js', {
+	forever.startDaemon('run.js', {
 		options: opts
 	});
 	
 	//start test server
 	var optsTest =["config=test", "-m '"+cfg.app.name+" port "+cfgTest.server.port+"'"];
-	forever.start('run.js', {
+	forever.startDaemon('run.js', {
 		options: optsTest
 	});
 }

@@ -103,6 +103,7 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-contrib-copy');
 	grunt.loadNpmTasks('grunt-shell');
 	grunt.loadNpmTasks('grunt-parallel');
+	grunt.loadNpmTasks('grunt-forever');
 	
 
 	/**

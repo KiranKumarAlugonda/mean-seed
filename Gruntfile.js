@@ -103,7 +103,8 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-contrib-copy');
 	grunt.loadNpmTasks('grunt-shell');
 	grunt.loadNpmTasks('grunt-parallel');
-	grunt.loadNpmTasks('grunt-forever');
+	// grunt.loadNpmTasks('grunt-forever');
+	grunt.loadNpmTasks('grunt-forever-multi');
 	
 
 	/**
@@ -549,12 +550,14 @@ module.exports = function(grunt) {
 					]
 				}
 			},
+			/*
 			forever: {
 				options: {
 					index: 'run.js',
 					options: ["-m '"+cfgJson.app.name+" port "+cfgJson.server.port+"'"]
 				}
 			},
+			*/
 			yuidoc: {
 				// NOTE: paths and outdir options (in yuidoc.json file AND/OR in options here) are apparently REQUIRED otherwise it doesn't work!
 				backend:    grunt.file.readJSON('yuidoc-backend.json'),

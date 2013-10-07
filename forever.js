@@ -8,7 +8,8 @@ Handles (re)starting the server. This is useful for continuous integration since
 'use strict';
 
 var fs = require('fs');
-var forever = require('forever-monitor');
+// var forever = require('forever-monitor');
+var forever =require('forever');
 
 //get config
 var configFile = './app/configs/config.json';

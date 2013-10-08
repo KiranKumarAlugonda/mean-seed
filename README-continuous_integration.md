@@ -20,6 +20,10 @@ An "agile" process of rapid iteration and frequent commits (daily) and tests (au
 		6. on success, deploy to production (environment / server - the tests and CI should be run on a mock/staging server that's as similar to production as possible but not the same since it can fail; only SUCCESSFUL builds get deployed)
 		7. run manual customer/user acceptance tests / collect feedback, aka "usability / exploratory testing"
 		NOTE: as many steps as possible should be AUTOMATED - especially steps 3, 4, and 5 (and 6). It should only take ONE manual action/command to do everything - which should be the commiting to version control; that should automatically kick off the build, testing, report/notification generating and deploying to production (on success).
+		
+		Other items that are nice:
+		- monitoring: server monitoring, alerting
+		- feature flipper system / automation (i.e. rolling out features to different users, A/B testing)
 
 - Grunt (+ (Git) Web Hook) vs CI
 	- Grunt does / can do 90% of Continuous Integration - you can automate your builds and run your tests already so the only things you really need to do on top of that are:

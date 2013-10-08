@@ -7,8 +7,8 @@ An "agile" process of rapid iteration and frequent commits (daily) and tests (au
 	- http://www.martinfowler.com/articles/originalContinuousIntegration.html
 	- Google Image search 'continuous integration' or 'continuous integration diagram' to see examples. Basically the "steps" are:
 		1. write code
-		2. check code into version control
-		3. build code
+		2. check code into version control (i.e. Github)
+		3. build code (compile and package into final assets - concat, minify, etc.)
 		4. run automated tests
 			1. [small] unit
 			2. [medium] integration

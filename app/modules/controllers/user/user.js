@@ -218,11 +218,11 @@ function fillFollow(db, data, params)
 @method search
 @param {Object} data
 	@param {String} [searchString] Text to search for
-	@param {Array} [searchFields =['first_name', 'last_name']] Fields to search searchString within
+	@param {Array} [searchFields =['first_name', 'last_name', 'name']] Fields to search searchString within
 		@example ['first_name', 'last_name']
 	@param {Array} [skipIds] _id fields to skip (will be added to query AFTER they are converted to mongo ids (if necessary))
 		@example ['324234', '328sakd23', '23lkjafl83']
-	@param {Object} [fields ={_id:1, first_name:1, last_name:1}] Fields to return
+	@param {Object} [fields ={_id:1, first_name:1, last_name:1, name:1}] Fields to return
 		@example {_id:1, name:1}
 	@param {Number} [skip =0] Where to start returning from (like a cursor)
 	@param {Number} [limit =20] How many to return
@@ -236,8 +236,8 @@ User.prototype.search = function(db, data, params) {
 
 	var defaults ={
 		'limit':20,
-		'fields':{'_id':1, 'first_name':1, 'last_name':1},
-		'searchFields':['first_name', 'last_name']
+		'fields':{'_id':1, 'first_name':1, 'last_name':1, 'name':1},
+		'searchFields':['first_name', 'last_name', 'name']
 	};
 	if(data.fields ===undefined) {
 		data.fields = defaults.fields;
@@ -251,6 +251,31 @@ User.prototype.search = function(db, data, params) {
 
 	var query ={};
 	var ppSend =CrudMod.setSearchParams(data, query, {});
+	
+	//if search query has a space in it and have first_name and/or last_name as search fields, replace those with just the first word for first_name and last word(s) for last_name to make a more specific search (i.e. do NOT want to search for a first_name of 'joe bob' and a last_name of 'joe bob' (which will likely return no results) - really want to search for first_name of 'joe' and last_name of 'bob')
+	if(data.searchString !==undefined) {
+		var indexSpace =data.searchString.indexOf(' ');
+		if(indexSpace >-1) {
+			var firstName =data.searchString.slice(0, indexSpace);
+			var lastName =data.searchString.slice((indexSpace+1), data.searchString.length);
+			var ii, xx;
+			for(ii =0; ii<ppSend.query.$or.length; ii++) {
+				for(xx in ppSend.query.$or[ii]) {
+					if(xx =='first_name') {
+						if(ppSend.query.$or[ii][xx].$regex !==undefined) {
+							ppSend.query.$or[ii][xx].$regex =firstName;
+						}
+					}
+					else if(xx =='last_name') {
+						if(ppSend.query.$or[ii][xx].$regex !==undefined) {
+							ppSend.query.$or[ii][xx].$regex =lastName;
+						}
+					}
+				}
+			}
+		}
+	}
+	
 	LookupMod.search(db, 'user', ppSend, function(err, retArray1) {
 		deferred.resolve(retArray1);
 	});

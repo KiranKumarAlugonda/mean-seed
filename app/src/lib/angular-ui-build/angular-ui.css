@@ -71,6 +71,11 @@ https://github.com/ProLoser/Flexbox.less
   padding-bottom: 9px;
 }
 
+.ui-forminput-input {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
 /*
 .ui-forminput-input-container input {
 	padding: 5px 10px;
@@ -96,15 +101,19 @@ input[type="checkbox"].ui-forminput-input-checkbox {
 
 /* get button to layout / act like div element instead */
 
-button[type='submit'],
+.ui-forminput-form button[type='submit'],
 .ui-forminput-submit {
   display: block;
   width: 100%;
-  max-width: 150px;
-  margin: 0 auto;
-  margin-top: 8px;
+  margin-right: auto;
+  margin-left: auto;
   font-family: inherit;
   font-size: inherit;
+}
+
+.ui-forminput-submit {
+  max-width: 150px;
+  margin-top: 8px;
 }
 
 /* side by side label layout */
@@ -150,7 +159,7 @@ button[type='submit'],
 .ui-forminput-form.wide label,
 .ui-forminput-form.wider label,
 .ui-forminput-form.widest label {
-  margin-top: .4em;
+  margin-top: 9px;
   margin-right: 10px;
   text-align: right;
 }
@@ -171,7 +180,6 @@ button[type='submit'],
 .ui-forminput-form.wider .ui-forminput-input,
 .ui-forminput-form.widest .ui-forminput-input {
   display: block;
-  margin: 2px 0;
   -webkit-box-flex: 1;
      -moz-box-flex: 1;
       -ms-box-flex: 1;
@@ -187,7 +195,7 @@ button[type='submit'],
 .ui-forminput-form.wide button[type='submit'],
 .ui-forminput-form.wide .ui-forminput-submit,
 .ui-forminput-form.wide .ui-forminput-validation {
-  margin-left: 99px;
+  margin-left: 95px;
   /*max-width:100%;*/
 
 }
@@ -195,7 +203,7 @@ button[type='submit'],
 .ui-forminput-form.wider button[type='submit'],
 .ui-forminput-form.wider .ui-forminput-submit,
 .ui-forminput-form.wider .ui-forminput-validation {
-  margin-left: 129px;
+  margin-left: 125px;
   /*max-width:100%;*/
 
 }
@@ -203,7 +211,7 @@ button[type='submit'],
 .ui-forminput-form.widest button[type='submit'],
 .ui-forminput-form.widest .ui-forminput-submit,
 .ui-forminput-form.widest .ui-forminput-validation {
-  margin-left: 159px;
+  margin-left: 155px;
   /*max-width:100%;*/
 
 }

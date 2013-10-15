@@ -112,6 +112,7 @@ angular.module('ui.directives').directive('uiCalendar',['ui.config', '$parse', f
 - same-height attr seems to break it (everything is 0 height)?
 - vertical center prev/next arrows (either position absolute negative margin hack or flexbox?)
 - add functionality / support options to bring it to parity with angular-ui carousel
+	- timing/intervals, etc.
 - remove jQuery dependency (about 5 uses left..)
 - [maybe?] option to automatically make it one slide at a time with overflow hidden, display inline-block, etc. so they just pass in slides and it looks like ui-bootstrap carousel
 	- UPDATE: this is the ONLY way it works now (at least the 1 slide at a time bit) - so may option to NOT do that and allow it to show multiple slides at a time.
@@ -215,7 +216,7 @@ for (var i=0; i<4; i++) {
 
 //2. (hammer) swipe
 partial / html:
-<div ui-carousel hammer-swipe='1' swipe-overlay='1'>
+<div ui-carousel hammer-swipe='1' swipe-overlay='1' opts='opts'>
 	<div ng-repeat='slide in slides' style='display:inline-block; text-align:center; vertical-align:top;'>		<!-- styles are optional and should be moved to a class / stylesheet; this centers things and makes them display side by side -->
 		<!-- custom content here -->
 		<img ng-src='{{slide.image}}' style='margin:auto; max-width:100%;'>		<!-- styles are optional and should be moved to a class / stylehseet; this makes the content/images dynamic full width. Remove max-width:100%; for them to keep their size and be centered. Make sure NOT to use 'width:100%;' as this will stretch tall, narrow images. -->
@@ -228,6 +229,10 @@ partial / html:
 </div>
 
 controller / js:
+$scope.opts ={
+	curSlide: 0
+};
+
 // $scope.myInterval = 5000;
 var slides = $scope.slides = [];
 $scope.addSlide = function() {
@@ -915,23 +920,30 @@ NOTE: I added in a "setTimeMoment" function to the forked file so it's now using
 - moment.js
 
 //TOC
+4. setModelVal
+4.5. scope.$on('uiDatetimepickerUpdateVal',..
 1.5. scope.onSelectDate
 1. onSelectDate
 2. updateModel
 3. handleValidOnchange
 
 scope (attrs that must be defined on the scope (i.e. in the controller) - they can't just be defined in the partial html)
-@param {String} ngModel Datetime string in format 'YYYY-MM-DD HH:mm:ssZ'. Time is optional.
+@param {String} ngModel Datetime string in format specified by opts.formatModel [see below]. Time is optional.
 @param {Function} validate Will be called everytime date changes PRIOR to setting the value of the date. Will pass the following parameters:
 	@param {String} date
 	@param {Object} params
+		@param {Object} opts The opts passed in
 	@param {Function} callback Expects a return of {Boolean} true if valid, false otherwise. If false, the value will be set to blank.
 @param {Function} onchange Will be called everytime date changes. Will pass the following parameters:
 	@param {String} date
 	@param {Object} params
+		@param {Object} opts The opts passed in
 @param {Object} opts
-	@param {Object} pikaday Opts to be used (will extend defaults) for pikaday
+	@param {String} [formatModel ='YYYY-MM-DD HH:mm:ssZ'] The string datetime format for the actual value
+	@param {String} [formatDisplay ='YYYY-MM-DD HH:mm:ssZ'] NOT SUPPORTED FOR FORGE/TRIGGERIO NATIVE INPUTS. The string datetime format to display in the input - this will overwrite the pikaday.format value
+	@param {Object} pikaday Opts to be used (will extend defaults) for pikaday - see https://github.com/owenmead/Pikaday for list of options. NOTE: the 'format' field will be overwritten by opts.formatDisplay so set format there instead.
 	@param {String} [id] Will over-write attrs.id value if set (used for the input id)
+@param {Function} ngClick Declared on scope so it can be 'passed through' from parent controller; just use as normal ng-click
 
 attrs
 @param {String} [placeholder ='Choose a date/time'] Placeholder text for input
@@ -1045,7 +1057,8 @@ angular.module('ui.directives').directive('uiDatetimepicker', [function () {
 			ngModel: '=',
 			validate: '&',
 			onchange: '&',
-			opts: '='
+			opts: '=',
+			ngClick: '&?'
 		},
 
 		// template: "<input type='datetime' />",
@@ -1060,19 +1073,54 @@ angular.module('ui.directives').directive('uiDatetimepicker', [function () {
 				attrs.placeholder ='Choose a date/time';
 			}
 			
-			var html ="<div>";
+			var class1 ='';
+			if(attrs.class) {
+				class1+=attrs.class;
+			}
+			
+			//copy over attributes
+			var customAttrs ='';		//string of attrs to copy over to input
+			var skipAttrs =['uiDatetimepicker', 'ngModel', 'label', 'type', 'placeholder', 'opts', 'name', 'validate', 'onchange', 'ngClick'];
+			angular.forEach(attrs, function (value, key) {
+				if (key.charAt(0) !== '$' && skipAttrs.indexOf(key) === -1) {
+					customAttrs+=attrs.$attr[key];
+					if(attrs[key]) {
+						customAttrs+='='+attrs[key];
+					}
+					customAttrs+=' ';
+				}
+			});
+			
+			var html ="<div class='"+class1+"'>";
 				if(type =='pikaday') {
-					html +="<input class='ui-datetimepicker-input' type='datetime' placeholder='"+attrs.placeholder+"' />";		//NOTE: do NOT use ng-model here since we want the displayed value to potentially be DIFFERENT than the returned (ngModel) value
+					html +="<input class='ui-datetimepicker-input' type='datetime' placeholder='"+attrs.placeholder+"' "+customAttrs+" ";		//NOTE: do NOT use ng-model here since we want the displayed value to potentially be DIFFERENT than the returned (ngModel) value
+					if(attrs.ngClick) {
+						html +="ng-click='ngClick()' ";
+					}
+					html +="/>";
 					// html+="<br />{{ngModel}}";
 				}
 				else if(type =='forge') {
-					html +="<input class='ui-datetimepicker-input' type='datetime' placeholder='"+attrs.placeholder+"' />";		//NOTE: do NOT use ng-model here since we want the displayed value to potentially be DIFFERENT than the returned (ngModel) value (this especially breaks iOS native datetime input display)
+					html +="<input class='ui-datetimepicker-input' type='datetime-local' placeholder='"+attrs.placeholder+"' "+customAttrs+" ";		//NOTE: do NOT use ng-model here since we want the displayed value to potentially be DIFFERENT than the returned (ngModel) value (this especially breaks iOS native datetime input display)		//UPDATE for iOS7 - need to use 'datetime-local' since 'datetime' input type is no longer supported..
+					if(attrs.ngClick) {
+						html +="ng-click='ngClick()' ";
+					}
+					html +="/>";
 					// html+="<br />{{ngModel}}";
 				}
 			html+="</div>";
 			element.replaceWith(html);
 			
 			return function(scope, element, attrs) {
+				//extend defaults
+				var defaults ={
+					opts: {
+						formatModel: 'YYYY-MM-DD HH:mm:ssZ',
+						formatDisplay: 'YYYY-MM-DD HH:mm:ssZ'
+					}
+				};
+				scope.opts =angular.extend(defaults.opts, scope.opts);
+			
 				//if was in an ng-repeat, they'll have have the same compile function so have to set the id here, NOT in the compile function (otherwise they'd all be the same..)
 				if(scope.opts.id !==undefined) {
 					attrs.id =scope.opts.id;
@@ -1085,14 +1133,19 @@ angular.module('ui.directives').directive('uiDatetimepicker', [function () {
 				
 				var triggerSkipSelect =true;		//trigger to avoid validating, etc. on setting initial/default value
 				
+				var inputFormatString;
+				
 				if(type =='forge') {
+					// inputFormatString ='YYYY-MM-DDTHH:mm:ssZ';
+					inputFormatString ='YYYY-MM-DDTHH:mm:ss';		//datetime-local now so no timezone (including it will not properly set the input (default) value)
+					
 					forge.ui.enhanceInput('#'+attrs.id);
 					
 					//set initial value
 					if(scope.ngModel) {
 						//native inputs need input value to be a javascript date object? So need to convert it.
-						var dateObj =moment(scope.ngModel, 'YYYY-MM-DD HH:mm:ssZ');
-						var inputFormat =dateObj.format('YYYY-MM-DDTHH:mm:ssZ');
+						var dateObj =moment(scope.ngModel, scope.opts.formatModel);
+						var inputFormat =dateObj.format(inputFormatString);
 						document.getElementById(attrs.id).value =inputFormat;
 					}
 					
@@ -1118,22 +1171,24 @@ angular.module('ui.directives').directive('uiDatetimepicker', [function () {
 						}
 						
 						//convert to local timezone (so it matches what the user actually selected)
-						var dtInfo =convertTimezone(dateMoment, tzFromMinutes, false, {'format':'YYYY-MM-DD HH:mm:ssZ'});
+						var format1 ='YYYY-MM-DD HH:mm:ssZ';
+						var dtInfo =convertTimezone(dateMoment, tzFromMinutes, false, {'format':format1});
+						var formattedModelVal =moment(dtInfo.dateFormatted, format1).format(scope.opts.formatModel);
 						
 						//update input value with non UTC value
 						// var inputFormat =dtInfo.date;		//not working
 						// var inputFormat =dtInfo.dateFormatted;		//kind of works for Android but not completely and not at all for iOS..
-						var inputFormat =dtInfo.date.format('YYYY-MM-DDTHH:mm:ssZ');
+						var inputFormat =dtInfo.date.format(inputFormatString);
 						document.getElementById(attrs.id).value =inputFormat;
 						
-						onSelectDate(dtInfo.dateFormatted);
+						onSelectDate(formattedModelVal);
 					});
 				}
 				else {		//pikaday
 					var defaultPikadayOpts ={
 						field: document.getElementById(attrs.id),
 						onSelect: function() {
-							var date =this.getMoment().format('YYYY-MM-DD HH:mm:ssZ');
+							var date =this.getMoment().format(scope.opts.formatModel);
 							onSelectDate(date);
 						},
 						
@@ -1153,23 +1208,77 @@ angular.module('ui.directives').directive('uiDatetimepicker', [function () {
 					if(scope.opts.pikaday ===undefined) {
 						scope.opts.pikaday ={};
 					}
+					scope.opts.pikaday.format =scope.opts.formatDisplay;		//overwrite with passed in (or default) format
 					var pikadayOpts =angular.extend(defaultPikadayOpts, scope.opts.pikaday);
 					
 					var picker =new Pikaday(pikadayOpts);
 					
 					//set initial value
 					if(scope.ngModel) {
-						var dateOnly =scope.ngModel.slice(0,scope.ngModel.indexOf(' '));
-						var timeOnly =scope.ngModel.slice((scope.ngModel.indexOf(' ')+1), scope.ngModel.length);
+						var dateFormat ='YYYY-MM-DD';
+						var timeFormat ='HH:mm:ss';
+						var modelFormatted =moment(scope.ngModel, scope.opts.formatModel).format(dateFormat+' '+timeFormat+'Z');
+						var dateOnly =modelFormatted;
+						var timeOnly ='';
+						if(modelFormatted.indexOf(' ') >-1) {
+							dateOnly =modelFormatted.slice(0,modelFormatted.indexOf(' '));
+							timeOnly =modelFormatted.slice((modelFormatted.indexOf(' ')+1), modelFormatted.length);
+						}
+
 						// picker.setDate(dateOnly);		//this will mess up due to timezone offset
-						picker.setMoment(moment(dateOnly, 'YYYY-MM-DD'));		//this works (isn't affected by timezone offset)
+						picker.setMoment(moment(dateOnly, dateFormat));		//this works (isn't affected by timezone offset)
 						// picker.setTime(scope.ngModel);		//doesn't work; nor does picker.setTime([hour], [minute], [second]);
-						picker.setTimeMoment(moment(timeOnly, 'HH:mm:ss'));
+						picker.setTimeMoment(moment(timeOnly, timeFormat));
 						// document.getElementById(attrs.id).value ='2010-01-01 12:02:00';		//works but doesn't update the picker views
 					}				
 				}
 				
 				triggerSkipSelect =false;		//NOW can validate, etc. as usual
+				
+				/**
+				@toc 4.
+				@method setModelVal
+				@param {String} val The value to set the ngModel to - will NOT be re-formatted so it should already be in the corrent string format (must match scope.opts.formatModel)
+				*/
+				function setModelVal(val) {
+					scope.ngModel =val;
+					if(type =='forge') {
+						//native inputs need input value to be a javascript date object? So need to convert it.
+						var dateObj =moment(scope.ngModel, scope.opts.formatModel);
+						var inputFormat =dateObj.format(inputFormatString);
+						document.getElementById(attrs.id).value =inputFormat;
+					}
+					else {
+						var dateFormat ='YYYY-MM-DD';
+						var timeFormat ='HH:mm:ss';
+						var modelFormatted =moment(scope.ngModel, scope.opts.formatModel).format(dateFormat+' '+timeFormat+'Z');
+						var dateOnly =modelFormatted;
+						var timeOnly ='';
+						if(modelFormatted.indexOf(' ') >-1) {
+							dateOnly =modelFormatted.slice(0,modelFormatted.indexOf(' '));
+							timeOnly =modelFormatted.slice((modelFormatted.indexOf(' ')+1), modelFormatted.length);
+						}
+
+						// picker.setDate(dateOnly);		//this will mess up due to timezone offset
+						picker.setMoment(moment(dateOnly, dateFormat));		//this works (isn't affected by timezone offset)
+						// picker.setTime(scope.ngModel);		//doesn't work; nor does picker.setTime([hour], [minute], [second]);
+						picker.setTimeMoment(moment(timeOnly, timeFormat));
+					}
+				}
+				
+				/**
+				Allow updating value from outside directive ($watch doesn't work since it will fire infinitely from within the directive when a date/time is chosen so have to use a skip trigger or have to use $on instead to make it more selective. $on seems easier though it does require setting an scope.opts.id value)
+				@toc 4.5.
+				@method $scope.$on('uiDatetimepickerUpdateVal',..
+				@param {Object} params
+					@param {String} instId
+					@param {String} val Correctly formatted date(time) string (must match scope.opts.formatModel) to set ngModel to
+				*/
+				scope.$on('uiDatetimepickerUpdateVal', function(evt, params) {
+					if(scope.opts.id !==undefined && params.instId !==undefined && scope.opts.id ==params.instId) {		//only update if the correct instance
+						setModelVal(params.val);
+					}
+				});
 				
 				/**
 				@toc 1.5.
@@ -1185,14 +1294,14 @@ angular.module('ui.directives').directive('uiDatetimepicker', [function () {
 				/**
 				@toc 1.
 				@method onSelectDate
-				@param {String} date The date to set in 'YYYY-MM-DD HH:mm:ssZ' format
+				@param {String} date The date to set in scope.opts.formatModel - MUST already be in correct format!
 				*/
 				function onSelectDate(date) {
 					if(!triggerSkipSelect) {
 						updateModel(date, {});		//update ngModel BEFORE validation so the validate function has the value ALREADY set so can compare to other existing values (passing back the new value by itself without ngModel doesn't allow setting it so the function may not know what instance this value corresponds to). We'll re-update the model again later if invalid.
 						
 						if(scope.validate !==undefined && scope.validate() !==undefined && typeof(scope.validate()) =='function') {		//this is an optional scope attr so don't assume it exists
-							scope.validate()(date, {}, function(valid) {
+							scope.validate()(date, {opts: scope.opts}, function(valid) {
 								if(!valid) {		//may NOT want to blank out values actually (since datepicker closes on selection, this makes it impossible to change the time (to a valid one) after select a date). But as long as they pick the TIME first, they're okay (since time doesn't auto close the picker, only date does).
 									date ='';
 									//update pikaday plugin with blank date
@@ -1205,7 +1314,7 @@ angular.module('ui.directives').directive('uiDatetimepicker', [function () {
 								}
 							});
 						}
-						else {		//assume valid since not validate function defined
+						else {		//assume valid since no validate function defined
 							handleValidOnchange(date, {});
 						}
 						if(!scope.$$phase) {
@@ -1231,7 +1340,7 @@ angular.module('ui.directives').directive('uiDatetimepicker', [function () {
 				*/
 				function handleValidOnchange(date, params) {
 					if(scope.onchange !==undefined && scope.onchange() !==undefined && typeof(scope.onchange()) =='function') {		//this is an optional scope attr so don't assume it exists
-						scope.onchange()(date, {});
+						scope.onchange()(date, {opts: scope.opts});
 					}
 				}
 			};
@@ -1313,7 +1422,6 @@ scope (attrs that must be defined on the scope (i.e. in the controller) - they c
 		// @param {String} [ngTrueValue =1] The value the ngModel will be equal to if the checkbox is checked
 		// @param {String} [ngFalseValue =0] The value the ngModel will be if the checkbox is NOT checked
 	@param {Object} [optsDatetime] DATE/DATETIME type only. Opts that will be passed through to ui-datetimepicker directive (see there for full documentation)
-		@param {Object} [pikaday] Opts to be used (will extend defaults) for pikaday
 	@param {Function} [validateDatetime] DATE/DATETIME type only. Will be called everytime date changes PRIOR to setting the value of the date. Will pass the following parameters:
 		@param {String} date
 		@param {Object} params
@@ -1321,6 +1429,7 @@ scope (attrs that must be defined on the scope (i.e. in the controller) - they c
 	@param {Function} [onchangeDatetime] DATE/DATETIME type only. Will be called everytime date changes. Will pass the following parameters:
 		@param {String} date
 		@param {Object} params
+	@param {Function} ngClick Declared on scope so it will be "passed-through" appropriately; use as normal ng-click
 
 attrs
 	@param {String} [type ='text'] Input type, one of: 'text'
@@ -1408,7 +1517,8 @@ angular.module('ui.directives').directive('uiForminput', ['ui.config', '$compile
 			optsDatetime: '=?',
 			// checkboxVals: '=?',
 			validateDatetime: '&?',
-			onchangeDatetime: '&?'
+			onchangeDatetime: '&?',
+			ngClick: '&?'
 		},
 		require: '?^form',		//if we are in a form then we can access the formController (necessary for validation to work)
 
@@ -1446,7 +1556,7 @@ angular.module('ui.directives').directive('uiForminput', ['ui.config', '$compile
 			
 			//copy over attributes
 			var customAttrs ='';		//string of attrs to copy over to input
-			var skipAttrs =['uiForminput', 'ngModel', 'label', 'type', 'placeholder', 'opts', 'name', 'optsDatetime', 'validateDatetime', 'onchangeDatetime', 'checkboxVals'];
+			var skipAttrs =['uiForminput', 'ngModel', 'label', 'type', 'placeholder', 'opts', 'name', 'optsDatetime', 'validateDatetime', 'onchangeDatetime', 'checkboxVals', 'ngClick'];
 			angular.forEach(attrs, function (value, key) {
 				if (key.charAt(0) !== '$' && skipAttrs.indexOf(key) === -1) {
 					customAttrs+=attrs.$attr[key];
@@ -1467,37 +1577,64 @@ angular.module('ui.directives').directive('uiForminput', ['ui.config', '$compile
 			var uniqueName ="uiFormInput"+attrs.type+Math.random().toString(36).substring(7);
 			var elementTag ='input';
 			if(attrs.type =='text' || attrs.type =='email' || attrs.type =='tel' || attrs.type =='number' || attrs.type =='url') {
-				html.input ="<input class='ui-forminput-input' name='"+uniqueName+"' ng-model='ngModel' type='"+attrs.type+"' placeholder='"+placeholder+"' "+customAttrs+" />";
+				html.input ="<input class='ui-forminput-input' name='"+uniqueName+"' ng-model='ngModel' type='"+attrs.type+"' placeholder='"+placeholder+"' "+customAttrs+" ";
+				if(attrs.ngClick) {
+					html.input +="ng-click='ngClick()' ";
+				}
+				html.input+="/>";
 			}
 			else if(attrs.type =='password') {
-				html.input ="<input class='ui-forminput-input' name='"+uniqueName+"' ng-model='ngModel' type='password' placeholder='"+placeholder+"' "+customAttrs+" />";
+				html.input ="<input class='ui-forminput-input' name='"+uniqueName+"' ng-model='ngModel' type='password' placeholder='"+placeholder+"' "+customAttrs+" ";
+				if(attrs.ngClick) {
+					html.input +="ng-click='ngClick()' ";
+				}
+				html.input+="/>";
 			}
 			else if(attrs.type =='textarea') {
 				elementTag ='textarea';
-				html.input ="<textarea class='ui-forminput-input' name='"+uniqueName+"' ng-model='ngModel' placeholder='"+placeholder+"' "+customAttrs+" ></textarea>";
+				html.input ="<textarea class='ui-forminput-input' name='"+uniqueName+"' ng-model='ngModel' placeholder='"+placeholder+"' "+customAttrs+" ";
+				if(attrs.ngClick) {
+					html.input +="ng-click='ngClick()' ";
+				}
+				html.input+="></textarea>";
 			}
 			else if(attrs.type =='checkbox') {
 				// html.input ="<input class='ui-forminput-input' name='"+uniqueName+"' ng-model='ngModel' type='checkbox' placeholder='"+placeholder+"' "+customAttrs+" />";
 				//doesn't work - apparently can't set ng-true-value and ng-false-value via scope...
 				// html.input ="<div class='ui-forminput-input ui-forminput-input-checkbox-cont'><input class='ui-forminput-input-checkbox' name='"+uniqueName+"' ng-model='ngModel' ng-true-value='{{checkboxVals.ngTrueValue}}' ng-false-value='{{checkboxVals.ngFalseValue}}' type='checkbox' placeholder='"+placeholder+"' "+customAttrs+" /></div>";
-				html.input ="<div class='ui-forminput-input ui-forminput-input-checkbox-cont'><input class='ui-forminput-input-checkbox' name='"+uniqueName+"' ng-model='ngModel' type='checkbox' placeholder='"+placeholder+"' "+customAttrs+" /></div>";
+				html.input ="<div class='ui-forminput-input ui-forminput-input-checkbox-cont'><input class='ui-forminput-input-checkbox' name='"+uniqueName+"' ng-model='ngModel' type='checkbox' placeholder='"+placeholder+"' "+customAttrs+" ";
+				if(attrs.ngClick) {
+					html.input +="ng-click='ngClick()' ";
+				}
+				html.input+="/></div>";
 			}
 			else if(attrs.type =='select') {
 				elementTag ='select';
-				html.input ="<select class='ui-forminput-input' name='"+uniqueName+"' ng-model='ngModel' ng-change='onchange({})' "+customAttrs+" ng-options='opt.val as opt.name for opt in selectOpts'></select>";
+				html.input ="<select class='ui-forminput-input' name='"+uniqueName+"' ng-model='ngModel' ng-change='onchange({})' "+customAttrs+" ng-options='opt.val as opt.name for opt in selectOpts' ";
+				if(attrs.ngClick) {
+					html.input +="ng-click='ngClick()' ";
+				}
+				html.input+="></select>";
 			}
 			else if(attrs.type =='multi-select') {
 				elementTag ='div';
-				html.input ="<div class='ui-forminput-input' name='"+uniqueName+"' ui-multiselect select-opts='selectOpts' ng-model='ngModel' config='opts'></div>";
+				html.input ="<div class='ui-forminput-input' name='"+uniqueName+"' ui-multiselect select-opts='selectOpts' ng-model='ngModel' config='opts' ";
+				if(attrs.ngClick) {
+					html.input +="ng-click='ngClick()' ";
+				}
+				html.input+="></div>";
 			}
 			else if(attrs.type =='date' || attrs.type =='datetime') {
 				elementTag ='div';
-				html.input ="<div class='ui-forminput-input' name='"+uniqueName+"' ui-datetimepicker opts='optsDatetime' ng-model='ngModel'  placeholder='"+placeholder+"' ";
+				html.input ="<div class='ui-forminput-input' name='"+uniqueName+"' ui-datetimepicker opts='optsDatetime' ng-model='ngModel'  placeholder='"+placeholder+"' "+customAttrs;
 				if(attrs.validateDatetime) {
 					html.input +="validate='validateDatetime' ";
 				}
 				if(attrs.onchangeDatetime) {
 					html.input +="onchange='onchangeDatetime' ";
+				}
+				if(attrs.ngClick) {
+					html.input +="ng-click='ngClick()' ";
 				}
 				html.input+=">";
 				html.input+="</div>";
@@ -1505,7 +1642,7 @@ angular.module('ui.directives').directive('uiForminput', ['ui.config', '$compile
 			
 			//validation
 			//'track by $id($index)' is required for Angular >= v1.1.4 otherwise will get a 'duplicates in a repeater are not allowed' error; see here for this solution: http://mutablethought.com/2013/04/25/angular-js-ng-repeat-no-longer-allowing-duplicates/
-			html.validation ="<div class='ui-forminput-validation text-error' ng-repeat='(key, error) in field.$error track by $id($index)' ng-show='error && field.$dirty' class='help-inline'>{{opts1.validationMessages[key]}}</div>";
+			html.validation ="<div class='ui-forminput-validation text-error' ng-repeat='(key, error) in field.$error track by $id($index)' ng-show='error && field.$dirty' class='help-inline'>{{opts1.validationMessages[key]}} <span ng-show='!opts1.validationMessages[key]'>Invalid</span></div>";		//generic "Invalid" error message if message for this key doesn't exist
 			
 			var htmlFull ="<div class='ui-forminput-cont'><div class='ui-forminput'>"+html.label+html.input+"</div>"+html.validation+"</div>";
 			element.replaceWith(htmlFull);
@@ -1574,7 +1711,8 @@ angular.module('ui.directives').directive('uiForminput', ['ui.config', '$compile
 					required: 'Required!',
 					minlength: 'Too short!',
 					maxlength: 'Too long!',
-					pattern: 'Invalid characters!'
+					pattern: 'Invalid characters!',
+					email: 'Invalid email'
 					// number: 'Must be a number!'		//not working
 				}
 			};
@@ -2391,6 +2529,7 @@ Scrolling functions (different ways to scroll the page / div/element)
 2.1. scrollAnimate
 5. $scope.$watch('items',..
 5.5. $scope.$on('uiInfinitescrollReInit',..
+5.55. $scope.$on('uiInfinitescrollRefresh',..
 5.6. $scope.$on('uiInfinitescrollLoadMore',..
 6. $scope.loadMoreDir
 6.5. changePage
@@ -2426,6 +2565,7 @@ attrs
 	@param {Number} [animateAfterItems=0] Number of items to slow pan through (to indicate to user that something has changed) AFTER jump to middle, etc. NOTE: this must be less than half of pageSize (if it's not, it will be cut to 1/4 of page size) otherwise it will cause loading of next pages leading to infinite auto scrolling through ALL items!
 	@param {Number} [animateAfterDuration=1000] Milliseconds for how long animation is for the after items animate
 	@param {String} [noMoreResultsText =No More Results!] What to display when have no more items to load (i.e. at very bottom)
+	@param {Number} [minItemsToShow =0] If set, will try to ensure at least this many items are visible - specifically, on initial load, if have previous items and not enough future/current items, will load some previous items to fill up to this amount.
 
 
 EXAMPLE usage:
@@ -2517,14 +2657,14 @@ angular.module('ui.directives').directive('uiInfinitescroll', ['ui.config', '$ti
 		},
 
 		compile: function(element, attrs) {
-			var defaults ={'pageSize':10, 'scrollLoad':'0', 'loadMorePageSize':20, 'pageScroll':0, 'scrollBuffer':50, 'scrollBufferPercent':33, 'noStopLoadMore':0, 'negativeLoad':0, 'animateLoad':0, 'animateScrollDuration':1000, 'itemHeight':0, 'animateAfterItems':0, 'animateAfterDuration':1000, 'noMoreResultsText':'No More Results!'};
+			var defaults ={'pageSize':10, 'scrollLoad':'0', 'loadMorePageSize':20, 'pageScroll':0, 'scrollBuffer':50, 'scrollBufferPercent':33, 'noStopLoadMore':0, 'negativeLoad':0, 'animateLoad':0, 'animateScrollDuration':1000, 'itemHeight':0, 'animateAfterItems':0, 'animateAfterDuration':1000, 'noMoreResultsText':'No More Results!', 'minItemsToShow':0};
 			for(var xx in defaults) {
 				if(attrs[xx] ===undefined) {
 					attrs[xx] =defaults[xx];
 				}
 			}
 			//convert to int
-			var attrsToInt =['pageSize', 'loadMorePageSize', 'scrollLoad', 'scrollBuffer', 'pageScroll', 'noStopLoadMore', 'negativeLoad', 'animateLoad', 'animateScrollDuration', 'itemHeight', 'animateAfterItems', 'animateAfterDuration'];
+			var attrsToInt =['pageSize', 'loadMorePageSize', 'scrollLoad', 'scrollBuffer', 'pageScroll', 'noStopLoadMore', 'negativeLoad', 'animateLoad', 'animateScrollDuration', 'itemHeight', 'animateAfterItems', 'animateAfterDuration', 'minItemsToShow'];
 			for(var ii=0; ii<attrsToInt.length; ii++) {
 				attrs[attrsToInt[ii]] =parseInt(attrs[attrsToInt[ii]], 10);
 			}
@@ -2562,12 +2702,12 @@ angular.module('ui.directives').directive('uiInfinitescroll', ['ui.config', '$ti
 					//"<div>page: {{page}} cursors: items.start: {{opts.cursors.items.start}} items.end: {{opts.cursors.items.end}} itemsView.start: {{opts.cursors.itemsView.start}} itemsView.end: {{opts.cursors.itemsView.end}} itemsView.current: {{opts.cursors.itemsView.current}} negative: {{opts.cursors.negative}} items.length: {{items.length}}</div>"+		//TESTING
 					//"<div>hasScrollbar: {{hasScrollbar}} | scrollLoad: {{scrollLoad}}</div>"+		//TESTING
 					//"<div ng-show='itemsFiltered.length <1'>No matches</div>"+
-					"<div ng-hide='(noMoreLoadMoreItems.prev) || (opts.cursors.itemsView.start <=0 && !negativeLoad) || (scrollLoad && hasScrollbar)' class='ui-infinitescroll-more' ng-click='loadMoreDir({\"prev\":true})'>Load More</div>"+
+					"<div ng-hide='trigs.loading || (noMoreLoadMoreItems.prev) || (opts.cursors.itemsView.start <=0 && !negativeLoad) || (scrollLoad && hasScrollbar)' class='ui-infinitescroll-more' ng-click='loadMoreDir({\"prev\":true})'>Load More</div>"+
 					//"<div ng-show='noMoreLoadMoreItemsPrev && queuedItemsPrev.length <1' class='ui-infinitescroll-no-more'>No More Results!</div>"+
 				"</div>"+
 				"<div id='"+attrs.ids.scrollContent+"' class='ui-infinitescroll-content' ng-transclude></div>"+
 				"<div id='"+attrs.ids.contentBottom+"'>"+
-					"<div ng-hide='(noMoreLoadMoreItems.next && opts.cursors.itemsView.end >=opts.cursors.items.end) || (scrollLoad && hasScrollbar)' class='ui-infinitescroll-more' ng-click='loadMoreDir({})'>Load More</div>"+
+					"<div ng-hide='trigs.loading || (noMoreLoadMoreItems.next && opts.cursors.itemsView.end >=opts.cursors.items.end) || (scrollLoad && hasScrollbar)' class='ui-infinitescroll-more' ng-click='loadMoreDir({})'>Load More</div>"+
 					//"<div>page: {{page}} cursors: items.start: {{opts.cursors.items.start}} items.end: {{opts.cursors.items.end}} itemsView.start: {{opts.cursors.itemsView.start}} itemsView.end: {{opts.cursors.itemsView.end}} itemsView.current: {{opts.cursors.itemsView.current}} items.length: {{items.length}}</div>"+		//TESTING
 					//"<div>scrollInfo: %fromTop: {{scrollInfo.percentTop}} %fromBot: {{scrollInfo.percentBottom}} pos: {{scrollInfo.scrollPos}} diff: {{scrollInfo.diff}} height: {{scrollInfo.scrollHeight}} viewportHeight: {{scrollInfo.viewportHeight}}</div>"+		//TESTING
 					"<div ng-show='noMoreLoadMoreItems.next && opts.cursors.items.end <= opts.cursors.itemsView.end' class='ui-infinitescroll-no-more'>"+attrs.noMoreResultsText+"</div>"+
@@ -2609,7 +2749,7 @@ angular.module('ui.directives').directive('uiInfinitescroll', ['ui.config', '$ti
 			//to allow / handle loading items below "0". The logic inside this directive (and arrays) can't/won't go below 0 so we'll just keep it at 0 and use this to keep track of what the "negative offset" is
 			$scope.opts.cursors.negative =0;
 			//$scope.cursorNegative =0;
-			$scope.trigs ={'loading':false};
+			$scope.trigs ={'loading':true};
 			//$scope.items =[];
 			
 			//boolean that will be set to true if (backend) has no more items (i.e. we're at the end of the list and can't load any more)
@@ -2669,27 +2809,32 @@ angular.module('ui.directives').directive('uiInfinitescroll', ['ui.config', '$ti
 										//console.log('uiInfinitescroll timeout scrolling loading');
 										var buffer =$attrs.scrollBuffer;
 										var scrollPos =$(window).scrollTop();
-										var scrollHeight =$(document).height();
-										var viewportHeight =$(window).height();
-										//console.log("pos: "+scrollPos+" height: "+scrollHeight+" height: "+viewportHeight);
-										var percentTop =scrollPos /scrollHeight *100;
-										var percentBottom =(scrollPos +viewportHeight) /scrollHeight *100;
-										$scope.scrollInfo ={
-											'scrollPos':scrollPos,
-											'scrollHeight':scrollHeight,
-											'viewportHeight':viewportHeight,
-											'diff':(scrollHeight-viewportHeight-buffer),
-											'percentTop':percentTop,
-											'percentBottom':percentBottom
-										};
-										//if(scrollPos >=(scrollHeight-viewportHeight-buffer) || (percentBottom > (100-$attrs.scrollBufferPercent)) ) {
-										if(scrollPos >5 && scrollPos >=(scrollHeight-viewportHeight-buffer)) {		//don't load more if 0 scrollPos (this specificlly fixes an initial double load issue)
-											$scope.loadMoreDir({'noDelay':true, 'next':true});
-										}
-										//prev version
-										//if(scrollPos <=buffer || (percentTop <$attrs.scrollBufferPercent) ) {
-										if(scrollPos <=buffer ) {
-											$scope.loadMoreDir({'noDelay':true, 'prev':true});
+										var oldScrollPos =uiInfinitescrollData.data[$attrs.id].scrollPos;
+										// console.log('scrollPos: old: '+uiInfinitescrollData.data[$attrs.id].scrollPos+' new: '+scrollPos);		//TESTING
+										uiInfinitescrollData.data[$attrs.id].scrollPos =scrollPos;		//update for next time
+										if(oldScrollPos !==-1) {		//don't go the first time since it falsely triggers a scroll..
+											var scrollHeight =$(document).height();
+											var viewportHeight =$(window).height();
+											//console.log("pos: "+scrollPos+" height: "+scrollHeight+" height: "+viewportHeight);
+											var percentTop =scrollPos /scrollHeight *100;
+											var percentBottom =(scrollPos +viewportHeight) /scrollHeight *100;
+											$scope.scrollInfo ={
+												'scrollPos':scrollPos,
+												'scrollHeight':scrollHeight,
+												'viewportHeight':viewportHeight,
+												'diff':(scrollHeight-viewportHeight-buffer),
+												'percentTop':percentTop,
+												'percentBottom':percentBottom
+											};
+											//if(scrollPos >=(scrollHeight-viewportHeight-buffer) || (percentBottom > (100-$attrs.scrollBufferPercent)) ) {
+											if(scrollPos >5 && scrollPos >=(scrollHeight-viewportHeight-buffer)) {		//don't load more if 0 scrollPos (this specificlly fixes an initial double load issue)
+												$scope.loadMoreDir({'noDelay':true, 'next':true});
+											}
+											//prev version
+											//if(scrollPos <=buffer || (percentTop <$attrs.scrollBufferPercent) ) {
+											if(scrollPos <=buffer ) {
+												$scope.loadMoreDir({'noDelay':true, 'prev':true});
+											}
 										}
 									}, timeoutInfo.scrolling.delay);
 								}
@@ -2754,12 +2899,14 @@ angular.module('ui.directives').directive('uiInfinitescroll', ['ui.config', '$ti
 			@method init
 			*/
 			function init(params) {
+				$scope.trigs.loading =true;
 				//$scope.page =1;		//will store what page (broken up by pageSize attr) we're on
 				$scope.page =Math.floor($scope.opts.cursors.itemsView.current / $attrs.pageSize);
 				setItemsViewCursor({});
 				
 				setItems({});
 				if($scope.items.length <$attrs.pageSize*2) {		//load more externally if don't have enough
+					$scope.trigs.loading =true;
 					$scope.loadMoreDir({});
 				}
 			}
@@ -2780,12 +2927,17 @@ angular.module('ui.directives').directive('uiInfinitescroll', ['ui.config', '$ti
 					$scope.opts.cursors.negative =0;
 					
 					//update / reset triggers
-					$scope.trigs.loading =false;
+					$scope.trigs.loading =true;
 					
 					$scope.noMoreLoadMoreItems.prev =false;
 					$scope.noMoreLoadMoreItems.next =false;
 					
 					timeoutInfo.scrolling.trig =false;
+					
+					triggers.skipWatch =false;
+					
+					//update / reset scroll data
+					uiInfinitescrollData.data[$attrs.id].scrollPos =-1;
 					
 					//update scrolling
 					checkForScrollBar({});
@@ -2824,6 +2976,13 @@ angular.module('ui.directives').directive('uiInfinitescroll', ['ui.config', '$ti
 						if($scope.opts.cursors.itemsView.end >$scope.items.length) {
 							$scope.opts.cursors.itemsView.end =$scope.items.length;
 						}
+						//ensure enough items
+						if(($scope.opts.cursors.itemsView.end - $scope.opts.cursors.itemsView.start) <=$attrs.minItemsToShow) {
+							$scope.opts.cursors.itemsView.start =$scope.opts.cursors.itemsView.end -$attrs.minItemsToShow;
+							if($scope.opts.cursors.itemsView.start <0) {
+								$scope.opts.cursors.itemsView.start =0;
+							}
+						}
 						//make sure to set page appropriately so next scroll/load works
 						$scope.page =Math.ceil($scope.opts.cursors.itemsView.start /$attrs.pageSize);
 					}
@@ -2851,8 +3010,11 @@ angular.module('ui.directives').directive('uiInfinitescroll', ['ui.config', '$ti
 						ppSend.diffHeight =diffHeight;
 					}
 					
-					scrollToMiddle(ppSend);
+					if($scope.itemsView.length >=$attrs.pageSize) {		//only scroll if have a full page of items
+						scrollToMiddle(ppSend);
+					}
 					checkForScrollBar({});
+					$scope.trigs.loading =false;		//reset
 				}
 			}
 			
@@ -3053,6 +3215,19 @@ angular.module('ui.directives').directive('uiInfinitescroll', ['ui.config', '$ti
 			});
 			
 			/**
+			Used in place of updating $scope.items to have the $watch fire in case it's during a triggers.skipWatch. This is different than uiInfinitescrollReInit in that it will NOT blank out / reset $scope.items.
+			@toc 5.55.
+			@param {Object} params
+				@param {String} instId Identifies the directive to update (only that one will be re-initialized)
+			*/
+			$scope.$on('uiInfinitescrollRefresh', function(evt, params) {
+				if($scope.opts.instId !==undefined && params.instId !==undefined && $scope.opts.instId ==params.instId) {		//only update if the correct instance
+					resetItems({});
+					init({});
+				}
+			});
+			
+			/**
 			Used to programmatically load more (prev or next)
 			@toc 5.6.
 			@param {Object} params
@@ -3114,6 +3289,11 @@ angular.module('ui.directives').directive('uiInfinitescroll', ['ui.config', '$ti
 			function changePage(params) {
 				if(params.prev) {
 					$scope.page--;
+					/*
+					if($scope.page <0) {		//don't allow negative page
+						$scope.page =0;
+					}
+					*/
 				}
 				else {
 					$scope.page++;
@@ -3188,7 +3368,7 @@ angular.module('ui.directives').directive('uiInfinitescroll', ['ui.config', '$ti
 					else {
 						$scope.items =$scope.items.concat(results);
 						$scope.opts.cursors.items.end +=results.length;		//don't just add $attrs.loadMorePageSize in case there weren't enough items on the backend (i.e. results could be LESS than this)
-						if(ppCustom !==undefined && ppCustom.numPrevItems !==undefined) {
+						if(ppCustom !==undefined && ppCustom.numPrevItems !==undefined && ppCustom.numPrevItems) {
 							$scope.opts.cursors.negative -=ppCustom.numPrevItems;
 							//shift page number up accordingly since added items to beginning
 							// console.log('$scope.page before: '+$scope.page);
@@ -3220,6 +3400,9 @@ angular.module('ui.directives').directive('uiInfinitescroll', ['ui.config', '$ti
 						}
 						else {
 							$scope.noMoreLoadMoreItems.next =true;
+							if(ppCustom !==undefined && ppCustom.numPrevItems !==undefined && ppCustom.numPrevItems) {		//if already loaded previous items, hide prev load more too
+								$scope.noMoreLoadMoreItems.prev =true;
+							}
 						}
 					}
 				}
@@ -3279,7 +3462,13 @@ var inst ={
 	/**
 	*/
 	windowScroll: function(instId, data, params) {
-		data.callback({});
+		if(data.callback !==undefined) {		//due to timeouts/timing, may be called after it's destroyed so have to check
+			data.callback({});
+		}
+		else {
+			// this.destroy(instId, {});
+			//do nothing - this is important to NOT destroy since callback may just not be added yet!
+		}
 	},
 	
 	/**
@@ -3304,6 +3493,7 @@ var inst ={
 			@param {Number} pageScroll 1 if want to use window / full page scroll (otherwise will scroll based on an element id)
 	*/
 	initInst: function(instId, params) {
+		params.scrollPos =-1;		//start off invalid. This property is used to check if there was indeed a scroll between the last time and this time (since window.onscroll at least seems to fire initially even when scroll bar is at top - i.e. creating the scroll bar fires onscroll though there's NOT actually any scrolling?)
 		this.data[instId] =params;
 	},
 	
@@ -3351,7 +3541,7 @@ var inst ={
 		this.inited =true;
 		
 		if(this.data[instId] !==undefined) {		//ONLY if defined, update it (add the callback)
-			this.data[instId] =params;
+			this.data[instId] =angular.extend(this.data[instId], params);		//must extend, not overwrite since need to keep custom added properties such as scrollPos
 		}
 	}
 	
@@ -4066,8 +4256,10 @@ angular.module('ui.directives').directive('uiLookup', ['ui.config', '$filter', '
 					if($attrs.minSearchShowAll) {		//show all
 						$scope.itemsFiltered =$scope.items;
 					}
-					else {		//show none
+					else {		//show none & reset
 						$scope.itemsFiltered =[];
+						resetItems({});
+						$scope.noMoreLoadMoreItems =true;		//hide loading
 					}
 				}
 				else {		//filter
@@ -4263,6 +4455,10 @@ angular.module('ui.directives').directive('uiLookup', ['ui.config', '$filter', '
 							});
 						}
 					}
+				}
+				else {		//just reset and remove load more button
+					$scope.noMoreLoadMoreItems =true;
+					$scope.trigs.loading =false;		//reset
 				}
 			}
 			
@@ -6888,19 +7084,19 @@ angular.module('ui.directives').directive('uiSlider', ['uiPolynomial', 'uiSlider
 
 	template_html += "<div id = '{{slider_id}}' ng-mousemove = 'mousemoveHandler($event); $event.preventDefault()' class = '{{container_class}}'>";
 		
-		template_html += "<div ng-click = 'barClickHandler($event)' class = '{{bar_container_class}}' style = '{{bar_container_style}}'>";
-			template_html += "<div id = '{{slider_id}}SliderBar' style = '{{slider_bar_style}}'>";
-				template_html += "<div class = '{{left_bg_class}}' style = 'width:{{left_bg_width}}%; {{left_bg_style}}'> </div>";
-				template_html += "<div ng-repeat = 'handle in handles' id = '{{slider_id}}Handle{{$index}}' ng-mousedown = 'startHandleDrag($index); $event.preventDefault()' class = '{{handle_class}}' style = 'z-index: {{handle.zindex}}; left: {{handle.left}}%; {{handle_style}}' ng-bind-html-unsafe = 'handle.innerhtml'></div>";
-				template_html += "<div ng-repeat = 'interior in interiors' class = '{{interior_bg_class}}' style = 'left: {{interior.left}}%; width: {{interior.width}}%; {{interior_bg_style}}'> </div>";
-				template_html += "<div class = '{{right_bg_class}}' style = 'width:{{right_bg_width}}%; {{right_bg_style}}'> </div>";
+		template_html += "<div ng-click = 'barClickHandler($event)' class = '{{bar_container_class}}' ng-style = 'bar_container_style'>";
+			template_html += "<div id = '{{slider_id}}SliderBar' style = 'position:relative; width:100%;'>";
+				template_html += "<div class = '{{left_bg_class}}' ng-style = '{\"width\": left_bg_width + \"%\", \"position\": \"absolute\",  \"left\": \"0%\"}'> </div>";
+				template_html += "<div ng-repeat = 'handle in handles' id = '{{slider_id}}Handle{{$index}}' ng-mousedown = 'startHandleDrag($index); $event.preventDefault()' class = '{{handle_class}}' ng-style = '{\"z-index\": handle.zindex, \"left\": handle.left + \"%\", \"position\": \"absolute\"}' ng-bind-html-unsafe = 'handle.innerhtml'></div>";
+				template_html += "<div ng-repeat = 'interior in interiors' class = '{{interior_bg_class}}' ng-style = '{\"left\": interior.left + \"%\", \"width\": interior.width + \"%\", \"position\": \"absolute\"}'> </div>";
+				template_html += "<div class = '{{right_bg_class}}' ng-style = '{\"width\": right_bg_width + \"%\", \"position\": \"absolute\", \"right\": \"0%\"}'> </div>";
 				template_html += "<div>";			//Dummy div to wrap ticks, so nth-of-type selectors will work (they ought to work without the wrapper, but don't)
-					template_html += "<div ng-repeat = 'tick in ticks' class = '{{ticks_class}}' style = 'position: absolute; left:{{tick.left}}%;'> </div>";		//If use_ticks not true, scope.ticks will be empty. Thus we don't need an ng-show here.
+					template_html += "<div ng-repeat = 'tick in ticks' class = '{{ticks_class}}' ng-style = '{\"position\": \"absolute\", \"left\": tick.left + \"%\"}'> </div>";		//If use_ticks not true, scope.ticks will be empty. Thus we don't need an ng-show here.
 				template_html += "</div>";
 			template_html += "</div>";
 			
 			template_html += "<div class = '{{ticks_values_container_class}}' style = 'position: relative;' ng-show = 'use_ticks'>";
-				template_html += "<div ng-repeat = 'tick in ticks' class = '{{ticks_value_class}}' style = 'position: absolute; left:{{tick.left}}%;'> {{tick.name}} </div>";
+				template_html += "<div ng-repeat = 'tick in ticks' class = '{{ticks_value_class}}' ng-style = '{\"position\": \"absolute\", \"left\": tick.left + \"%\"}'> {{tick.name}} </div>";
 			template_html += "</div>";
 		template_html += "</div>";
 	template_html += "</div>";
@@ -7252,14 +7448,20 @@ angular.module('ui.directives').directive('uiSlider', ['uiPolynomial', 'uiSlider
 			
 			var setStyles = function()
 			{			
+				/* Now handled in the template directly via ng-style, for IE compatibility
+				
 				//Setup needed bar styles
-				scope.slider_bar_style = 'position:relative; width:100%;';
 				scope.left_bg_style = 'position:absolute; left:0%;';				//width varies depending on handle position; define separately.
 				scope.interior_bg_style = 'position:absolute;';						//left, width varies depending on handles; define separately.
 				scope.right_bg_style = 'position:absolute; right:0%;';				//width varies depending on handle position; define separately.
 				scope.handle_style = 'position:absolute;';
-				var ro = 'rotate(' + scope.rotate + 'deg); ';
-				scope.bar_container_style = '-moz-transform:' + ro + '-webkit-transform:' + ro + '-o-transform:' + ro + '-ms-transform:' + ro + 'transform:' + ro;
+				*/
+				
+				// var ro = 'rotate(' + scope.rotate + 'deg); ';
+				// scope.bar_container_style = '-moz-transform:' + ro + '-webkit-transform:' + ro + '-o-transform:' + ro + '-ms-transform:' + ro + 'transform:' + ro;
+				//ng-style requires object format
+				var ro = 'rotate(' + scope.rotate + 'deg)';
+				scope.bar_container_style = {'-moz-transform': ro, '-webkit-transform': ro, '-o-transform': ro, '-ms-transform': ro, 'transform': ro};
 				
 			};	//End setStyles
 			

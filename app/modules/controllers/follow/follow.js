@@ -355,7 +355,7 @@ Search users. Filter out users that are already followed.
 	@param {Array} [skipIds] _id fields to skip (will be added to query AFTER they are converted to mongo ids (if necessary))
 		@example ['324234', '328sakd23', '23lkjafl83']
 	@param {Object} [fields ={_id:1, first_name:1, last_name:1}] Fields to return
-		@example {_id:1, name:1}
+		@example {_id:1, first_name:1, last_name:1}
 	@param {Number} [skip =0] Where to start returning from (like a cursor)
 	@param {Number} [limit =20] How many to return
 @param {Object} params

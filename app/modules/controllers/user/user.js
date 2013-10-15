@@ -218,12 +218,12 @@ function fillFollow(db, data, params)
 @method search
 @param {Object} data
 	@param {String} [searchString] Text to search for
-	@param {Array} [searchFields =['first_name', 'last_name', 'name']] Fields to search searchString within
+	@param {Array} [searchFields =['first_name', 'last_name']] Fields to search searchString within
 		@example ['first_name', 'last_name']
 	@param {Array} [skipIds] _id fields to skip (will be added to query AFTER they are converted to mongo ids (if necessary))
 		@example ['324234', '328sakd23', '23lkjafl83']
-	@param {Object} [fields ={_id:1, first_name:1, last_name:1, name:1}] Fields to return
-		@example {_id:1, name:1}
+	@param {Object} [fields ={_id:1, first_name:1, last_name:1}] Fields to return
+		@example {_id:1, first_name:1, last_name:1}
 	@param {Number} [skip =0] Where to start returning from (like a cursor)
 	@param {Number} [limit =20] How many to return
 @param {Object} params
@@ -236,8 +236,8 @@ User.prototype.search = function(db, data, params) {
 
 	var defaults ={
 		'limit':20,
-		'fields':{'_id':1, 'first_name':1, 'last_name':1, 'name':1},
-		'searchFields':['first_name', 'last_name', 'name']
+		'fields':{'_id':1, 'first_name':1, 'last_name':1},
+		'searchFields':['first_name', 'last_name']
 	};
 	if(data.fields ===undefined) {
 		data.fields = defaults.fields;
@@ -365,7 +365,7 @@ Reads one or more users
 	@param {Array} [_ids] Ids to look up object info on Will be converted to mongo object ids if necessary.
 	@param {Object} [fullQuery] Full mongo query to use directly for read
 	@param {Array} [fields ={'_id':1, 'first_name':1, 'last_name':1}] Mongo query for which fields in the record to return. Use the empty object {} to get all fields.
-		@example {'_id':1, 'name':1}
+		@example {'_id':1, 'first_name':1, 'last_name':1}
 	@param {Object} [query] Additional query for lookup (will be added to the id(s) query).
 @param {Object} params
 @return {Promise}
@@ -380,7 +380,7 @@ User.prototype.read = function(db, data, params) {
 	};
 	if(data._ids !==undefined) {		//for bulk read, return less info
 		ppSend.defaults = {
-			'fields':{'_id':1, 'first_name':1, 'last_name':1, 'name':1}
+			'fields':{'_id':1, 'first_name':1, 'last_name':1}
 		};
 	}
 	else if(data.fields !== undefined)
@@ -419,7 +419,7 @@ Check for a user's existence based on a given email.
 @param {Object} data
 	@param {String} email The email to search for.
 	@param {Array} [fields = {}] Mongo query for which fields in the record to return. Default is everything.
-		@example {'_id':1, 'name':1}
+		@example {'_id':1, 'first_name':1, 'last_name':1}
 @param {Object} params
 @return {Promise}
 	@param {Object} ret
@@ -470,7 +470,7 @@ Check for a user's existence based on a given phone number.
 @param {Object} data
 	@param {String} phone The phone object to search for.  Will be stripped of all non digit characters first for comparison.
 	@param {Array} [fields = {}] Mongo query for which fields in the record to return. Default is everything.
-		@example {'_id':1, 'name':1}
+		@example {'_id':1, 'first_name':1, 'last_name':1}
 @param {Object} params
 @return {Promise}
 	@param {Object} ret

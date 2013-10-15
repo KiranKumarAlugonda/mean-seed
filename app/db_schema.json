@@ -26,7 +26,6 @@
 		],
 		"first_name":"{String} John",
 		"last_name":"{String} Smith",
-		"name":"{String} John Smith",
 		"password":"{String} [encrypted salt + encrypted password] lkj3lkrjlfkjlk3j4",
 		"password_salt":"{String} [string of password salt] 3lkfsajlf93kfakf",
 		"sess_id":"{String} [string of current session id] 3l4klaskj3",

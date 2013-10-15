@@ -118,9 +118,9 @@ AuthApi.prototype.rpcLogin = function(){
 				{
 					ret1.user =UserMod.readFilter(ret1.user, {type:'login'});		//only return certain fields (i.e strip out password)
 
-					//@example: var fields ={'tribe': {'_id':1, 'email': 1, 'phone': 1, 'first_name': 1, 'last_name': 1, 'name': 1}, 'follow':{'_id':1, 'email': 1, 'phone': 1, 'first_name': 1, 'last_name': 1, 'name': 1} };
+					//@example: var fields ={'tribe': {'_id':1, 'email': 1, 'phone': 1, 'first_name': 1, 'last_name': 1}, 'follow':{'_id':1, 'email': 1, 'phone': 1, 'first_name': 1, 'last_name': 1} };
 					// var fields ={};
-					var fields ={ 'follow':{'_id':1, 'email': 1, 'phone': 1, 'first_name': 1, 'last_name': 1, 'name': 1} };
+					var fields ={ 'follow':{'_id':1, 'email': 1, 'phone': 1, 'first_name': 1, 'last_name': 1} };
 					var fill_promise = UserMod.fillInfo(db, {'user': ret1.user, 'fields': fields }, {});
 					fill_promise.then(
 						function(ret2)
@@ -216,9 +216,9 @@ AuthApi.prototype.rpcCreateLogin = function(){
 			promise.then(function(ret1) {
 				ret1.user =UserMod.readFilter(ret1.user, {type:'login'});		//only return certain fields (i.e strip out password)
 
-				//@example: var fields ={'tribe': {'_id':1, 'email': 1, 'phone': 1, 'first_name': 1, 'last_name': 1, 'name': 1}, 'follow':{'_id':1, 'email': 1, 'phone': 1, 'first_name': 1, 'last_name': 1, 'name': 1} };
+				//@example: var fields ={'tribe': {'_id':1, 'email': 1, 'phone': 1, 'first_name': 1, 'last_name': 1}, 'follow':{'_id':1, 'email': 1, 'phone': 1, 'first_name': 1, 'last_name': 1} };
 				// var fields ={};
-				var fields ={ 'follow':{'_id':1, 'email': 1, 'phone': 1, 'first_name': 1, 'last_name': 1, 'name': 1} };
+				var fields ={ 'follow':{'_id':1, 'email': 1, 'phone': 1, 'first_name': 1, 'last_name': 1} };
 				var fill_promise = UserMod.fillInfo(db, {'user': ret1.user, 'fields': fields }, {});
 				fill_promise.then(
 					function(ret2)
@@ -273,9 +273,9 @@ AuthApi.prototype.rpcActive = function(){
 			promise.then(function(ret1) {
 				ret1.user =UserMod.readFilter(ret1.user, {type:'public'});		//only return certain fields (i.e strip out password)
 				
-				//@example: var fields ={'tribe': {'_id':1, 'email': 1, 'phone': 1, 'first_name': 1, 'last_name': 1, 'name': 1}, 'follow':{'_id':1, 'email': 1, 'phone': 1, 'first_name': 1, 'last_name': 1, 'name': 1} };
+				//@example: var fields ={'tribe': {'_id':1, 'email': 1, 'phone': 1, 'first_name': 1, 'last_name': 1}, 'follow':{'_id':1, 'email': 1, 'phone': 1, 'first_name': 1, 'last_name': 1} };
 				// var fields ={};
-				var fields ={ 'follow':{'_id':1, 'email': 1, 'phone': 1, 'first_name': 1, 'last_name': 1, 'name': 1} };
+				var fields ={ 'follow':{'_id':1, 'email': 1, 'phone': 1, 'first_name': 1, 'last_name': 1} };
 				var fill_promise = UserMod.fillInfo(db, {'user': ret1.user, 'fields': fields }, {});
 				fill_promise.then(
 					function(ret2)
@@ -486,9 +486,9 @@ AuthApi.prototype.rpcSocialLogin = function(){
 				ret1.user =UserMod.readFilter(ret1.user, {type:'full'});		//only return certain fields (i.e strip out password)
 				// ret1.user =UserMod.readFilter(ret1.user, {type:'login'});		//only return certain fields (i.e strip out password)
 
-				//@example: var fields ={'tribe': {'_id':1, 'email': 1, 'phone': 1, 'first_name': 1, 'last_name': 1, 'name': 1}, 'follow':{'_id':1, 'email': 1, 'phone': 1, 'first_name': 1, 'last_name': 1, 'name': 1} };
+				//@example: var fields ={'tribe': {'_id':1, 'email': 1, 'phone': 1, 'first_name': 1, 'last_name': 1}, 'follow':{'_id':1, 'email': 1, 'phone': 1, 'first_name': 1, 'last_name': 1} };
 				// var fields ={};
-				var fields ={ 'follow':{'_id':1, 'email': 1, 'phone': 1, 'first_name': 1, 'last_name': 1, 'name': 1} };
+				var fields ={ 'follow':{'_id':1, 'email': 1, 'phone': 1, 'first_name': 1, 'last_name': 1} };
 				var fill_promise = UserMod.fillInfo(db, {'user': ret1.user, 'fields': fields }, {});
 				fill_promise.then(
 					function(ret2)

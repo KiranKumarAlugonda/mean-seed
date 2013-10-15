@@ -79,7 +79,7 @@ UserApi.prototype.rpcSearch = function(){
 			searchString: { type: 'string', info: "Text to search for" },
 			searchFields: { type: 'array', info: "Fields to search searchString within, i.e. ['first_name', 'last_name']" },
 			skipIds: { type: 'array', info: "_id fields to skip (will be added to query AFTER they are converted to mongo ids (if necessary))" },
-			fields: { type: 'object', info: "Fields to return, i.e. {_id:1, name:1}" },
+			fields: { type: 'object', info: "Fields to return, i.e. {_id:1, first_name:1, last_name:1}" },
 			skip: { type: 'number', info: "Where to start returning from (like a cursor), default =0" },
 			limit: { type: 'number', info: "How many to return, default =20" }
 		},

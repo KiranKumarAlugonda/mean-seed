@@ -405,6 +405,12 @@ var inst ={
 		if(params.noDotNotation ===undefined || !params.noDotNotation) {
 			params.keys =params.keys.split(".");
 		}
+		
+		//simpler and infinitely nested version from: http://stackoverflow.com/questions/8051975/access-object-child-properties-using-a-dot-notation-string
+		while(params.keys.length && (arrayBase = arrayBase[params.keys.shift()]));
+		return arrayBase;
+		
+		/*
 		if(params.keys.length ==1) {
 			if(arrayBase[params.keys[0]] !==undefined) {
 				retArray.val =arrayBase[params.keys[0]];
@@ -439,7 +445,9 @@ var inst ={
 			retArray.valid =0;
 			retArray.msg ='Too deep / too many keys; can only handle key length up to 6';
 		}
+		
 		return retArray;
+		*/
 	},
 	
 	//9.
@@ -941,14 +949,21 @@ var inst ={
 	*/
 	sort2D: function(arrayUnsorted, column, params)
 	{
-		var tempArray =[];	//copy calHide array here to sort; then re-copy back into calHide array once sorted
+		var tempArray =[];
+		var tempArrayPart;
 		var array2D =[];
 		var ii;
 		for(ii =0; ii<arrayUnsorted.length; ii++)
 		{
 			tempArray[ii] =[];
 			tempArray[ii] =arrayUnsorted[ii];
-			array2D[ii] =[ii, tempArray[ii][column]];
+			if(column.indexOf('.') >-1) {		//handle nested / dot notation columns
+				tempArrayPart =this.evalArray(tempArray[ii], {'keys':column});
+				array2D[ii] =[ii, tempArrayPart];
+			}
+			else {
+				array2D[ii] =[ii, tempArray[ii][column]];
+			}
 		}
 
 		array2D =this.subSort2D(array2D);		//function		- array2D will come out sorted
@@ -2155,6 +2170,378 @@ var inst ={
 return inst;
 }]);
 /**
+Handles google maps interaction
+
+@toc
+1. geo
+2. directions
+3. distance
+4. map
+6. addMarker
+5. updateCenter
+5.5. updateCenterActual
+
+@usage
+
+@example
+*/
+
+'use strict';
+
+angular.module('lib.services').
+factory('libGoogleMaps', ['libGooglePlaces', function(libGooglePlaces) {
+var inst ={
+
+	data: {},		//one set of data per instance id
+	
+	/**
+	@toc 1.
+	@return (via callback)
+		@param {Boolean} valid
+		@param {String} msg
+		@param {Array} results All results, each is an object of:
+			@param {Array} address_components
+			@param {String} formatted_address
+			@param {Object} geometry
+				@param {Object} location LatLng object
+				@param {Object} location_type GeocoderLocationType
+				@param {Object} viewport LatLngBounds
+				@param {Object} bounds LatLngBounds
+			@param {Array} types
+	*/
+	geo: function(address, params, callback) {
+		var retArray ={'valid':1, 'msg':'', 'results':''};
+		var geocoder = new google.maps.Geocoder();
+		geocoder.geocode( { 'address': address}, function(results, status) {
+			if (status == google.maps.GeocoderStatus.OK) {
+				retArray.results =results;
+			} else {
+				retArray.valid =0;
+				retArray.msg ="Geocode was not successful for the following reason: " + status;
+				//alert(retArray.msg);
+			}
+			callback(retArray);
+    });
+	},
+	
+	/**
+	@toc 2.
+	@param start =start address OR latLng string (i.e. "(37.7749295, -122.41941550000001)" )
+	@param end =end address OR latLng string (i.e. "(37.7749295, -122.41941550000001)" )
+	@param params
+		travelMode =string of 'drive' (default), 'transit', 'walk', 'bike'
+		transitOptions (only used for 'transit' travelMode)
+			departureTime =javascript date object
+	@return (via callback)
+		valid =boolean
+		msg =string
+		result =array that matches google directions result object: https://developers.google.com/maps/documentation/javascript/directions#DirectionsResults
+	*/
+	directions: function(start, end, params, callback) {
+		var retArray ={'valid':1, 'msg':'', 'result':''};
+		var defaults ={'travelMode':'drive'};
+		//params =libArray.extend(defaults, params, {});		//doesn't extend javascript date object properly..
+		if(params.travelMode ===undefined) {
+			params.travelMode =defaults.travelMode;
+		}
+		var travelModeMap ={
+			'drive':google.maps.TravelMode.DRIVING,
+			'transit':google.maps.TravelMode.TRANSIT,
+			'walk':google.maps.TravelMode.WALKING,
+			'bike':google.maps.TravelMode.BICYCLING
+		};
+		var directionsService = new google.maps.DirectionsService();
+		var request ={
+			origin:start,
+			destination:end,
+			travelMode: travelModeMap[params.travelMode]
+		};
+		if(request.travelMode ==google.maps.TravelMode.TRANSIT) {
+			request.provideRouteAlternatives =true;
+			if(params.transitOptions !==undefined) {
+				request.transitOptions =params.transitOptions;
+			}
+		}
+		directionsService.route(request, function(result, status) {
+			if (status == google.maps.DirectionsStatus.OK) {
+				retArray.result =result;
+			} else {
+				retArray.valid =0;
+				retArray.msg ="Error: Google Maps Directions Service: "+status;
+				//alert(retArray.msg);
+			}
+			callback(retArray);
+		});
+	},
+	
+	/**
+	@toc 3.
+	@param start =start address OR latLng string (i.e. "(37.7749295, -122.41941550000001)" )
+	@param end =end address OR latLng string (i.e. "(37.7749295, -122.41941550000001)" )
+	@param params
+		@param unitSystem {String} one of: 'metric', 'imperial'
+	@return (via callback)
+		valid =boolean
+		msg =string
+		result =false if invalid, otherwise: array {}
+			distance
+				value =int of meters, i.e. 1942009
+				text =string, i.e. 1207 mi
+			duration
+				value =int of seconds, i.e. 96000
+				text =string, i.e.: 1 day 3 hours
+	*/
+	distance: function(start, end, params, callback) {
+		var retArray ={'valid':1, 'msg':'', 'result':false};
+		var distService = new google.maps.DistanceMatrixService();
+		var request ={
+			origins:[start],
+			destinations:[end],
+			travelMode: google.maps.TravelMode.DRIVING
+			//unitSystem: google.maps.UnitSystem.IMPERIAL
+		};
+		if(params.unitSystem !==undefined) {
+			if(params.unitSystem =='imperial') {
+				request.unitSystem =google.maps.UnitSystem.IMPERIAL;
+			}
+		}
+		distService.getDistanceMatrix(request, function(response, status) {
+			if (status == google.maps.DistanceMatrixStatus.OK) {
+				retArray.result ={};
+				retArray.result.distance =response.rows[0].elements[0].distance;
+				retArray.result.duration =response.rows[0].elements[0].duration;
+			}
+			else {
+				retArray.valid =0;
+			}
+			callback(retArray);
+		});
+	},
+	
+	/**
+	@toc 4.
+	@param params
+		lat =int (i.e. 37.774650)
+		lng =int (i.e. -122.419478)
+		zoom =ing (i.e. 12)
+		mapType =string, one of: 'roadmap', 'satellite', 'hybrid', 'terrain'
+		address =string of address (lat & lng will be looked up & formed via Google Maps geo API)
+		clickAddMarkerOpts =array {} of options for displaying a marker when click
+			animation =string of 'drop'
+			draggable =boolean
+			icon =string of image url
+	@return (via callback) {Object}
+		@param {Number} valid 0 or 1
+		@param {String} msg
+		@param {Object} map Google maps object (if valid)
+	*/
+	map: function(gmId, params, callback) {
+		var thisObj =this;
+		this.data[gmId] ={};		//init data for this instance
+		var retArray ={'map':false, 'valid':0, 'msg':''};
+		
+		if(params.address) {
+			this.geo(params.address, {}, function(retArray1) {
+				if(retArray1.valid && retArray1.results) {
+					params.lat =retArray1.results[0].geometry.location.lat();
+					params.lng =retArray1.results[0].geometry.location.lng();
+					thisObj.map1(gmId, params, callback);
+				}
+				else {
+					callback(retArray1);
+				}
+			});
+		}
+		else {
+			thisObj.map1(gmId, params, callback);
+		}
+	},
+	
+	/**
+	@toc 4.1.
+	@param params
+		lat =int (i.e. 37.774650)
+		lng =int (i.e. -122.419478)
+		zoom =ing (i.e. 12)
+		mapType =string, one of: 'roadmap', 'satellite', 'hybrid', 'terrain'
+		clickAddMarkerOpts =array {} of options for displaying a marker when click
+			animation =string of 'drop'
+			draggable =boolean
+			icon =string of image url
+	*/
+	map1: function(gmId, params, callback) {
+		var thisObj =this;
+		var retArray ={'map':false, 'valid':0, 'msg':''};
+		
+		var ids ={'map':gmId+"Map"};
+		$("#"+gmId).html("<div id='"+ids.map+"' style='width:100%; height:100%;'></div>");
+		var defaults ={'lat':37.774650, 'lng':-122.419478, 'zoom':12, 'mapType':'roadmap'};
+		// params =libArray.extend(defaults, params, {});
+		params =angular.extend(defaults, params);
+		
+		var mapTypesMap ={'roadmap':google.maps.MapTypeId.ROADMAP, 'satellite':google.maps.MapTypeId.SATELLITE, 'hybrid':google.maps.MapTypeId.HYBRID, 'terrain':google.maps.MapTypeId.TERRAIN};
+		var mapOptions = {
+			center: new google.maps.LatLng(params.lat, params.lng),
+			zoom: parseInt(params.zoom, 10),
+			mapTypeId: mapTypesMap[params.mapType]
+		};
+		var map =retArray.map =new google.maps.Map(document.getElementById(ids.map), mapOptions);
+		if(params.clickAddMarkerOpts !==undefined) {
+			//thisObj.data[gmId]['clickAddMarkerOpts'] =params.clickAddMarkerOpts;		//save for when marker is actually added
+			google.maps.event.addListener(map, 'click', function(evt) {
+			//map.click(function(evt) {
+				params.evt =evt;
+				params.clearEventListener =true;		//hardcoded @todo pass in via params
+				params.opts =params.clickAddMarkerOpts;
+				thisObj.addMarker(gmId, map, params);
+			});
+		}
+		this.data[gmId].map =retArray.map;
+		callback(retArray);
+	},
+	
+	/**
+	@toc 6.
+	@param params
+		@param {String|Number} lat
+		@param {String|Number} lng
+		latLng =google maps latLng for where to add the marker
+		evt =(mouse) event (i.e. if came from google maps click handler or something)
+			latLng
+		clearEventListener =boolean true to remove click listener
+		opts =options for marker
+			animation =string of 'drop'
+			draggable =boolean
+			icon =string of image url
+	@return marker =google maps marker object handle
+	*/
+	addMarker: function(gmId, map, params) {
+		var opts ={};
+		if(params.opts) {
+			opts =params.opts;
+		}
+		opts.map =map;
+		if(opts.icon ===undefined) {
+			opts.icon ='https://maps.gstatic.com/mapfiles/markers2/icon_greenA.png';
+		}
+		if(params.latLng ===undefined && params.lat !==undefined && params.lng !==undefined) {
+			params.latLng =new google.maps.LatLng(params.lat, params.lng);
+		}
+		if(params.latLng !==undefined) {
+			opts.position =params.latLng;
+		}
+		else if(params.evt !==undefined) {
+			opts.position =params.evt.latLng;
+		}
+		if(opts.animation) {		//convert from string to google maps animation
+			var animationMap ={'drag':google.maps.Animation.DROP};
+			if(animationMap[opts.animation]) {
+				opts.animation =animationMap[opts.animation];
+			}
+		}
+		var marker =new google.maps.Marker(opts);
+		
+		if(params.clearEventListener) {
+			//only allow 1 marker (so clear click listener)
+			google.maps.event.clearListeners(map, 'click');
+		}
+		return marker;
+	},
+	
+	/**
+	@toc 5.
+	@param {String} gmId (instance) id for map to update (whatever was passed in to map function above for creating it)
+	@param params
+		lat
+		lng
+		latLng =already set google latLng
+		placeString =string of text to lookup lat and lng for
+	*/
+	updateCenter: function(gmId, params) {
+		var thisObj =this;
+		var map =this.data[gmId].map;
+		if(params.placeString) {
+			libGooglePlaces.textSearch(params.placeString, map, {}, function(retArray1) {
+				thisObj.updateCenterActual(gmId, retArray1.place.geometry.location, {});
+			});
+		}
+		else {
+			var latLng;
+			if(params.lat && params.lng) {
+				latLng =new google.maps.LatLng(params.lat, params.lng);
+			}
+			else {
+				latLng =params.latLng;
+			}
+			thisObj.updateCenterActual(gmId, latLng, {});
+		}
+	},
+	
+	/**
+	@toc 5.5.
+	@method updateCenterActual
+	*/
+	updateCenterActual: function(gmId, latLng, params) {
+		var map =this.data[gmId].map;
+		map.setCenter(latLng);
+	}
+};
+return inst;
+}]);
+/**
+Handles google places interaction
+
+@toc
+1. textSearch
+
+@usage
+
+@example
+*/
+
+'use strict';
+
+angular.module('lib.services').
+factory('libGooglePlaces', [function() {
+var inst ={
+
+	/**
+	@toc 1.
+	@param text =string of text to search for
+	@param map =google maps map object
+	@param params
+	@return (via callback) array {}
+		valid =boolean
+		msg =string
+		place =array {}
+			name =string of text suggestion
+			geometry
+				location =lat & lng of place
+				viewport
+	*/
+	textSearch: function(text, map, params, callback) {
+		var retArray ={'valid':0, 'msg':'', 'place':false};
+		var service = new google.maps.places.PlacesService(map);
+		var request ={
+			query: text
+		};
+		service.textSearch(request, function(results, status) {
+			if (status == google.maps.places.PlacesServiceStatus.OK) {
+				var place;
+				for (var i = 0; i < results.length; i++) {
+					place = results[i];
+					break;		//only return the first one
+					//createMarker(results[i]);
+				}
+				retArray.place =place;
+			}
+			callback(retArray);
+		});
+	}
+};
+return inst;
+}]);
+/**
 //TOC
 //0. init
 //1. show
@@ -2376,6 +2763,8 @@ return inst;
 /**
 //TOC
 //5. parseUrl
+//5.5. parseUrlParams
+//5.6. stripUrlParams
 //4. addFileSuffix
 //3. escapeHtml
 //1. trim
@@ -2389,7 +2778,7 @@ factory('libString', ['libArray', function(libArray){
 var inst ={
 
 	/**
-	Parses the url to retrieve GET params BEFORE $location.url() is available..
+	Parses the url to retrieve GET params BEFORE Angular $location.url() is available..
 	Handles hash (#) for non HTML5 History support (so '#/' will be stripped off too - though this may be an AngularJS specific routing solution??)
 	@toc 5.
 	@method parseUrl
@@ -2399,6 +2788,7 @@ var inst ={
 	@return {Object} A parsed section of the current url, i.e. for a url of: 'http://localhost/static/public/home?p1=yes&p2=no'
 		@param {String} page The current url WITHOUT url GET params and WITHOUT the root path, i.e. 'home'
 		@param {String} queryParams The GET params, i.e. 'p1=yes&p2=no'
+		@param {Object} queryParamsObj An object version of the GET params, i.e. {p1:'yes', p2:'no'}
 	*/
 	parseUrl: function(params) {
 		var ret ={page: '', queryParams: ''};
@@ -2426,13 +2816,94 @@ var inst ={
 		var posQuery =curPage.indexOf("?");
 		var queryParams ='';
 		if(posQuery >-1) {
-			queryParams =curPage.slice((posQuery), curPage.length);
+			queryParams =curPage.slice((posQuery+1), curPage.length);
 			curPage =curPage.slice(0, posQuery);
 		}
 		
 		ret.page =curPage;
 		ret.queryParams =queryParams;
+		ret.queryParamsObj =this.parseUrlParams(queryParams, {});
 		return ret;
+	},
+	
+	/**
+	Turns a query string (i.e. '?yes=no&maybe=so') into an object for easier reference
+	@toc 5.5.
+	@param {String} urlParams The query string (i.e. '?yes=no&maybe=so')
+	@param {Object} [params]
+	@return {Object} Key-value pairs for each parameter; i.e. {'yes':'no', 'maybe':'so'}
+	*/
+	parseUrlParams: function(urlParams, params) {
+		//strip out leading question mark, if present
+		var questionMark =urlParams.indexOf("?");
+		if(questionMark >-1) {
+			urlParams =urlParams.slice((questionMark+1), urlParams.length);
+		}
+		
+		var urlParamsObj ={};
+		var parts =urlParams.split('&');
+		var ii, subParts;
+		for(ii =0; ii<parts.length; ii++) {
+			subParts =parts[ii].split('=');
+			urlParamsObj[subParts[0]] =subParts[1];
+		}
+		return urlParamsObj;
+	},
+	
+	/**
+	Takes a url and removes one or more parameters and adds a trailing '?' or '&' so more can be added
+	@toc 5.6.
+	@method stripUrlParams
+	@param {String} url The original url (i.e. 'http://domain.com?p1=yes&p2=no&p3=maybe' )
+	@param {Array} stripKeys The params to remove from the url (i.e. ['p2'] )
+	@param {Object} [params]
+		@param {Boolean} [returnParamsOnly] True to return JUST url params (i.e. cut out the domain - i.e. 'http://domain.com' would NOT be present in the returned url)
+	@return {String} newUrl (i.e. 'http://domain.com?p1=yes&p3=maybe&' )
+	*/
+	stripUrlParams: function(url, stripKeys, params) {
+		var newUrl =url;
+		var ii, patt1, patt2, patt3, patt4;
+		
+		//strip out host (everything before leading question mark) since need to add back in question mark later since need to search WITH a leading '?' and '&' otherwise can get improper matches (i.e. 'page' will improperly replace '&editpage=yes' if don't search with the leading character first)
+		var host ='';
+		var questionMark =newUrl.indexOf("?");
+		if(questionMark >-1) {
+			host =newUrl.slice(0, questionMark);
+			newUrl =newUrl.slice((questionMark+0), newUrl.length);
+		}
+			
+		for(ii =0; ii<stripKeys.length; ii++) {
+			//note: order matters here - the last two will match the ENTIRE rest of the string so must only replace AFTER have searched for and replaced it earlier (i.e. before a '&') if it exists there!
+			//must do these first
+			patt1 =new RegExp('\\?'+stripKeys[ii]+'=.*&', 'i');		//for leading (first) parameter with non-ending parameter
+			patt2 =new RegExp('&'+stripKeys[ii]+'=.*&', 'i');		//for all other (non-first) parameters with non-ending parameter
+			//must do these last
+			patt3 =new RegExp('\\?'+stripKeys[ii]+'=.*', 'i');		//for leading (first) parameter
+			patt4 =new RegExp('&'+stripKeys[ii]+'=.*', 'i');		//for all other (non-first) parameters
+			newUrl =newUrl.replace(patt1, '?').replace(patt2, '&').replace(patt3, '?').replace(patt4, '&');
+		}
+		
+		//re-add leading question mark
+		if(newUrl.length >0) {		//if have something left
+			if(newUrl.indexOf('?') <0) {		//if no question mark, replace leading character (must be an '&') with a question mark
+				newUrl ='?'+newUrl.slice(1, newUrl.length);
+			}
+		}
+		
+		//add appropriate trailing character so returned url can be added to without having to figure out if it should be a '?' or a '&'
+		if(newUrl.indexOf('?') <0) {
+			newUrl +='?';
+		}
+		else {
+			newUrl +='&';
+		}
+		
+		if(params.returnParamsOnly ===undefined || !params.returnParamsOnly) {
+			//add back in host
+			newUrl =host+newUrl;
+		}
+		
+		return newUrl;
 	},
 	
 	//4.

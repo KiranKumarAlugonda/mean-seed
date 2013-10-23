@@ -165,26 +165,28 @@ angular.module('myApp').controller('LayoutCtrl', ['$scope', 'libResize', 'LGloba
 		@param {String} minHeightEleId id of which element to set min-height to - to ensure footer is also below scroll line
 	*/
 	function resize(params) {
-		//var totHeight =$(window).height();
-		var totHeight =window.innerHeight;
-		var nonFooterHeight =0;
-		for(var ii=0; ii<params.otherHeightEleIds.length; ii++)
-		{
-			var curId =params.otherHeightEleIds[ii];
-			if(curId !=params.minHeightEleId) {
-				//nonFooterHeight +=$("#"+curId).height();
-				nonFooterHeight +=document.getElementById(curId).offsetHeight;
+		if(document.getElementById(params.minHeightEleId)) {	//only run if page has loaded and elements exist
+			//var totHeight =$(window).height();
+			var totHeight =window.innerHeight;
+			var nonFooterHeight =0;
+			for(var ii=0; ii<params.otherHeightEleIds.length; ii++)
+			{
+				var curId =params.otherHeightEleIds[ii];
+				if(curId !=params.minHeightEleId && document.getElementById(curId)) {
+					//nonFooterHeight +=$("#"+curId).height();
+					nonFooterHeight +=document.getElementById(curId).offsetHeight;
+				}
 			}
+			//account for padding/margin of content element
+			//@todo - remove jQuery.. but not sure how to reliably get padding & margin cross browser otherwise..
+			var ele =$('#'+params.minHeightEleId);
+			var marginPaddingHeight =ele.outerHeight() -ele.height();
+			
+			$scope.contentMinHeight =totHeight-nonFooterHeight -marginPaddingHeight;
+			//$("#"+params.minHeightEleId).css({'min-height':$scope.contentMinHeight+"px"});
+			document.getElementById(params.minHeightEleId).style.minHeight =$scope.contentMinHeight+"px";
+			$scope.$broadcast('footerResize', $scope.contentMinHeight);		//broadcast in case any children elements want to set the min-height to this as well (since height 100% isn't really working... too tall sometimes..)
 		}
-		//account for padding/margin of content element
-		//@todo - remove jQuery.. but not sure how to reliably get padding & margin cross browser otherwise..
-		var ele =$('#'+params.minHeightEleId);
-		var marginPaddingHeight =ele.outerHeight() -ele.height();
-		
-		$scope.contentMinHeight =totHeight-nonFooterHeight -marginPaddingHeight;
-		//$("#"+params.minHeightEleId).css({'min-height':$scope.contentMinHeight+"px"});
-		document.getElementById(params.minHeightEleId).style.minHeight =$scope.contentMinHeight+"px";
-		$scope.$broadcast('footerResize', $scope.contentMinHeight);		//broadcast in case any children elements want to set the min-height to this as well (since height 100% isn't really working... too tall sometimes..)
 	}
 
 	//init

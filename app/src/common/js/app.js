@@ -18,6 +18,7 @@ The "resolve" block in the routes allows calling functions (that return a $q def
 'use strict';
 
 angular.module('myApp', [
+'ngRoute', 'ngSanitize', 'ngTouch', 'ngAnimate',		//additional angular modules
 'ui',
 'ui.bootstrap',
 // 'templates-main',
@@ -31,7 +32,7 @@ config(['$routeProvider', '$locationProvider', 'LGlobalsProvider', '$compileProv
 	setup - whitelist, appPath, html5Mode
 	@toc 1.
 	*/
-	$compileProvider.urlSanitizationWhitelist(/^\s*(https?|ftp|mailto|file|tel|content|geo|http?):/);		//otherwise ng-href links don't work on Android within TriggerIO: http://stackoverflow.com/questions/16130902/angular-js-and-trigger-io-cant-follow-a-link-on-android-that-works-on-ios
+	$compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|ftp|mailto|file|tel|content|geo|http?):/);		//otherwise ng-href links don't work on Android within TriggerIO: http://stackoverflow.com/questions/16130902/angular-js-and-trigger-io-cant-follow-a-link-on-android-that-works-on-ios		//UPDATE: Angular 1.2.0 no longer has urlSanitizationWhitelist; it's been renamed to aHrefSanitizationWhitelist and may no longer even be necessary: http://stackoverflow.com/questions/15105910/angular-ng-view-routing-not-working-in-phonegap
 	
 	var appPath =LGlobalsProvider.dirPaths.appPath;
 	var staticPath = LGlobalsProvider.dirPaths.staticPath;

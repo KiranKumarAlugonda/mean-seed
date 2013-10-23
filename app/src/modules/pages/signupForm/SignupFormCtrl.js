@@ -5,14 +5,14 @@
 
 'use strict';
 
-angular.module('myApp').controller('SignupFormCtrl', ['$scope', 'LGlobals', '$rootScope', 'UserModel', 'svcHttp', function($scope, LGlobals, $rootScope, UserModel, svcHttp) {
+angular.module('myApp').controller('SignupFormCtrl', ['$scope', 'LGlobals', '$rootScope', 'UserModel', 'svcHttp', 'libAngular', function($scope, LGlobals, $rootScope, UserModel, svcHttp, libAngular) {
 	$scope.formVals = {};
 	
 	/**
 	@method $scope.submitForm
 	*/
 	$scope.submitForm =function() {
-		if($scope.signupForm.$valid) {
+		if($scope.signupForm.$valid || libAngular.formValid($scope.signupForm, {})) {
 			if($scope.formVals.password_confirm !=$scope.formVals.password) {
 				$scope.$emit('evtAppalertAlert', {type:'error', msg:'Passwords must match'});
 			}

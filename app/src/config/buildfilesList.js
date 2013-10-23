@@ -38,23 +38,31 @@ var inst ={
 		{
 			"dirs":
 			{
+				"bower":"bower_components",
 				"lib":"lib",
 				"common":"common",
 				"pages":"modules/pages",
 				"directives":"modules/directives",
 				"services":"modules/services",
 			},
-			"dirsExt":['lib'],		//lists all (external/3rd party) directories that are assumed to be already be "final" (linted, minimized) and thus won't be linted or minified (doing so can cause issues)
+			"dirsExt":['bower', 'lib'],		//lists all (external/3rd party) directories that are assumed to be already be "final" (linted, minimized) and thus won't be linted or minified (doing so can cause issues)
 			"files":
 			{
+				"bower":[
+					"angular/angular.min.js",
+					"angular-route/angular-route.min.js",
+					"angular-sanitize/angular-sanitize.min.js",
+					"angular-touch/angular-touch.min.js",
+					"angular-animate/angular-animate.min.js"
+				],
 				//jQuery must be loaded BEFORE Angular for some 3rd party plugins to work?? i.e. bootstrap-datepicker, bootstrap-timepicker??
 				"lib":[
 					"jquery/jquery-1.8.3.min.js",
-					"angular/angular.min.js",
-					"angular/angular-sanitize.min.js",
-					"angular/angular-mobile.min.js",
-					"angular-ui-build/angular-ui.min.js",
-					// "angular-ui-build/angular-ui.js",
+					// "angular/angular.min.js",		//bower now
+					// "angular/angular-sanitize.min.js",		//bower now
+					// "angular/angular-mobile.min.js",		//bower now
+					// "angular-ui-build/angular-ui.min.js",
+					"angular-ui-build/angular-ui.js",
 					"angular-lib-build/angular-lib.min.js",
 					// "angular-lib-build/angular-lib.js",
 					"angular-ui-bootstrap/ui-bootstrap-custom-0.4.0.min.js",

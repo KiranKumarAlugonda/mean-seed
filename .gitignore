@@ -17,6 +17,10 @@ results
 npm-debug.log
 node_modules
 
+# bower components (local installs that should not be tracked)
+app/src/bower_components
+.bowerrc
+
 # testing stuff
 ## selenium server
 selenium

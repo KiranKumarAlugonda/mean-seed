@@ -7,6 +7,11 @@
 	],
 	"description": "node.js and AngularJS seed",
 	"dependencies": {
+		"angular":"~1.2.0",
+		"angular-animate":"~1.2.0",
+		"angular-route":"~1.2.0",
+		"angular-sanitize":"~1.2.0",
+		"angular-touch":"~1.2.0"
 	},
 	"keywords": [
 		"node.js",

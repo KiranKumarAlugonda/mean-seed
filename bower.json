@@ -1,0 +1,21 @@
+{
+	"name": "mean-seed",
+	"version": "0.0.0",
+	"homepage": "https://github.com/lukemadera/mean-seed",
+	"authors": [
+		"Luke Madera <luke.madera@gmail.com>"
+	],
+	"description": "node.js and AngularJS seed",
+	"dependencies": {
+	},
+	"keywords": [
+		"node.js",
+		"AngularJS",
+		"node",
+		"Angular",
+		"mongo",
+		"MongoDB",
+		"Express"
+	],
+	"license": "MIT"
+}

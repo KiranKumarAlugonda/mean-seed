@@ -61,8 +61,8 @@ var inst ={
 					// "angular/angular.min.js",		//bower now
 					// "angular/angular-sanitize.min.js",		//bower now
 					// "angular/angular-mobile.min.js",		//bower now
-					// "angular-ui-build/angular-ui.min.js",
-					"angular-ui-build/angular-ui.js",
+					"angular-ui-build/angular-ui.min.js",
+					// "angular-ui-build/angular-ui.js",
 					"angular-lib-build/angular-lib.min.js",
 					// "angular-lib-build/angular-lib.js",
 					"angular-ui-bootstrap/ui-bootstrap-custom-0.4.0.min.js",

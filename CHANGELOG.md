@@ -21,14 +21,14 @@ Version numbers correspond to `package.json` version (bower.json and config.json
 ## Breaking Changes
 - all form (js controller) `.$valid` checks must have `libAngular.formValid()` in addition/instead since .$valid will ALWAYS be false..
 	- before:
-	```js
+	```
 	if($scope.signupForm.$valid) {
 		...
 	}
 	```
 	
 	- after:
-	```js
+	```
 	if($scope.signupForm.$valid || libAngular.formValid($scope.signupForm, {})) {
 		...
 	}

@@ -52,7 +52,7 @@ Any suggestions for improvement are welcome!
 		- `git config --global user.email "<your email>"`
 		- `git config --global --add color.ui true`
 	- Install global NPM packages.
-		- `sudo npm install -g grunt-cli jasmine-node less karma yuidocjs forever yo generator-generator bower`
+		- `sudo npm install -g grunt-cli jasmine-node less karma yuidocjs forever yo generator-generator bower `
 			- NOTE: karma doesn't seem to always work if install globally?? so it's in package.json now so will be installed locally (as well)
 		- NOTE: IF new global npm packages are installed, you'll need to run this again.
 	- Clone the project to your desired folder location with git (i.e. `git clone [remote location]`)

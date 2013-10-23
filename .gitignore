@@ -19,7 +19,7 @@ node_modules
 
 # bower components (local installs that should not be tracked)
 app/src/bower_components
-.bowerrc
+#.bowerrc		//DO want to track this
 
 # testing stuff
 ## selenium server

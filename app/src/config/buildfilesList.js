@@ -29,7 +29,6 @@ var inst ={
 					"angular-ui-build/angular-ui.min.css",
 					"angular-lib-build/angular-lib.min.css",
 					//"bootstrap/css/bootstrap.css",		//now using LESS to build bootstrap.css (included above)
-					"jcrop/jquery.Jcrop.css",
 					"pikaday/pikaday.css"
 				]
 			},
@@ -53,7 +52,8 @@ var inst ={
 					"angular-route/angular-route.min.js",
 					"angular-sanitize/angular-sanitize.min.js",
 					"angular-touch/angular-touch.min.js",
-					"angular-animate/angular-animate.min.js"
+					"angular-animate/angular-animate.min.js",
+					"momentjs/min/moment.min.js"
 				],
 				//jQuery must be loaded BEFORE Angular for some 3rd party plugins to work?? i.e. bootstrap-datepicker, bootstrap-timepicker??
 				"lib":[
@@ -64,9 +64,7 @@ var inst ={
 					// "angular-lib-build/angular-lib.js",
 					// "angular-ui-bootstrap/ui-bootstrap-custom-0.4.0.min.js",
 					"angular-ui-bootstrap/ui-bootstrap-custom-tpls-0.4.0.min.js",
-					"jcrop/jquery.Jcrop.min.js",
-					"jquery/jquery.mobile.events.js",
-					"moment/moment.min.js",
+					// "jquery/jquery.mobile.events.js",
 					// "pikaday/pikaday.js",		//must be AFTER moment.js is included	//@todo - put this somewhere else and minify it
 					"pikaday/pikaday-luke-edit.js",
 					// "lawnchair/lawnchair.min.js"		//causes Karma SyntaxError

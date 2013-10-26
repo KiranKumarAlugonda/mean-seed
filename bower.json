@@ -14,7 +14,8 @@
 		"angular-route":"~1.2.0",
 		"lesshat":"latest",
 		"font-awesome":"latest",
-		"less-flexbox":"latest"
+		"less-flexbox":"latest",
+		"momentjs":"latest"
 	},
 	"keywords": [
 		"node.js",

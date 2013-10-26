@@ -6,7 +6,7 @@ NOTE: there is both generic and site specific code in here - search for 'site-sp
 
 Sets up the header and footer navigation buttons / displays.
 Each button generally has the following properties (but check the corresponding HTML template for a full reference)
-	- `html` of the content to display, i.e. "Title Here" or "<span class='icon-bell'></span>" or "&nbsp;"
+	- `html` of the content to display, i.e. "Title Here" or "<span class='fa fa-bell'></span>" or "&nbsp;"
 	- either an `href` or `click`. For the `click`, it's generally a $rootScope.$broadcast that can be listened for in the appropriate controller for that page.
 	- `classes` which is an object that has style classes to apply for different parts of the nav item (i.e. `cont` is usually the class for the outer-most container)
 		- use classes.cont ='hidden' as a special class to HIDE (display:none) the entire header and/or footer
@@ -14,7 +14,7 @@ Each button generally has the following properties (but check the corresponding 
 @example
 buttons: [
 	{
-		html: "<span class='icon-bell'></span>",
+		html: "<span class='fa fa-bell'></span>",
 		href: this.paths.appPathLink+'notifications',
 		id: 'notifications'
 	},
@@ -128,7 +128,7 @@ var inst ={
 	initComponents: function(params) {
 		var self =this;
 		this.components.backButton ={
-			html: "<span class='icon-arrow-left'></span>",
+			html: "<span class='fa fa-arrow-left'></span>",
 			click: function() {self.historyBack({}); }
 		};
 		

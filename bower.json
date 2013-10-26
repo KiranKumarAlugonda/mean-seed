@@ -11,7 +11,10 @@
 		"angular-animate":"~1.2.0",
 		"angular-sanitize":"~1.2.0",
 		"angular-touch":"~1.2.0",
-		"angular-route":"~1.2.0"
+		"angular-route":"~1.2.0",
+		"lesshat":"latest",
+		"font-awesome":"latest",
+		"less-flexbox":"latest"
 	},
 	"keywords": [
 		"node.js",

@@ -1,17 +1,17 @@
 //variables
 @font-dir: '../common/font/';		//hardcoded - NOTE: this is relative to the compiled css file, NOT this file
 
-//mixins
-@import url('../../lib/lesshat/lesshat.less');
-@import url('../../lib/flexbox/flexbox.less');
+//bower components - mostly mixins
+@import url('../../bower_components/lesshat/lesshat.less');
+@import url('../../bower_components/less-flexbox/flexbox-mixins.less');
+@import url('../../bower_components/less-flexbox/flexbox.less');
+@import url('../../bower_components/font-awesome/less/font-awesome.less');		//font-awesome font icons (since not using twitter bootstrap need to import here)
+
 
 @import url('mixins/text.less');
 @import url('mixins/triangle.less');
 
 @import url('reset.less');
-
-//3rd party files
-@import url('../../lib/font-awesome/font-awesome.less');		//font-awesome font icons (since not using twitter bootstrap need to import here)
 
 
 @import url('variables/colors.less');
@@ -19,7 +19,6 @@
 @import url('fonts.less');		//must be toward top
 
 @import url('bootstrap-parts.less');
-@import url('flexbox.less');
 
 @import url('body-other.less');
 @import url('form.less');

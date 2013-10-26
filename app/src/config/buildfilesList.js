@@ -58,14 +58,11 @@ var inst ={
 				//jQuery must be loaded BEFORE Angular for some 3rd party plugins to work?? i.e. bootstrap-datepicker, bootstrap-timepicker??
 				"lib":[
 					"jquery/jquery-1.8.3.min.js",
-					// "angular/angular.min.js",		//bower now
-					// "angular/angular-sanitize.min.js",		//bower now
-					// "angular/angular-mobile.min.js",		//bower now
 					"angular-ui-build/angular-ui.min.js",
 					// "angular-ui-build/angular-ui.js",
 					"angular-lib-build/angular-lib.min.js",
 					// "angular-lib-build/angular-lib.js",
-					"angular-ui-bootstrap/ui-bootstrap-custom-0.4.0.min.js",
+					// "angular-ui-bootstrap/ui-bootstrap-custom-0.4.0.min.js",
 					"angular-ui-bootstrap/ui-bootstrap-custom-tpls-0.4.0.min.js",
 					"jcrop/jquery.Jcrop.min.js",
 					"jquery/jquery.mobile.events.js",

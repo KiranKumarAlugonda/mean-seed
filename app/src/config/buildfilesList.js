@@ -53,7 +53,9 @@ var inst ={
 					"angular-sanitize/angular-sanitize.min.js",
 					"angular-touch/angular-touch.min.js",
 					"angular-animate/angular-animate.min.js",
-					"momentjs/min/moment.min.js"
+					"momentjs/min/moment.min.js",
+					"hammerjs/dist/hammer.min.js",
+					"angular-hammer/angular-hammer.js"
 				],
 				//jQuery must be loaded BEFORE Angular for some 3rd party plugins to work?? i.e. bootstrap-datepicker, bootstrap-timepicker??
 				"lib":[

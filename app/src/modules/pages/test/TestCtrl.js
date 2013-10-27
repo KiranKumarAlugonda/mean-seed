@@ -1,6 +1,9 @@
 'use strict';
 
 angular.module('myApp').controller('TestCtrl', ['$scope', '$timeout', 'svcHttp', 'UserModel', 'LGlobals', '$location', function($scope, $timeout, svcHttp, UserModel, LGlobals, $location) {
+	$scope.swipe1 =function(evt, direction, params) {
+		alert(direction);
+	};
 	
 	$scope.formVals ={
 	};

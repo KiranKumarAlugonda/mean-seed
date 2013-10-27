@@ -21,6 +21,7 @@ angular.module('myApp', [
 'ngRoute', 'ngSanitize', 'ngTouch', 'ngAnimate',		//additional angular modules
 'ui',
 'ui.bootstrap',
+'hmTouchEvents',		//hammer swipe / touch
 // 'templates-main',
 'LGlobalsModule',	//todo - clean up / rename these
 'dtv', 'svc',		//local / app specific directives and services (anything that can be used across apps should be added to an external directive or service library such as angular-ui, angular-lib)

@@ -15,7 +15,9 @@
 		"lesshat":"latest",
 		"font-awesome":"latest",
 		"less-flexbox":"latest",
-		"momentjs":"latest"
+		"momentjs":"latest",
+		"hammerjs":"latest",
+		"angular-hammer":"latest"
 	},
 	"keywords": [
 		"node.js",

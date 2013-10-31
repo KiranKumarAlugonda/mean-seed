@@ -60,10 +60,6 @@ angular.module('svc').factory('svcHttp', ['$http', '$q', '$rootScope', 'libCooki
 
 			var deferred = $q.defer();
 			
-			if(self.timeoutTrig) {
-				$timeout.cancel(self.timeoutTrig);
-			}
-			
 			this.formConfig(rpcOpts, httpOpts, params)
 			.then(function(httpOpts) {
 			
@@ -113,6 +109,10 @@ angular.module('svc').factory('svcHttp', ['$http', '$q', '$rootScope', 'libCooki
 				})
 				;
 				
+				//have to do this right before setting it again (previously it was earlier in the function but this is async now so may not cancel properly due to timing unless it's here
+				if(self.timeoutTrig) {
+					$timeout.cancel(self.timeoutTrig);
+				}
 				//start timeout going to cancel call if it takes too long
 				self.timeoutTrig =$timeout(function() {
 					$rootScope.$broadcast('evtAppalertAlert', {type:'error', msg:'Call is taking too long so was canceled; please check your internet connection and try again later'});

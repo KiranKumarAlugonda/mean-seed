@@ -176,13 +176,18 @@ angular.module('myApp').controller('LayoutCtrl', ['$scope', 'libResize', 'LGloba
 				}
 			}
 			//account for padding/margin of content element
-			//@todo - remove jQuery.. but not sure how to reliably get padding & margin cross browser otherwise..
+			if(0) {
 			var ele =$('#'+params.minHeightEleId);
 			var marginPaddingHeight =ele.outerHeight(true) -ele.height();
 			console.log('outer: '+ele.outerHeight(true)+' height: '+ele.height()+' marginPadding: '+marginPaddingHeight);
-			
-			// var ele =document.getElementById(params.minHeightEleId);
-			// var marginPaddingHeight =ele.style.marginTop +ele.style.marginBottom +ele.style.borderTopWidth +ele.style.borderBottomWidth;	
+			}
+			else {
+			var ele =document.getElementById(params.minHeightEleId);
+			//http://stackoverflow.com/questions/14275304/how-to-get-margin-value-of-a-div-in-original-javascript
+			var style = ele.currentStyle || window.getComputedStyle(ele);
+			var marginPaddingHeight =parseInt(style.marginTop,10) +parseInt(style.marginBottom,10) +parseInt(style.borderTopWidth,10) +parseInt(style.borderBottomWidth,10) +parseInt(style.paddingTop,10) +parseInt(style.paddingBottom,10);
+			console.log('offsetHeight: '+ele.offsetHeight+' marginPaddingHeight: '+marginPaddingHeight);
+			}
 			
 			$scope.contentMinHeight =totHeight-nonFooterHeight -marginPaddingHeight;
 			//$("#"+params.minHeightEleId).css({'min-height':$scope.contentMinHeight+"px"});

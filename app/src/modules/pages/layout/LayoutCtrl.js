@@ -182,7 +182,6 @@ angular.module('myApp').controller('LayoutCtrl', ['$scope', 'libResize', 'LGloba
 			var marginPaddingHeight =parseInt(style.marginTop,10) +parseInt(style.marginBottom,10) +parseInt(style.borderTopWidth,10) +parseInt(style.borderBottomWidth,10) +parseInt(style.paddingTop,10) +parseInt(style.paddingBottom,10);
 			
 			$scope.contentMinHeight =totHeight-nonFooterHeight -marginPaddingHeight;
-			//$("#"+params.minHeightEleId).css({'min-height':$scope.contentMinHeight+"px"});
 			document.getElementById(params.minHeightEleId).style.minHeight =$scope.contentMinHeight+"px";
 			$scope.$broadcast('footerResize', $scope.contentMinHeight);		//broadcast in case any children elements want to set the min-height to this as well (since height 100% isn't really working... too tall sometimes..)
 		}

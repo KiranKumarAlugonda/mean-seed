@@ -138,6 +138,18 @@ var inst ={
 				cont: ''
 			},
 			buttons: [
+				{
+					html: "<span class='fa fa-sign-in'></span>",
+					href: this.paths.appPathLink+'login'
+				},
+				{
+					html: "<span class='fa fa-sign-out'></span>",
+					href: this.paths.appPathLink+'logout'
+				},
+				{
+					html: "Test",
+					href: this.paths.appPathLink+'test'
+				}
 			]
 		};
 		//hardcoded array indices for use to change these buttons later
@@ -147,11 +159,25 @@ var inst ={
 		this.components.headerCentered ={
 			template: self.paths.templates.headerCentered,
 			title: {
-				html: ''
+				html: '[Title]'
 			},
 			buttons: {
 				left: [
-					this.components.backButton
+					this.components.backButton,
+					{
+						html: "Test",
+						href: this.paths.appPathLink+'test'
+					}
+				],
+				right: [
+					{
+						html: "<span class='fa fa-sign-in'></span>",
+						href: this.paths.appPathLink+'login'
+					},
+					{
+						html: "<span class='fa fa-sign-out'></span>",
+						href: this.paths.appPathLink+'logout'
+					}
 				]
 			}
 		};
@@ -207,12 +233,12 @@ var inst ={
 		
 		//test
 		this.pages.test =libArray.copyArray(this.components.defaultNav);
-		this.pages.test.header.classes ={
-			cont: 'hidden'
-		};
-		this.pages.test.footer.classes ={
-			cont: 'hidden'
-		};
+		// this.pages.test.header.classes ={
+			// cont: 'hidden'
+		// };
+		// this.pages.test.footer.classes ={
+			// cont: 'hidden'
+		// };
 		
 		//end: CUSTOM nav definitions
 	},

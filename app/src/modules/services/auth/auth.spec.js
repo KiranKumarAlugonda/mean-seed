@@ -3,6 +3,8 @@
 describe('svcAuth', function(){
 	var ctrl, scope ={}, $httpBackend, svcHttp, svcAuth, svcStorage, LGlobals, $cookieStore, UserModel;
 
+	beforeEach(module('ngCookies'));
+	beforeEach(module('jrg'));
     beforeEach(module('svc'));
 	beforeEach(module('LGlobalsModule'));
 	beforeEach(module('UserModelModule'));

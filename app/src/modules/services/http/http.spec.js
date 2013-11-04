@@ -3,6 +3,7 @@
 describe('svcHttp', function(){
 	var ctrl, scope ={}, $httpBackend, svcHttp;
 
+	beforeEach(module('ngCookies'));
     beforeEach(module('svc'));
 	beforeEach(module('LGlobalsModule'));
 	

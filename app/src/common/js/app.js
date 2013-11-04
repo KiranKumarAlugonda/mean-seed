@@ -17,10 +17,21 @@ The "resolve" block in the routes allows calling functions (that return a $q def
 
 'use strict';
 
+//combine all jackrabbitsgroup modules into 'jrg' module for easy reference later (including in test specs)
+angular.module('jrg', [
+		//services
+		'jackrabbitsgroup.angular-string',
+		'jackrabbitsgroup.angular-array',
+		'jackrabbitsgroup.angular-facebook-auth',
+		'jackrabbitsgroup.angular-google-auth',
+		//directives
+		'jackrabbitsgroup.angular-forminput'
+	]
+);
+
 angular.module('myApp', [
 'ngRoute', 'ngSanitize', 'ngTouch', 'ngAnimate', 'ngCookies',		//additional angular modules
-'jackrabbitsgroup.angular-string', 'jackrabbitsgroup.angular-array', 'jackrabbitsgroup.angular-facebook-auth', 'jackrabbitsgroup.angular-google-auth',		//services
-'jackrabbitsgroup.angular-forminput',		//directives
+'jrg',
 'ui.bootstrap',
 'hmTouchEvents',		//hammer swipe / touch
 // 'templates-main',

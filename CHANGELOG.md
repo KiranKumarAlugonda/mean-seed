@@ -1,5 +1,3 @@
-Version numbers correspond to `package.json` version (bower.json and config.json files are NOT necessarily in sync)
-
 # 0.7.0
 
 ## Features

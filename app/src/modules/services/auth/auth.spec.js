@@ -1,18 +1,18 @@
 'use strict';
 
 describe('svcAuth', function(){
-	var ctrl, scope ={}, $httpBackend, svcHttp, svcAuth, svcStorage, LGlobals, libCookie, UserModel;
+	var ctrl, scope ={}, $httpBackend, svcHttp, svcAuth, svcStorage, LGlobals, $cookieStore, UserModel;
 
     beforeEach(module('svc'));
 	beforeEach(module('LGlobalsModule'));
 	beforeEach(module('UserModelModule'));
 	
-	beforeEach(inject(function($rootScope, $controller, $injector, _svcHttp_, _svcAuth_, _svcStorage_, _LGlobals_, _libCookie_, _UserModel_) {
+	beforeEach(inject(function($rootScope, $controller, $injector, _svcHttp_, _svcAuth_, _svcStorage_, _LGlobals_, _$cookieStore_, _UserModel_) {
 		svcHttp =_svcHttp_;
 		svcAuth =_svcAuth_;
 		svcStorage =_svcStorage_;
 		LGlobals =_LGlobals_;
-		libCookie =_libCookie_;
+		$cookieStore =_$cookieStore_;
 		UserModel =_UserModel_;
 		$httpBackend = $injector.get('$httpBackend');
 		
@@ -32,8 +32,8 @@ describe('svcAuth', function(){
 		LGlobals.state.loggedIn =false;
 		var promiseStorage =svcStorage.delete1();		//ensure no local storage
 		promiseStorage.then(function(ret1) {
-			libCookie.clear('user_id', {});
-			libCookie.clear('sess_id', {});
+			$cookieStore.remove('user_id');
+			$cookieStore.remove('sess_id');
 			
 			var promise1 =svcAuth.checkSess({});
 			promise1.then(function(response) {
@@ -53,8 +53,8 @@ describe('svcAuth', function(){
 			sess_id: '38asdflke'
 		};
 		LGlobals.state.loggedIn =true;
-		libCookie.set('user_id', user._id, 1, {});
-		libCookie.set('sess_id', user.sess_id, 1, {});
+		$cookieStore.put('user_id', user._id);
+		$cookieStore.put('sess_id', user.sess_id);
 		
 		var promise1 =svcAuth.checkSess({});
 		promise1.then(function(response) {
@@ -84,12 +84,12 @@ describe('svcAuth', function(){
 		console.log('yes');
 		promiseStorage.then(function(ret1) {
 			console.log('promiseStorage success');
-			libCookie.set('user_id', user._id, 1, {});
-			libCookie.set('sess_id', user.sess_id, 1, {});
+			$cookieStore.put('user_id', user._id);
+			$cookieStore.put('sess_id', user.sess_id);
 			
 			//TESTING
-			var cookieSess =libCookie.get('sess_id', {});
-			var cookieUser =libCookie.get('user_id', {});
+			var cookieSess =$cookieStore.get('sess_id');
+			var cookieUser =$cookieStore.get('user_id');
 			console.log('cookies: '+cookieSess+' '+cookieUser);
 			//end: TESTING
 

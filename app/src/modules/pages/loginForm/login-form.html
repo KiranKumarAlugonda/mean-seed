@@ -1,22 +1,26 @@
 <div class='login-form center center-margin' ng-controller='LoginFormCtrl'>
-	<form class='ui-forminput-form wide' name='loginForm' ng-submit='submitForm()'>
-		<div ui-forminput type='email' placeholder='Email' ng-model='formVals.email' opts='' required></div>
+	<form class='jrg-forminput-form wide' name='loginForm' ng-submit='submitForm()'>
+		<div jrg-forminput type='email' placeholder='Email' ng-model='formVals.email' opts='' required></div>
 		<div ng-hide='forgotPassVisible'>
-			<div ui-forminput type='password' placeholder='Password' ng-model='formVals.password' opts='' required ng-minlength='6'></div>
+			<div jrg-forminput type='password' placeholder='Password' ng-model='formVals.password' opts='' required ng-minlength='6'></div>
 		</div>
 		
 		<div class='clearfix' ng-hide='forgotPassVisible'>
 			<div class='login-form-forgot-pass btn-link' ng-click='toggleForgotPass({})'>Forgot Password</div>
-			<button class='btn btn-primary login-form-button-right ui-forminput-submit' type='submit' >Login</button>
+			<button class='btn btn-primary login-form-button-right jrg-forminput-submit' type='submit' >Login</button>
 		</div>
 		<div class='clearfix' ng-show='forgotPassVisible'>
 			<div class='login-form-forgot-pass btn-link' ng-click='toggleForgotPass({})'>Back to Login</div>
-			<div class='ui-forminput-submit btn btn-primary login-form-button-right' ng-click='forgotPass({})' >Remind Me!</div>
+			<div class='jrg-forminput-submit btn btn-primary login-form-button-right' ng-click='forgotPass({})' >Remind Me!</div>
 		</div>
 		
 		<div class='login-social-buttons center'>
+			<div class='login-signup-button-facebook'><i class='fa fa-facebook padding-lr login-signup-button-icon'></i><div class='login-signup-button-text'>Login</div></div>
+			<div class='login-signup-button-google'><i class='fa fa-google-plus padding-lr login-signup-button-icon'></i><div class='login-signup-button-text'>Login</div></div>
+			<!--
 			<div class='facebook' ui-iconbutton icon-class='fa fa-facebook' button-text='Login' ng-click='fbLogin()'></div>
 			<div class='google' ui-iconbutton icon-class='fa fa-google-plus' button-text='Login' ng-click='googleLogin()'></div>
+			-->
 		</div>
 	</form>
 

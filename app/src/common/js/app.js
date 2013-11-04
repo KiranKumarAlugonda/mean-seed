@@ -19,7 +19,8 @@ The "resolve" block in the routes allows calling functions (that return a $q def
 
 angular.module('myApp', [
 'ngRoute', 'ngSanitize', 'ngTouch', 'ngAnimate', 'ngCookies',		//additional angular modules
-'jackrabbitsgroup.angular-string', 'jackrabbitsgroup.angular-array',
+'jackrabbitsgroup.angular-string', 'jackrabbitsgroup.angular-array', 'jackrabbitsgroup.angular-facebook-auth', 'jackrabbitsgroup.angular-google-auth',		//services
+'jackrabbitsgroup.angular-forminput',		//directives
 'ui.bootstrap',
 'hmTouchEvents',		//hammer swipe / touch
 // 'templates-main',

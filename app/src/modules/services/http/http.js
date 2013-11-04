@@ -12,8 +12,8 @@ $http wrapper for making (backend) calls and handling notifications (in addition
 
 'use strict';
 
-angular.module('svc').factory('svcHttp', ['$http', '$q', '$rootScope', 'libCookie', 'LGlobals', '$timeout', 'svcStorage',
-	function($http, $q, $rootScope, libCookie, LGlobals, $timeout, svcStorage){
+angular.module('svc').factory('svcHttp', ['$http', '$q', '$rootScope', '$cookieStore', 'LGlobals', '$timeout', 'svcStorage',
+	function($http, $q, $rootScope, $cookieStore, LGlobals, $timeout, svcStorage){
 
 	var inst = {
 	
@@ -199,8 +199,8 @@ angular.module('svc').factory('svcHttp', ['$http', '$q', '$rootScope', 'libCooki
 			var authObj =false;
 			
 			//required for most calls
-			var cookieSess =libCookie.get('sess_id', {});
-			var cookieUser =libCookie.get('user_id', {});
+			var cookieSess =$cookieStore.get('sess_id');
+			var cookieUser =$cookieStore.get('user_id');
 			//var sessId =LGlobals.load('session_id', {});
 			if(cookieSess && cookieUser)
 			{

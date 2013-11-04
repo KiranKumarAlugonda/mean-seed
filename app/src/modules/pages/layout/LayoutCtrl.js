@@ -12,8 +12,8 @@ The "pages" array defines the pages and is used to set the layout and top level 
 
 'use strict';
 
-angular.module('myApp').controller('LayoutCtrl', ['$scope', 'LGlobals', '$location', 'libCookie', '$rootScope', 'libAngular', 'svcAuth', '$timeout',
- function($scope, LGlobals, $location, libCookie, $rootScope, libAngular, svcAuth, $timeout) {
+angular.module('myApp').controller('LayoutCtrl', ['$scope', 'LGlobals', '$location', '$cookieStore', '$rootScope', 'svcAuth', '$timeout',
+ function($scope, LGlobals, $location, $cookieStore, $rootScope, svcAuth, $timeout) {
 	/**
 	Most common and default use of appPath, which is set from LGlobals and is used to allow using absolute paths for ng-include and all other file structure / path references
 	@property $scope.appPath
@@ -102,10 +102,10 @@ angular.module('myApp').controller('LayoutCtrl', ['$scope', 'LGlobals', '$locati
 			$scope.classes.loggedIn ='logged-in';
 			LGlobals.state.loggedIn =true;
 			if(params.sess_id !==undefined) {
-				libCookie.set('sess_id', params.sess_id, 1, {});
+				$cookieStore.put('sess_id', params.sess_id);
 			}
 			if(params.user_id !==undefined) {
-				libCookie.set('user_id', params.user_id, 1, {});
+				$cookieStore.put('user_id', params.user_id);
 			}
 			if(params.noRedirect ===undefined || !params.noRedirect || (params.loggedIn && (locPathMatch ==appPath1Match+'login' || locPathMatch ==appPath1Match+'password-reset') ) ) {
 				var page ='home';
@@ -117,7 +117,7 @@ angular.module('myApp').controller('LayoutCtrl', ['$scope', 'LGlobals', '$locati
 						redirect =true;
 					}
 					svcAuth.data.redirectUrl =false;		//reset for next time
-					libCookie.clear('redirectUrl', {});
+					$cookieStore.remove('redirectUrl');
 				}
 				//ensure page refreshes by adding param to end
 				var ppAdd ='refresh=1';
@@ -192,9 +192,14 @@ angular.module('myApp').controller('LayoutCtrl', ['$scope', 'LGlobals', '$locati
 		}
 	}
 
-	//init
+	//init (need to wait until loaded)
+	/*
 	var promise =libAngular.scopeLoaded({'idEle':$scope.ids.content});
 	promise.then(function() {
 		resize({'otherHeightEleIds':[$scope.ids.header, $scope.ids.content, $scope.ids.footer], 'minHeightEleId':$scope.ids.content});		//init min-height
 	});
+	*/
+	$timeout(function() {
+		resize({'otherHeightEleIds':[$scope.ids.header, $scope.ids.content, $scope.ids.footer], 'minHeightEleId':$scope.ids.content});		//init min-height
+	}, 100);
 }]);

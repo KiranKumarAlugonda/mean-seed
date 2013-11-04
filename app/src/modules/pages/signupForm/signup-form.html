@@ -1,17 +1,21 @@
 <div class='signup-form center center-margin' ng-controller='SignupFormCtrl'>
-	<form class='ui-forminput-form wider' name='signupForm' ng-submit='submitForm()'>
-		<div ui-forminput placeholder='Name' ng-model='formVals.name' opts='' required ng-minlength='5'></div>
-		<div ui-forminput type='email' placeholder='Email' ng-model='formVals.email' opts='' required></div>
-		<div ui-forminput type='password' placeholder='Password (6+ characters)' label='Password' ng-model='formVals.password' opts='' required ng-minlength='6'></div>
-		<div ui-forminput type='password' placeholder='Password Again' ng-model='formVals.password_confirm' opts='' required></div>
+	<form class='jrg-forminput-form wider' name='signupForm' ng-submit='submitForm()'>
+		<div jrg-forminput placeholder='Name' ng-model='formVals.name' opts='' required ng-minlength='5'></div>
+		<div jrg-forminput type='email' placeholder='Email' ng-model='formVals.email' opts='' required></div>
+		<div jrg-forminput type='password' placeholder='Password (6+ characters)' label='Password' ng-model='formVals.password' opts='' required ng-minlength='6'></div>
+		<div jrg-forminput type='password' placeholder='Password Again' ng-model='formVals.password_confirm' opts='' required></div>
 		
-		<button class='btn btn-primary ui-forminput-submit' type='submit' >Sign Up</button>
+		<button class='btn btn-primary jrg-forminput-submit' type='submit' >Sign Up</button>
 		<div class='text-info'>{{msgNotify}}</div>
 	</form>
 
 	<div class='login-social-buttons center'>
+		<div class='login-signup-button-facebook'><i class='fa fa-facebook padding-lr login-signup-button-icon'></i><div class='login-signup-button-text'>Sign Up</div></div>
+		<div class='login-signup-button-google'><i class='fa fa-google-plus padding-lr login-signup-button-icon'></i><div class='login-signup-button-text'>Sign Up</div></div>
+		<!--
 		<div class='facebook' ui-iconbutton icon-class='fa fa-facebook' button-text='Sign Up' ng-click='fbLogin()'></div>
 		<div class='google' ui-iconbutton icon-class='fa fa-google-plus' button-text='Sign Up' ng-click='googleLogin()'></div>
+		-->
 	</div>
 	
 </div>

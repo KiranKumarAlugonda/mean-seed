@@ -14,11 +14,15 @@ var inst ={
 		{
 			"dirs":
 			{
+				"bower":"bower_components",
 				"build":"build",
 				"lib":"lib"
 			},
 			"files":
 			{
+				"bower":
+				[
+				],
 				"build":
 				[
 					// "bootstrap.css",
@@ -57,8 +61,13 @@ var inst ={
 					"momentjs/min/moment.min.js",
 					"hammerjs/dist/hammer.min.js",
 					"angular-hammer/angular-hammer.js",		//@todo - use/make .min version
-					"angular-array/angular-array.min.js",
-					"angular-string/angular-string.min.js"
+					//services
+					"angular-array/array.min.js",
+					"angular-string/string.min.js",
+					"angular-facebook-auth/facebook-auth.min.js",
+					"angular-google-auth/google-auth.min.js",
+					//directives
+					"angular-forminput/forminput.min.js",
 				],
 				//jQuery must be loaded BEFORE Angular for some 3rd party plugins to work?? i.e. bootstrap-datepicker, bootstrap-timepicker??
 				"lib":[

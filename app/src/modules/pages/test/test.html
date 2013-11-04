@@ -1,4 +1,5 @@
 <div class='test' ng-controller='TestCtrl'>
+	Test
 	<!--
 	test hammer swipe<br />
 	<div hm-swipeleft='swipe1($event, "left", {})' hm-swiperight='swipe1($event, "right", {})' hm-options='{swipe_velocity: 0.1}' style='padding-top:20px; padding-bottom:20px; height:100px; background-color:blue;'>Swipe here!</div>
@@ -21,31 +22,6 @@
 	<span class='btn btn-info'>Info</span>
 	<span class='btn btn-inverse'>Inverse</span>
 	
-	-->
-	
-	<br /><br />
-	<div ui-carousel opts='optsCarousel'>
-		<div ng-repeat='slide in slides' style='display:inline-block; text-align:center; vertical-align:top;'>		<!-- styles are optional and should be moved to a class / stylesheet; this centers things and makes them display side by side -->
-			<!-- custom content here -->
-			<img ng-src='{{slide.image}}' style='margin:auto; max-width:100%;'>		<!-- styles are optional and should be moved to a class / stylehseet; this makes the content/images dynamic full width. Remove max-width:100%; for them to keep their size and be centered. Make sure NOT to use 'width:100%;' as this will stretch tall, narrow images. -->
-			<div>
-				<h4>Slide {{$index}}</h4>
-				<p>{{slide.text}}</p>
-			</div>
-			<!-- end: custom content here -->
-		</div>
-	</div>
-
-
-	<br /><br />
-	<!--
-	DateTimePicker:<br />
-	<div ui-datetimepicker ng-model='ngModelDatetimepicker' opts='optsDatetimepicker'></div>
-	-->
-	<!--
-	<div ui-forminput type='datetime' ng-model='ngModelDatetimepicker' placeholder='Date/time' opts=''></div>
-	
-	<div ui-forminput ng-model='formVals.text' placeholder='text' opts=''></div>
 	-->
 	
 </div>

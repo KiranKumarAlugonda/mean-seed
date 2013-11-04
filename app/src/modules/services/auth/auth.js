@@ -11,8 +11,8 @@
 'use strict';
 
 angular.module('svc').
-factory('svcAuth', ['svcHttp', 'LGlobals', 'libCookie', '$location', '$rootScope', '$q', 'UserModel', 'jrgString', 'svcNav', 'svcStorage',
-function(svcHttp, LGlobals, libCookie, $location, $rootScope, $q, UserModel, jrgString, svcNav, svcStorage) {
+factory('svcAuth', ['svcHttp', 'LGlobals', '$cookieStore', '$location', '$rootScope', '$q', 'UserModel', 'jrgString', 'svcNav', 'svcStorage',
+function(svcHttp, LGlobals, $cookieStore, $location, $rootScope, $q, UserModel, jrgString, svcNav, svcStorage) {
 var inst ={
 
 	data: {
@@ -81,10 +81,10 @@ var inst ={
 			}
 			curPage +=queryParamsString;
 			this.data.redirectUrl =curPage;
-			libCookie.set('redirectUrl', curPage, 1, {});		//save cookie as well just in case (page refresh, etc.)
+			$cookieStore.put('redirectUrl', curPage);		//save cookie as well just in case (page refresh, etc.)
 		}
 		else {		//pull from cookie
-			this.data.redirectUrl =libCookie.get('redirectUrl', {});
+			this.data.redirectUrl =$cookieStore.get('redirectUrl');
 		}
 	},
 	
@@ -130,7 +130,7 @@ var inst ={
 					$location.url(LGlobals.dirPaths.appPathLocation+thisObj.data.redirectUrl);
 					var redirectUrlSave =thisObj.data.redirectUrl;
 					thisObj.data.redirectUrl =false;		//reset for next time
-					libCookie.clear('redirectUrl', {});
+					$cookieStore.remove('redirectUrl');
 					if(thisObj.samePage(redirectUrlSave, {})) {
 						thisObj.done({});
 						deferred.resolve({'goTrig':goTrig});
@@ -144,8 +144,8 @@ var inst ={
 					deferred.resolve({'goTrig':goTrig});
 				}
 			}, function(err) {	//check cookies
-				var cookieSess =libCookie.get('sess_id', {});
-				var cookieUser =libCookie.get('user_id', {});
+				var cookieSess =$cookieStore.get('sess_id');
+				var cookieUser =$cookieStore.get('user_id');
 				if(cookieUser && cookieSess) {		//cookie still thinks logged in - see if can pull user data from back-end to log in user
 					goTrig =false;
 					
@@ -159,7 +159,7 @@ var inst ={
 							$location.url(LGlobals.dirPaths.appPathLocation+thisObj.data.redirectUrl);
 							var redirectUrlSave =thisObj.data.redirectUrl;
 							thisObj.data.redirectUrl =false;		//reset for next time
-							libCookie.clear('redirectUrl', {});
+							$cookieStore.remove('redirectUrl');
 							if(thisObj.samePage(redirectUrlSave, {})) {
 								thisObj.done({});
 								deferred.resolve({'goTrig':goTrig});
@@ -173,8 +173,8 @@ var inst ={
 							deferred.resolve({'goTrig':goTrig});
 						}
 					}, function(response) {
-						libCookie.clear('sess_id', {});		//clear cookie to avoid endless loop
-						libCookie.clear('user_id', {});		//clear cookie to avoid endless loop
+						$cookieStore.remove('sess_id');		//clear cookie to avoid endless loop
+						$cookieStore.remove('user_id');		//clear cookie to avoid endless loop
 						if(!params.noLoginRequired) {
 							$location.url(LGlobals.dirPaths.appPathLocation+params.loginPage);
 							if(thisObj.samePage(params.loginPage, {})) {

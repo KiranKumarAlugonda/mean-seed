@@ -139,12 +139,12 @@ var inst ={
 			},
 			buttons: [
 				{
-					html: "<span class='fa fa-sign-in'></span>",
-					href: this.paths.appPathLink+'login'
+					html: "<span class='fa fa-unlock-o'></span>",
+					href: this.paths.appPathLink+'forgot-password'
 				},
 				{
-					html: "<span class='fa fa-sign-out'></span>",
-					href: this.paths.appPathLink+'logout'
+					html: "Design",
+					href: this.paths.appPathLink+'design'
 				},
 				{
 					html: "Test",

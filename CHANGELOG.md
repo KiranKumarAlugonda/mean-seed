@@ -12,25 +12,26 @@ Version numbers correspond to `package.json` version (bower.json and config.json
 	
 		
 ## Bug Fixes
-	- new angular-forminput directive fixes/removes `libAngular.formValid()` requirement on form submit so you no longer need this
+- new angular-forminput directive fixes/removes `libAngular.formValid()` requirement on form submit so you no longer need this
 
 ## Breaking Changes
-	- MANY - the frontend has been refactored to be more modularized
-		- removed modules / libraries
-			- jQuery (just using jqLite built into AngularJS)
-			- Angular-UI
-			- Angular-lib
-		- new, select/core Bower modules in place of old `ui` and `lib`
-			- services
-				- angular-string
-				- angular-array
-				- angular-facebook-auth
-				- angular-google-auth
-			- directives
-				- angular-forminput
-			- others
-				- ngCookies
-				
+- MANY - the frontend has been refactored to be more modularized
+	- removed modules / libraries
+		- jQuery (just using jqLite built into AngularJS)
+		- Angular-UI
+		- Angular-lib
+	- new, select/core Bower modules in place of old `ui` and `lib`
+		- services
+			- angular-string
+			- angular-array
+			- angular-facebook-auth
+			- angular-google-auth
+		- directives
+			- angular-forminput
+		- others
+			- ngCookies
+
+			
 
 # 0.1.0
 

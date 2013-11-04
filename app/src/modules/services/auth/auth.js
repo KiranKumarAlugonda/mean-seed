@@ -11,8 +11,8 @@
 'use strict';
 
 angular.module('svc').
-factory('svcAuth', ['svcHttp', 'LGlobals', 'libCookie', '$location', '$rootScope', '$q', 'UserModel', 'libString', 'svcNav', 'svcStorage',
-function(svcHttp, LGlobals, libCookie, $location, $rootScope, $q, UserModel, libString, svcNav, svcStorage) {
+factory('svcAuth', ['svcHttp', 'LGlobals', 'libCookie', '$location', '$rootScope', '$q', 'UserModel', 'jrgString', 'svcNav', 'svcStorage',
+function(svcHttp, LGlobals, libCookie, $location, $rootScope, $q, UserModel, jrgString, svcNav, svcStorage) {
 var inst ={
 
 	data: {
@@ -52,7 +52,7 @@ var inst ={
 		var appPath =LGlobals.dirPaths.appPath;
 		var curUrl =$location.$$absUrl;
 		// this.curUrl =curUrl;
-		var ret1 =libString.parseUrl({url: curUrl, rootPath: appPath});
+		var ret1 =jrgString.parseUrl({url: curUrl, rootPath: appPath});
 		var curPage =ret1.page;
 		var queryParams =ret1.queryParams;
 		this.data.urlInfo =angular.extend(this.data.urlInfo, ret1);
@@ -109,7 +109,7 @@ var inst ={
 	checkSess: function(params) {
 		var thisObj =this;
 		var defaults ={'noLoginRequired':false, 'loginPage':'login'};
-		params =$.extend({}, defaults, params);
+		params =angular.extend(defaults, params);
 		var deferred = $q.defer();
 		var promise1;
 		

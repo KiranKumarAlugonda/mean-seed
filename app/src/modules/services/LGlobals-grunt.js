@@ -89,7 +89,7 @@ var cfgJson = grunt.config('cfgJson');
 			*/
 			load: function(key, params) {
 				var defaults ={'mainKey':'data'};
-				params =$.extend({}, defaults, params);
+				params =angular.extend(defaults, params);
 				var val =false;
 				if(this[params.mainKey][key] !==undefined)
 					val =this[params.mainKey][key];
@@ -103,7 +103,7 @@ var cfgJson = grunt.config('cfgJson');
 			*/
 			save: function(key, value, params) {
 				var defaults ={'mainKey':'data'};
-				params =$.extend({}, defaults, params);
+				params =angular.extend(defaults, params);
 				this[params.mainKey][key] =value;
 			}
 		};

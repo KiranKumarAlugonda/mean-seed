@@ -12,8 +12,8 @@ The "pages" array defines the pages and is used to set the layout and top level 
 
 'use strict';
 
-angular.module('myApp').controller('LayoutCtrl', ['$scope', 'libResize', 'LGlobals', '$location', 'libCookie', '$rootScope', 'libAngular', 'svcAuth', '$timeout',
- function($scope, libResize, LGlobals, $location, libCookie, $rootScope, libAngular, svcAuth, $timeout) {
+angular.module('myApp').controller('LayoutCtrl', ['$scope', 'LGlobals', '$location', 'libCookie', '$rootScope', 'libAngular', 'svcAuth', '$timeout',
+ function($scope, LGlobals, $location, libCookie, $rootScope, libAngular, svcAuth, $timeout) {
 	/**
 	Most common and default use of appPath, which is set from LGlobals and is used to allow using absolute paths for ng-include and all other file structure / path references
 	@property $scope.appPath
@@ -150,12 +150,17 @@ angular.module('myApp').controller('LayoutCtrl', ['$scope', 'libResize', 'LGloba
 	});
 
 	//ensure footer is always below scroll line (i.e. on each resize)
+	window.onresize =function() {
+		resize({'otherHeightEleIds':[$scope.ids.header, $scope.ids.content, $scope.ids.footer], 'minHeightEleId':$scope.ids.content});
+	};
+	/*
 	var evtName ="resizeFooterEvt";
 	libResize.addCallback('footerResize', {'evtName':evtName, 'args':[]}, {});
 
 	$scope.$on(evtName, function(evt) {
 		resize({'otherHeightEleIds':[$scope.ids.header, $scope.ids.content, $scope.ids.footer], 'minHeightEleId':$scope.ids.content});
 	});
+	*/
 
 	/**
 	@method resize

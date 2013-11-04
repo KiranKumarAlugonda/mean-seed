@@ -18,15 +18,14 @@ The "resolve" block in the routes allows calling functions (that return a $q def
 'use strict';
 
 angular.module('myApp', [
-'ngRoute', 'ngSanitize', 'ngTouch', 'ngAnimate',		//additional angular modules
-'ui',
+'ngRoute', 'ngSanitize', 'ngTouch', 'ngAnimate', 'ngCookies',		//additional angular modules
+'jackrabbitsgroup.angular-string', 'jackrabbitsgroup.angular-array',
 'ui.bootstrap',
 'hmTouchEvents',		//hammer swipe / touch
 // 'templates-main',
-'LGlobalsModule',	//todo - clean up / rename these
-'dtv', 'svc',		//local / app specific directives and services (anything that can be used across apps should be added to an external directive or service library such as angular-ui, angular-lib)
-'lib',
-'UserModelModule'		//todo - clean up and make part of a "models" & localstorage service?
+'LGlobalsModule',	//@todo - clean up / rename these
+'dtv', 'svc',		//local / app specific directives and services (anything that can be used across apps should be added to an external (bower) directive or service library)
+'UserModelModule'		//@todo - clean up and make part of a "models" & localstorage service?
 ]).
 config(['$routeProvider', '$locationProvider', 'LGlobalsProvider', '$compileProvider', function($routeProvider, $locationProvider, LGlobalsProvider, $compileProvider) {
 	/**

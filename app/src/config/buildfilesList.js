@@ -26,10 +26,10 @@ var inst ={
 					"base.css",		//put this LAST to override bootstrap styles
 				],
 				"lib":[
-					"angular-ui-build/angular-ui.min.css",
-					"angular-lib-build/angular-lib.min.css",
+					// "angular-ui-build/angular-ui.min.css",
+					// "angular-lib-build/angular-lib.min.css",
 					//"bootstrap/css/bootstrap.css",		//now using LESS to build bootstrap.css (included above)
-					"pikaday/pikaday.css"
+					// "pikaday/pikaday.css"
 				]
 			},
 		},
@@ -53,25 +53,28 @@ var inst ={
 					"angular-sanitize/angular-sanitize.min.js",
 					"angular-touch/angular-touch.min.js",
 					"angular-animate/angular-animate.min.js",
+					"angular-cookies/angular-cookies.min.js",
 					"momentjs/min/moment.min.js",
 					"hammerjs/dist/hammer.min.js",
-					"angular-hammer/angular-hammer.js"
+					"angular-hammer/angular-hammer.js",		//@todo - use/make .min version
+					"angular-array/angular-array.min.js",
+					"angular-string/angular-string.min.js"
 				],
 				//jQuery must be loaded BEFORE Angular for some 3rd party plugins to work?? i.e. bootstrap-datepicker, bootstrap-timepicker??
 				"lib":[
-					"jquery/jquery-1.8.3.min.js",
-					"angular-ui-build/angular-ui.min.js",
+					// "jquery/jquery-1.8.3.min.js",
+					// "angular-ui-build/angular-ui.min.js",
 					// "angular-ui-build/angular-ui.js",
-					"angular-lib-build/angular-lib.min.js",
+					// "angular-lib-build/angular-lib.min.js",
 					// "angular-lib-build/angular-lib.js",
 					// "angular-ui-bootstrap/ui-bootstrap-custom-0.4.0.min.js",
 					"angular-ui-bootstrap/ui-bootstrap-custom-tpls-0.4.0.min.js",
 					// "jquery/jquery.mobile.events.js",
 					// "pikaday/pikaday.js",		//must be AFTER moment.js is included	//@todo - put this somewhere else and minify it
-					"pikaday/pikaday-luke-edit.js",
+					// "pikaday/pikaday-luke-edit.js",
 					// "lawnchair/lawnchair.min.js"		//causes Karma SyntaxError
 					// "lawnchair/lawnchair.js"		//causes Karma SyntaxError
-					"lawnchair/lawnchair-edit.js"
+					"lawnchair/lawnchair-edit.js"		//@todo - use/make .min version
 					// "facebook/facebook.all.js"			//HUGE filesize (168kb) just for login - WASTE - try to shift to just using backend facebook calls?
 				],
 				"common":[

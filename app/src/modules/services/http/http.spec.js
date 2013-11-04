@@ -4,7 +4,6 @@ describe('svcHttp', function(){
 	var ctrl, scope ={}, $httpBackend, svcHttp;
 
     beforeEach(module('svc'));
-	beforeEach(module('lib'));
 	beforeEach(module('LGlobalsModule'));
 	
 	beforeEach(inject(function($rootScope, $controller, $injector, _svcHttp_) {

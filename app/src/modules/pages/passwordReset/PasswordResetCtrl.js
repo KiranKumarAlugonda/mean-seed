@@ -5,7 +5,8 @@
 
 'use strict';
 
-angular.module('myApp').controller('PasswordResetCtrl', ['$scope', 'LGlobals', '$routeParams', '$location', 'svcHttp', 'libAngular', 'UserModel', function($scope, LGlobals, $routeParams, $location, svcHttp, libAngular, UserModel) {
+angular.module('myApp').controller('PasswordResetCtrl', ['$scope', 'LGlobals', '$routeParams', '$location', 'svcHttp', 'UserModel',
+function($scope, LGlobals, $routeParams, $location, svcHttp, UserModel) {
 	$scope.formVals = {};
 	
 	//see if email and/or password reset key is set in url
@@ -20,7 +21,7 @@ angular.module('myApp').controller('PasswordResetCtrl', ['$scope', 'LGlobals', '
 	@method $scope.submitForm
 	*/
 	$scope.submitForm =function() {
-		if(($scope.passResetForm.$valid || libAngular.formValid($scope.passResetForm, {})) && $scope.formVals.password ==$scope.formVals.password_confirm) {
+		if(($scope.passResetForm.$valid) && $scope.formVals.password ==$scope.formVals.password_confirm) {
 			$scope.$emit('evtAppalertAlert', {close:true});		//clear existing messages
 			
 			$scope.formVals.reset_key =$scope.formVals.password_reset_key;

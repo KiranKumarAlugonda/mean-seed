@@ -5,14 +5,14 @@
 
 'use strict';
 
-angular.module('myApp').controller('LoginFormCtrl', ['$scope', 'LGlobals', 'svcHttp', '$rootScope', 'UserModel', 'libAngular', '$location', function($scope, LGlobals, svcHttp, $rootScope, UserModel, libAngular, $location) {
+angular.module('myApp').controller('LoginFormCtrl', ['$scope', 'LGlobals', 'svcHttp', '$rootScope', 'UserModel', '$location', function($scope, LGlobals, svcHttp, $rootScope, UserModel, $location) {
 	$scope.formVals = {};
 
 	/**
 	@method $scope.submitForm
 	*/
 	$scope.submitForm =function() {
-		if($scope.loginForm.$valid || libAngular.formValid($scope.loginForm, {})) {
+		if($scope.loginForm.$valid) {
 			$scope.$emit('evtAppalertAlert', {close:true});		//clear existing messages
 			
 			// var promise1 =svcHttp.go({method:'Auth.login'}, {data:$scope.formVals}, {});

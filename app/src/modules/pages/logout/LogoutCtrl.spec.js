@@ -8,7 +8,6 @@ describe('LogoutCtrl', function(){
 	var ctrl, scope ={}, $httpBackend, UserModel, LGlobals, svcHttp;
 
 	beforeEach(module('myApp'));
-	beforeEach(module('lib'));
 	beforeEach(module('svc'));
 	beforeEach(module('LGlobalsModule'));		//all need LGlobals for LGlobals provider in app.js
 	beforeEach(module('UserModelModule'));
@@ -74,7 +73,6 @@ describe('LogoutCtrl', function(){
 	var ctrl, scope ={}, $httpBackend, UserModel, LGlobals, svcHttp;
 
 	beforeEach(module('myApp'));
-	beforeEach(module('lib'));
 	beforeEach(module('svc'));
 	beforeEach(module('LGlobalsModule'));		//all need LGlobals for LGlobals provider in app.js
 	beforeEach(module('UserModelModule'));

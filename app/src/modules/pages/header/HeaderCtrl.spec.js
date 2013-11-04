@@ -11,7 +11,6 @@ describe('HeaderCtrl', function(){
 	
 	beforeEach(module('myApp'));
 	beforeEach(module('LGlobalsModule'));
-	beforeEach(module('lib'));
 	
 	beforeEach(inject(function(_$httpBackend_, $rootScope, $controller, _LGlobals_) {
 		/*

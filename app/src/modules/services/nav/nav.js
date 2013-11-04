@@ -47,7 +47,7 @@ buttons: [
 'use strict';
 
 angular.module('svc').
-factory('svcNav', ['$rootScope', '$location', 'LGlobals', 'libString', 'libArray', function($rootScope, $location, LGlobals, libString, libArray) {
+factory('svcNav', ['$rootScope', '$location', 'LGlobals', 'jrgArray', function($rootScope, $location, LGlobals, jrgArray) {
 var inst ={
 
 	inited: false,		//trigger that will be set after this first time this is run
@@ -196,7 +196,7 @@ var inst ={
 	initPages: function(params) {
 		var self =this;
 		
-		this.pages.defaultPage =libArray.copyArray(this.components.defaultNav);			//in case missed a page, show default nav
+		this.pages.defaultPage =jrgArray.copy(this.components.defaultNav);			//in case missed a page, show default nav
 		
 		//site-specific
 		//CUSTOM nav definitions
@@ -232,7 +232,7 @@ var inst ={
 		
 		
 		//test
-		this.pages.test =libArray.copyArray(this.components.defaultNav);
+		this.pages.test =jrgArray.copy(this.components.defaultNav);
 		// this.pages.test.header.classes ={
 			// cont: 'hidden'
 		// };
@@ -312,7 +312,7 @@ var inst ={
 	@method getNav
 	*/
 	getNav: function(params) {
-		return libArray.copyArray(this.curPage, {});		//must return COPY otherwise changes will overwrite objects here!
+		return jrgArray.copy(this.curPage, {});		//must return COPY otherwise changes will overwrite objects here!
 	},
 	
 	/**

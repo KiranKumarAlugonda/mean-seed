@@ -10,8 +10,8 @@
 'use strict';
 
 angular.module('svc').
-factory('svcSocialAuth', ['svcHttp', 'LGlobals', '$rootScope', '$q', 'libGoogleAuth', 'libFacebookAuth', 'UserModel', '$timeout',
-function(svcHttp, LGlobals, $rootScope, $q, libGoogleAuth, libFacebookAuth, UserModel, $timeout) {
+factory('svcSocialAuth', ['svcHttp', 'LGlobals', '$rootScope', '$q', 'jrgGoogleAuth', 'jrgFacebookAuth', 'UserModel', '$timeout',
+function(svcHttp, LGlobals, $rootScope, $q, jrgGoogleAuth, jrgFacebookAuth, UserModel, $timeout) {
 var inst ={
 
 	/**
@@ -29,7 +29,7 @@ var inst ={
 	},
 	
 	/**
-	Wraps libGoogleAuth service to check if user is already authenticated by google and if not, authenticate them. Either way, return a promise with the google authentication information upon completion
+	Wraps jrgGoogleAuth service to check if user is already authenticated by google and if not, authenticate them. Either way, return a promise with the google authentication information upon completion
 	@toc 2.
 	@method checkAuthGoogle
 	@param {Object} opts
@@ -53,12 +53,12 @@ var inst ={
 		}
 		else {		//have to authenticate
 			//initialize google auth with client id
-			//libGoogleAuth.init({'client_id':LGlobals.info.googleClientId, 'scope':'https://www.googleapis.com/auth/plus.login https://www.googleapis.com/auth/userinfo.email'});
-			libGoogleAuth.init({'client_id':LGlobals.info.googleClientId, 'scopeHelp':['login', 'email', 'contacts'] });
+			//jrgGoogleAuth.init({'client_id':LGlobals.info.googleClientId, 'scope':'https://www.googleapis.com/auth/plus.login https://www.googleapis.com/auth/userinfo.email'});
+			jrgGoogleAuth.init({'client_id':LGlobals.info.googleClientId, 'scopeHelp':['login', 'email', 'contacts'] });
 			
 			//handle actual google login
 			var evtGoogleLogin ="evtGoogleLogin";
-			libGoogleAuth.login({'extraInfo':{'user_id':true, 'emails':true}, 'callback':{'evtName':evtGoogleLogin, 'args':[]} });
+			jrgGoogleAuth.login({'extraInfo':{'user_id':true, 'emails':true}, 'callback':{'evtName':evtGoogleLogin, 'args':[]} });
 			
 			/**
 			@toc
@@ -87,7 +87,7 @@ var inst ={
 	},
 	
 	/**
-	Wraps libFacebookAuth service to check if user is already authenticated by facebook and if not, authenticate them. Either way, return a promise with the facebook authentication information upon completion
+	Wraps jrgFacebookAuth service to check if user is already authenticated by facebook and if not, authenticate them. Either way, return a promise with the facebook authentication information upon completion
 	@toc 3.
 	@method checkAuthFacebook
 	@param {Object} opts
@@ -111,12 +111,12 @@ var inst ={
 		}
 		else {		//have to authenticate
 			//initialize facebook auth with app id
-			libFacebookAuth.fbLoginInit({'fbAppId':LGlobals.info.fbAppId, 'fbPerms':LGlobals.info.fbPerms});
+			jrgFacebookAuth.init({'fbAppId':LGlobals.info.fbAppId, 'fbPerms':LGlobals.info.fbPerms});
 			
 			//$timeout(function() {
 				//handle actual facebook login
 				var evtFBLogin ="evtFBLogin";
-				libFacebookAuth.preLoginFB({'callback':{'evtName':evtFBLogin, 'args':[]} });
+				jrgFacebookAuth.login({'callback':{'evtName':evtFBLogin, 'args':[]} });
 				
 				/**
 				@toc

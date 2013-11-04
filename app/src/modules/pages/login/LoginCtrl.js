@@ -9,7 +9,8 @@
 'use strict';
 
 //function LoginCtrl($scope, svcHttp, LFBLogin, UserModel, LGlobals, $rootScope) {
-angular.module('myApp').controller('LoginCtrl', ['$scope', 'svcHttp', 'UserModel', 'LGlobals', '$rootScope', 'svcSocialAuth', 'libFacebookAuth', 'libGoogleAuth', function($scope, svcHttp, UserModel, LGlobals, $rootScope, svcSocialAuth, libFacebookAuth, libGoogleAuth) {
+angular.module('myApp').controller('LoginCtrl', ['$scope', 'svcHttp', 'UserModel', 'LGlobals', '$rootScope', 'svcSocialAuth',
+function($scope, svcHttp, UserModel, LGlobals, $rootScope, svcSocialAuth) {
 	/**
 	@property $scope.signupVisible
 	@type Boolean

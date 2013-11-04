@@ -79,11 +79,11 @@ describe("E2E: Testing Routes", function() {
 		
 		//fill in signup form
 		var formSelector ='.signup-form form';
-		ptor.findElement(protractor.By.css(formSelector+' .ui-forminput-cont:nth-child(1) input')).sendKeys(user1.name);
-		ptor.findElement(protractor.By.css(formSelector+' .ui-forminput-cont:nth-child(2) input')).sendKeys(user1.email);
-		// ptor.findElement(protractor.By.css(formSelector+' .ui-forminput-cont:nth-child(3) input')).sendKeys(user1.phone.number);
-		ptor.findElement(protractor.By.css(formSelector+' .ui-forminput-cont:nth-child(3) input')).sendKeys(user1.password);
-		ptor.findElement(protractor.By.css(formSelector+' .ui-forminput-cont:nth-child(4) input')).sendKeys(user1.password);
+		ptor.findElement(protractor.By.css(formSelector+' .jrg-forminput-cont:nth-child(1) input')).sendKeys(user1.name);
+		ptor.findElement(protractor.By.css(formSelector+' .jrg-forminput-cont:nth-child(2) input')).sendKeys(user1.email);
+		// ptor.findElement(protractor.By.css(formSelector+' .jrg-forminput-cont:nth-child(3) input')).sendKeys(user1.phone.number);
+		ptor.findElement(protractor.By.css(formSelector+' .jrg-forminput-cont:nth-child(3) input')).sendKeys(user1.password);
+		ptor.findElement(protractor.By.css(formSelector+' .jrg-forminput-cont:nth-child(4) input')).sendKeys(user1.password);
 		
 		//submit form
 		ptor.findElement(protractor.By.css('.signup-form form button.btn-primary')).click();

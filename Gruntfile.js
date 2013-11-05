@@ -105,6 +105,7 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-parallel');
 	grunt.loadNpmTasks('grunt-forever-multi');
 	grunt.loadNpmTasks('grunt-wait');
+	grunt.loadNpmTasks('grunt-font-awesome-vars');
 	
 
 	/**
@@ -623,6 +624,12 @@ module.exports = function(grunt) {
 						{expand: true, cwd: publicPathRelativeDot+'common/img/', src: ['**'], dest: publicPathRelativeDot+pathsPhonegap.ios+'/common/img/'}		//apparently it copies the folder(s) in the src path to the dest as well..
 					]
 				}
+			},
+			fontAwesomeVars: {
+				main: {
+					variablesLessPath: publicPathRelativeRoot+'bower_components/font-awesome/less/variables.less',
+					fontPath: '../bower_components/font-awesome/fonts'		//NOTE: this must be relative to FINAL, compiled .css file - NOT the variables.less file! For example, this would be the correct path if the compiled css file is main.css which is in 'src/build' and the font awesome font is in 'src/bower_components/font-awesome/fonts' - since to get from main.css to the fonts directory, you first go back a directory then go into bower_components > font-awesome > fonts.
+				}
 			}
 		});
 		
@@ -644,11 +651,11 @@ module.exports = function(grunt) {
 
 		grunt.registerTask('lint-backend', ['jshint:backend']);
 		
-		grunt.registerTask('build', ['buildfiles', 'ngtemplates:main', 'jshint:backend', 'jshint:beforeconcat', 'uglify:build', 'less:development', 'concat:devJs', 'concat:devCss']);
+		grunt.registerTask('build', ['buildfiles', 'ngtemplates:main', 'jshint:backend', 'jshint:beforeconcat', 'uglify:build', 'fontAwesomeVars', 'less:development', 'concat:devJs', 'concat:devCss']);
 
 		// Default task(s).
-		// grunt.registerTask('default', ['buildfiles', 'jshint:beforeconcat', 'uglify:build', 'less:development', 'concat:devJs', 'concat:devCss', 'jshint:backend', 'yuidoc', 'jasmine_node']);
-		//grunt.registerTask('default', ['buildfiles', 'jshint:beforeconcat', 'uglify:build', 'less:development', 'concat:devJs', 'concat:devCss', 'jshint:backend', 'yuidoc']);
+		// grunt.registerTask('default', ['buildfiles', 'jshint:beforeconcat', 'uglify:build', 'fontAwesomeVars', 'less:development', 'concat:devJs', 'concat:devCss', 'jshint:backend', 'yuidoc', 'jasmine_node']);
+		//grunt.registerTask('default', ['buildfiles', 'jshint:beforeconcat', 'uglify:build', 'fontAwesomeVars', 'less:development', 'concat:devJs', 'concat:devCss', 'jshint:backend', 'yuidoc']);
 		grunt.registerTask('default', 'run default task', function() {
 			//check to ensure config files and npm install are up to date
 			var cfgVersion = (cfgJson.versions) ? cfgJson.versions.cfg : undefined;
@@ -675,7 +682,7 @@ module.exports = function(grunt) {
 				if(cfgJson.forever !==undefined && cfgJson.forever) {
 					tasks =['build', 'foreverMulti', 'wait:afterForever', 'test'];		//need to wait after restart server to give a chance to initialize before the tests are attempted (otherwise will just error and fail because the server isn't up/restarted yet)
 				}
-				// grunt.task.run(['buildfiles', 'ngtemplates:main', 'jshint:backend', 'jshint:beforeconcat', 'uglify:build', 'less:development', 'concat:devJs', 'concat:devCss', 'test']);
+				// grunt.task.run(['buildfiles', 'ngtemplates:main', 'jshint:backend', 'jshint:beforeconcat', 'uglify:build', 'fontAwesomeVars', 'less:development', 'concat:devJs', 'concat:devCss', 'test']);
 				grunt.task.run(tasks);
 			} else {
 				throw new Error('invalid project versions.');
@@ -683,7 +690,7 @@ module.exports = function(grunt) {
 		});
 
 		//quick version of default task testing/viewing quick changes
-		grunt.registerTask('q', ['buildfiles', 'ngtemplates:main', 'jshint:backendQ', 'jshint:beforeconcatQ', 'uglify:build', 'less:development', 'concat:devJs', 'concat:devCss']);
+		grunt.registerTask('q', ['buildfiles', 'ngtemplates:main', 'jshint:backendQ', 'jshint:beforeconcatQ', 'uglify:build', 'fontAwesomeVars', 'less:development', 'concat:devJs', 'concat:devCss']);
 		
 		//Phonegap build
 		grunt.registerTask('phonegap', 'run Phonegap task', function() {
@@ -691,10 +698,10 @@ module.exports = function(grunt) {
 			grunt.option('type', 'prod');
 			init({});		//re-init (since changed grunt options)
 		
-			grunt.task.run(['buildfiles', 'ngtemplates:main', 'uglify:build', 'less:development', 'concat:devJs', 'concat:devCss', 'copy:phonegapAndroid', 'copy:phonegapIOS']);
+			grunt.task.run(['buildfiles', 'ngtemplates:main', 'uglify:build', 'fontAwesomeVars', 'less:development', 'concat:devJs', 'concat:devCss', 'copy:phonegapAndroid', 'copy:phonegapIOS']);
 		});
 		
-		grunt.registerTask('noMin', ['buildfiles', 'ngtemplates:main', 'less:development', 'concat:devJsNoMin', 'concat:devCss']);
+		grunt.registerTask('noMin', ['buildfiles', 'ngtemplates:main', 'fontAwesomeVars', 'less:development', 'concat:devJsNoMin', 'concat:devCss']);
 		
 		//sauce labs tests
 		grunt.registerTask('sauce', ['parallel:sauce']);

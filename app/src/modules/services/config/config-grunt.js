@@ -10,8 +10,8 @@ holds state / app level properties (i.e. logged in status, session id, etc.) tha
 
 'use strict';
 
-angular.module('LGlobalsModule', []).
-provider('LGlobals', function(){
+angular.module('svc').
+provider('svcConfig', function(){
 	this.server ='';
 
 <%

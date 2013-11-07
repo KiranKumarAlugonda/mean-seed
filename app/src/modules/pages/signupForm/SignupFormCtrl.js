@@ -5,8 +5,8 @@
 
 'use strict';
 
-angular.module('myApp').controller('SignupFormCtrl', ['$scope', 'LGlobals', '$rootScope', 'UserModel', 'svcHttp',
-function($scope, LGlobals, $rootScope, UserModel, svcHttp) {
+angular.module('myApp').controller('SignupFormCtrl', ['$scope', '$rootScope', 'UserModel', 'svcHttp',
+function($scope, $rootScope, UserModel, svcHttp) {
 	$scope.formVals = {};
 	
 	/**

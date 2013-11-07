@@ -1,19 +1,17 @@
 'use strict';
 
 describe('svcAuth', function(){
-	var ctrl, scope ={}, $httpBackend, svcHttp, svcAuth, svcStorage, LGlobals, $cookieStore, UserModel;
+	var ctrl, scope ={}, $httpBackend, svcHttp, svcAuth, svcStorage, svcConfig, $cookieStore, UserModel;
 
 	beforeEach(module('ngCookies'));
 	beforeEach(module('jrg'));
     beforeEach(module('svc'));
-	beforeEach(module('LGlobalsModule'));
-	beforeEach(module('UserModelModule'));
 	
-	beforeEach(inject(function($rootScope, $controller, $injector, _svcHttp_, _svcAuth_, _svcStorage_, _LGlobals_, _$cookieStore_, _UserModel_) {
+	beforeEach(inject(function($rootScope, $controller, $injector, _svcHttp_, _svcAuth_, _svcStorage_, _svcConfig_, _$cookieStore_, _UserModel_) {
 		svcHttp =_svcHttp_;
 		svcAuth =_svcAuth_;
 		svcStorage =_svcStorage_;
-		LGlobals =_LGlobals_;
+		svcConfig =_svcConfig_;
 		$cookieStore =_$cookieStore_;
 		UserModel =_UserModel_;
 		$httpBackend = $injector.get('$httpBackend');
@@ -31,7 +29,7 @@ describe('svcAuth', function(){
 			_id: '2382aca',
 			email: 'test@gmail.com'
 		};
-		LGlobals.state.loggedIn =false;
+		svcConfig.state.loggedIn =false;
 		var promiseStorage =svcStorage.delete1();		//ensure no local storage
 		promiseStorage.then(function(ret1) {
 			$cookieStore.remove('user_id');
@@ -54,7 +52,7 @@ describe('svcAuth', function(){
 			email: 'test@gmail.com',
 			sess_id: '38asdflke'
 		};
-		LGlobals.state.loggedIn =true;
+		svcConfig.state.loggedIn =true;
 		$cookieStore.put('user_id', user._id);
 		$cookieStore.put('sess_id', user.sess_id);
 		
@@ -81,7 +79,7 @@ describe('svcAuth', function(){
 		$httpBackend.expectPOST('/api/auth/active').respond({result: {user: user} });
 		// $httpBackend.when('POST', '/api/auth/').respond({result: {user: user} });
 		
-		LGlobals.state.loggedIn =false;
+		svcConfig.state.loggedIn =false;
 		var promiseStorage =svcStorage.delete1();		//ensure no local storage
 		console.log('yes');
 		promiseStorage.then(function(ret1) {

@@ -8,7 +8,7 @@ describe('PasswordResetCtrl', function(){
 	var ctrl, scope ={}, $routeParams;
 
 	beforeEach(module('myApp'));
-	beforeEach(module('LGlobalsModule'));		//all need LGlobals for LGlobals provider in app.js
+	beforeEach(module('svc'));		//all need svcConfig for svcConfig provider in app.js
 	
 	/*
 	beforeEach(inject(function($rootScope, $controller, $routeParams) {

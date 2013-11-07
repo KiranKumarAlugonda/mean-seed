@@ -137,10 +137,24 @@
 			"dirs":[
 				{
 					"name":"services",
-					"files": {
-						"js":["svc.js", "LGlobals.js", "UserModel.js"]
-					},
 					"dirs":[
+						{
+							"name":"models",
+							"dirs":[
+								{
+									"name":"user",
+									"files":{
+										"js":["UserModel.js"]
+									}
+								}
+							]
+						},
+						{
+							"name":"config",
+							"files": {
+								"js": ["config.js"]
+							}
+						},
 						{
 							"name":"http",
 							"files": {
@@ -192,9 +206,6 @@
 				},
 				{
 					"name":"directives",
-					"files": {
-						"js":["dtv.js"]
-					},
 					"dirs":[
 						{
 							"name":"appalert",

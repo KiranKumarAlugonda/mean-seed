@@ -11,8 +11,8 @@
 'use strict';
 
 angular.module('svc').
-factory('svcAuth', ['svcHttp', 'LGlobals', '$cookieStore', '$location', '$rootScope', '$q', 'UserModel', 'jrgString', 'svcNav', 'svcStorage',
-function(svcHttp, LGlobals, $cookieStore, $location, $rootScope, $q, UserModel, jrgString, svcNav, svcStorage) {
+factory('svcAuth', ['svcHttp', 'svcConfig', '$cookieStore', '$location', '$rootScope', '$q', 'UserModel', 'jrgString', 'svcNav', 'svcStorage',
+function(svcHttp, svcConfig, $cookieStore, $location, $rootScope, $q, UserModel, jrgString, svcNav, svcStorage) {
 var inst ={
 
 	data: {
@@ -47,9 +47,9 @@ var inst ={
 	*/
 	saveUrlLocation: function(params) {
 		var skipPages =['login'];
-		//var curPage =$location.path().replace(LGlobals.dirPaths.appPath, '');		//$location doesn't have url & path defined yet??
-		// var appPath =window.location.host+LGlobals.dirPaths.appPath;
-		var appPath =LGlobals.dirPaths.appPath;
+		//var curPage =$location.path().replace(svcConfig.dirPaths.appPath, '');		//$location doesn't have url & path defined yet??
+		// var appPath =window.location.host+svcConfig.dirPaths.appPath;
+		var appPath =svcConfig.dirPaths.appPath;
 		var curUrl =$location.$$absUrl;
 		// this.curUrl =curUrl;
 		var ret1 =jrgString.parseUrl({url: curUrl, rootPath: appPath});
@@ -118,7 +118,7 @@ var inst ={
 		this.data.urlInfo.curNavPage =svcNav.updateNav({'urlInfo':this.data.urlInfo});
 		
 		var goTrig =true;
-		if(LGlobals.state.loggedIn ===false) {
+		if(svcConfig.state.loggedIn ===false) {
 			// console.log('checking auth');
 			goTrig =false;
 			//check (local)storage
@@ -127,7 +127,7 @@ var inst ={
 				UserModel.save(user);
 				$rootScope.$broadcast('loginEvt', {'loggedIn':true, 'noRedirect':true, 'user_id':user._id, 'sess_id':user.sess_id});
 				if(thisObj.data.redirectUrl) {
-					$location.url(LGlobals.dirPaths.appPathLocation+thisObj.data.redirectUrl);
+					$location.url(svcConfig.dirPaths.appPathLocation+thisObj.data.redirectUrl);
 					var redirectUrlSave =thisObj.data.redirectUrl;
 					thisObj.data.redirectUrl =false;		//reset for next time
 					$cookieStore.remove('redirectUrl');
@@ -156,7 +156,7 @@ var inst ={
 						UserModel.save(user);
 						$rootScope.$broadcast('loginEvt', {'loggedIn':true, 'noRedirect':true, 'user_id':user._id, 'sess_id':user.sess_id});
 						if(thisObj.data.redirectUrl) {
-							$location.url(LGlobals.dirPaths.appPathLocation+thisObj.data.redirectUrl);
+							$location.url(svcConfig.dirPaths.appPathLocation+thisObj.data.redirectUrl);
 							var redirectUrlSave =thisObj.data.redirectUrl;
 							thisObj.data.redirectUrl =false;		//reset for next time
 							$cookieStore.remove('redirectUrl');
@@ -176,7 +176,7 @@ var inst ={
 						$cookieStore.remove('sess_id');		//clear cookie to avoid endless loop
 						$cookieStore.remove('user_id');		//clear cookie to avoid endless loop
 						if(!params.noLoginRequired) {
-							$location.url(LGlobals.dirPaths.appPathLocation+params.loginPage);
+							$location.url(svcConfig.dirPaths.appPathLocation+params.loginPage);
 							if(thisObj.samePage(params.loginPage, {})) {
 								thisObj.done({});
 								deferred.resolve({'goTrig':goTrig});
@@ -193,11 +193,11 @@ var inst ={
 				}
 				else {
 					goTrig =true;
-					if(LGlobals.state.loggedIn ===false) {
+					if(svcConfig.state.loggedIn ===false) {
 						$rootScope.$broadcast('changeLayoutEvt', 'login');
 						if(!params.noLoginRequired) {
 							//thisObj.data.redirectUrl =$location.url();		//save for after login
-							$location.url(LGlobals.dirPaths.appPathLocation+params.loginPage);
+							$location.url(svcConfig.dirPaths.appPathLocation+params.loginPage);
 							if(thisObj.samePage(params.loginPage, {})) {
 								thisObj.done({});
 								deferred.resolve({'goTrig':goTrig});
@@ -220,11 +220,11 @@ var inst ={
 			});
 		}
 		if(goTrig) {		//no AJAXing, just handle redirect (to login OR home/main) here
-			if(LGlobals.state.loggedIn ===false) {
+			if(svcConfig.state.loggedIn ===false) {
 				$rootScope.$broadcast('changeLayoutEvt', 'login');
 				if(!params.noLoginRequired) {
 					//thisObj.data.redirectUrl =$location.url();		//save for after login
-					$location.url(LGlobals.dirPaths.appPathLocation+params.loginPage);
+					$location.url(svcConfig.dirPaths.appPathLocation+params.loginPage);
 					if(thisObj.samePage(params.loginPage, {})) {
 						thisObj.done({});
 						deferred.resolve({'goTrig':goTrig});

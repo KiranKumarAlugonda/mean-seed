@@ -5,8 +5,8 @@
 
 'use strict';
 
-angular.module('myApp').controller('PasswordResetCtrl', ['$scope', 'LGlobals', '$routeParams', '$location', 'svcHttp', 'UserModel',
-function($scope, LGlobals, $routeParams, $location, svcHttp, UserModel) {
+angular.module('myApp').controller('PasswordResetCtrl', ['$scope', '$routeParams', '$location', 'svcHttp', 'UserModel',
+function($scope, $routeParams, $location, svcHttp, UserModel) {
 	$scope.formVals = {};
 	
 	//see if email and/or password reset key is set in url
@@ -27,7 +27,6 @@ function($scope, LGlobals, $routeParams, $location, svcHttp, UserModel) {
 			$scope.formVals.reset_key =$scope.formVals.password_reset_key;
 			var promise =svcHttp.go({}, {url:'auth/resetPassword', data:$scope.formVals}, {});
 			promise.then(function(response) {
-				// $location.url(LGlobals.dirPaths.appPathLocation+"home");
 				var user =response.result.user;
 				UserModel.save(user);
 				$scope.$emit('loginEvt', {'loggedIn': true, 'sess_id':user.sess_id, 'user_id':user._id});

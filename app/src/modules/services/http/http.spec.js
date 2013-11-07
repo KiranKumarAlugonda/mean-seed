@@ -5,7 +5,6 @@ describe('svcHttp', function(){
 
 	beforeEach(module('ngCookies'));
     beforeEach(module('svc'));
-	beforeEach(module('LGlobalsModule'));
 	
 	beforeEach(inject(function($rootScope, $controller, $injector, _svcHttp_) {
 		svcHttp =_svcHttp_;

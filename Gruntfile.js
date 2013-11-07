@@ -361,9 +361,9 @@ module.exports = function(grunt) {
 						// src:        publicPathRelative+"partials/resources/no-touch-grunt.html",
 						// dest:       publicPathRelative+"partials/resources/no-touch.html"
 					// },
-					LGlobals: {
-						src:        publicPathRelative+"modules/services/LGlobals-grunt.js",
-						dest:       publicPathRelative+"modules/services/LGlobals.js"
+					svcConfig: {
+						src:        publicPathRelative+"modules/services/config/config-grunt.js",
+						dest:       publicPathRelative+"modules/services/config/config.js"
 					},
 					karmaUnit: {
 						src:        publicPathRelativeRoot+"config/karma.conf-grunt.js",

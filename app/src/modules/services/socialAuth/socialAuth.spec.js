@@ -2,16 +2,14 @@
 'use strict';
 
 describe('svcSocialAuth', function(){
-	var ctrl, scope ={}, $httpBackend, svcHttp, svcAuth, LGlobals, UserModel;
+	var ctrl, scope ={}, $httpBackend, svcHttp, svcAuth, svcConfig, UserModel;
 
     beforeEach(module('svc'));
-	beforeEach(module('LGlobalsModule'));
-	beforeEach(module('UserModelModule'));
 	
-	beforeEach(inject(function($rootScope, $controller, $injector, _svcHttp_, _svcAuth_, _LGlobals_, _UserModel_) {
+	beforeEach(inject(function($rootScope, $controller, $injector, _svcHttp_, _svcAuth_, _svcConfig_, _UserModel_) {
 		svcHttp =_svcHttp_;
 		svcAuth =_svcAuth_;
-		LGlobals =_LGlobals_;
+		svcConfig =_svcConfig_;
 		UserModel =_UserModel_;
 		$httpBackend = $injector.get('$httpBackend');
 		

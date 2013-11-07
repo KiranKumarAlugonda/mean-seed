@@ -12,28 +12,28 @@ The "pages" array defines the pages and is used to set the layout and top level 
 
 'use strict';
 
-angular.module('myApp').controller('LayoutCtrl', ['$scope', 'LGlobals', '$location', '$cookieStore', '$rootScope', 'svcAuth', '$timeout',
- function($scope, LGlobals, $location, $cookieStore, $rootScope, svcAuth, $timeout) {
+angular.module('myApp').controller('LayoutCtrl', ['$scope', 'svcConfig', '$location', '$cookieStore', '$rootScope', 'svcAuth', '$timeout',
+ function($scope, svcConfig, $location, $cookieStore, $rootScope, svcAuth, $timeout) {
 	/**
-	Most common and default use of appPath, which is set from LGlobals and is used to allow using absolute paths for ng-include and all other file structure / path references
+	Most common and default use of appPath, which is set from svcConfig and is used to allow using absolute paths for ng-include and all other file structure / path references
 	@property $scope.appPath
 	@type String
 	*/
-	$scope.appPath =LGlobals.dirPaths.appPath;		//so all children can access this without having to set it in each one
+	$scope.appPath =svcConfig.dirPaths.appPath;		//so all children can access this without having to set it in each one
 	
 	/**
 	For use in <a ng-href=''> </a> tags in HTML partial files
 	@property $scope.appPathLink
 	@type String
 	*/
-	$scope.appPathLink =LGlobals.dirPaths.appPathLink;
+	$scope.appPathLink =svcConfig.dirPaths.appPathLink;
 	
 	/**
 	For use with $location.url(..) in javascript controller files
 	@property $scope.appPathLocation
 	@type String
 	*/
-	$scope.appPathLocation =LGlobals.dirPaths.appPathLocation;
+	$scope.appPathLocation =svcConfig.dirPaths.appPathLocation;
 	
 	/**
 	For use with displaying images that are located in the common/img folder (where all images should be) inside <img> tags in the HTML/partial. This is so all children controllers/partials (which is every one since LayoutCtrl is the parent controller to everything) can access this without having to set it in each one.
@@ -41,28 +41,28 @@ angular.module('myApp').controller('LayoutCtrl', ['$scope', 'LGlobals', '$locati
 	@type String
 	@usage <img ng-src='{{appPathImg}}/ie-chrome-logo.png' />		<!-- assumes there's an image file named 'ie-chrome-logo.png' in the common/img folder -->
 	*/
-	$scope.appPathImg =LGlobals.dirPaths.appPath+'src/common/img';
+	$scope.appPathImg =svcConfig.dirPaths.appPath+'src/common/img';
 	
 	/**
 	For use in referencing static files like partials
 	@property $scope.staticPath
 	@type String
 	**/
-	$scope.staticPath = LGlobals.dirPaths.staticPath;
+	$scope.staticPath = svcConfig.dirPaths.staticPath;
 	
 	/**
 	For use in referencing pages folders like partials
 	@property $scope.pagesFullPath
 	@type String
 	**/
-	$scope.pagesFullPath = LGlobals.dirPaths.staticPath+LGlobals.dirPaths.pagesPath;
+	$scope.pagesFullPath = svcConfig.dirPaths.staticPath+svcConfig.dirPaths.pagesPath;
 	
 	/**
-	Stores the title of the application (as set in LGlobals) - can be used in (any) HTML partial files or javascript controller files
+	Stores the title of the application (as set in svcConfig) - can be used in (any) HTML partial files or javascript controller files
 	@property $scope.appTitle
 	@type String
 	*/
-	$scope.appTitle =LGlobals.info.appTitle;
+	$scope.appTitle =svcConfig.info.appTitle;
 
 	$scope.ids ={'header':'header', 'content':'content', 'footer':'footer'};
 	/**
@@ -82,7 +82,7 @@ angular.module('myApp').controller('LayoutCtrl', ['$scope', 'LGlobals', '$locati
 
 	/**
 	Handles post login (or reverse for logout)
-	- sets LGlobals.state.loggedIn
+	- sets svcConfig.state.loggedIn
 	- sets $scope.classes.loggedIn
 	- sets (or clears for logout) cookies for session and user
 	- redirects to the appropriate page if need be
@@ -94,13 +94,13 @@ angular.module('myApp').controller('LayoutCtrl', ['$scope', 'LGlobals', '$locati
 		@param {Boolean} [noRedirect] true to not change/page location
 	*/
 	$scope.$on('loginEvt', function(evt, params) {
-		var appPath1 =LGlobals.dirPaths.appPath;
+		var appPath1 =svcConfig.dirPaths.appPath;
 		//strip slashes for matching to ensure no single character mismatch issues
 		var locPathMatch =$location.path().replace(/^[//]+/g, '');
 		var appPath1Match =appPath1.replace(/^[//]/g, '');
 		if(params.loggedIn) {
 			$scope.classes.loggedIn ='logged-in';
-			LGlobals.state.loggedIn =true;
+			svcConfig.state.loggedIn =true;
 			if(params.sess_id !==undefined) {
 				$cookieStore.put('sess_id', params.sess_id);
 			}
@@ -127,14 +127,14 @@ angular.module('myApp').controller('LayoutCtrl', ['$scope', 'LGlobals', '$locati
 				else {
 					ppAdd ='?'+ppAdd;
 				}
-				$location.url(LGlobals.dirPaths.appPathLocation+page+ppAdd);
+				$location.url(svcConfig.dirPaths.appPathLocation+page+ppAdd);
 			}
 		}
 		else {
 			$scope.classes.loggedIn ='logged-out';
-			LGlobals.state.loggedIn =false;
+			svcConfig.state.loggedIn =false;
 			if(params.noRedirect ===undefined || !params.noRedirect || (params.loggedIn && (locPathMatch ==appPath1Match+'login' || locPathMatch ==appPath1Match+'password-reset') ) ) {
-				$location.url(LGlobals.dirPaths.appPathLocation+"home");
+				$location.url(svcConfig.dirPaths.appPathLocation+"home");
 			}
 		}
 	});

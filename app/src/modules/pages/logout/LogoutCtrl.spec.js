@@ -5,15 +5,13 @@
 'use strict';
 
 describe('LogoutCtrl', function(){
-	var ctrl, scope ={}, $httpBackend, UserModel, LGlobals, svcHttp;
+	var ctrl, scope ={}, $httpBackend, UserModel, svcConfig, svcHttp;
 
 	beforeEach(module('myApp'));
 	beforeEach(module('svc'));
-	beforeEach(module('LGlobalsModule'));		//all need LGlobals for LGlobals provider in app.js
-	beforeEach(module('UserModelModule'));
 	
-	beforeEach(inject(function($rootScope, $controller, $injector, _svcHttp_, _UserModel_, _LGlobals_) {
-		LGlobals =_LGlobals_;
+	beforeEach(inject(function($rootScope, $controller, $injector, _svcHttp_, _UserModel_, _svcConfig_) {
+		svcConfig =_svcConfig_;
 		svcHttp =_svcHttp_;
 		UserModel =_UserModel_;
 		//$httpBackend = _$httpBackend_;
@@ -70,19 +68,17 @@ describe('LogoutCtrl', function(){
 'use strict';
 
 describe('LogoutCtrl', function(){
-	var ctrl, scope ={}, $httpBackend, UserModel, LGlobals, svcHttp;
+	var ctrl, scope ={}, $httpBackend, UserModel, svcConfig, svcHttp;
 
 	beforeEach(module('myApp'));
 	beforeEach(module('svc'));
-	beforeEach(module('LGlobalsModule'));		//all need LGlobals for LGlobals provider in app.js
-	beforeEach(module('UserModelModule'));
 	
-	beforeEach(inject(function($rootScope, $controller, _$httpBackend_, _svcHttp_, _UserModel_, _LGlobals_) {
-		LGlobals =_LGlobals_;
+	beforeEach(inject(function($rootScope, $controller, _$httpBackend_, _svcHttp_, _UserModel_, _svcConfig_) {
+		svcConfig =_svcConfig_;
 		svcHttp =_svcHttp_;
 		UserModel =_UserModel_;
 		$httpBackend = _$httpBackend_;
-		var url =LGlobals.dirPaths.ajaxUrl.api+"user/logout";
+		var url =svcConfig.dirPaths.ajaxUrl.api+"user/logout";
 		var user =false;
 		if(0) {
 		if(0) {

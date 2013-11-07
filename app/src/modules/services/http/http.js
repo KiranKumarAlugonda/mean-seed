@@ -12,8 +12,8 @@ $http wrapper for making (backend) calls and handling notifications (in addition
 
 'use strict';
 
-angular.module('svc').factory('svcHttp', ['$http', '$q', '$rootScope', '$cookieStore', 'LGlobals', '$timeout', 'svcStorage',
-	function($http, $q, $rootScope, $cookieStore, LGlobals, $timeout, svcStorage){
+angular.module('svc').factory('svcHttp', ['$http', '$q', '$rootScope', '$cookieStore', 'svcConfig', '$timeout', 'svcStorage',
+	function($http, $q, $rootScope, $cookieStore, svcConfig, $timeout, svcStorage){
 
 	var inst = {
 	
@@ -201,7 +201,7 @@ angular.module('svc').factory('svcHttp', ['$http', '$q', '$rootScope', '$cookieS
 			//required for most calls
 			var cookieSess =$cookieStore.get('sess_id');
 			var cookieUser =$cookieStore.get('user_id');
-			//var sessId =LGlobals.load('session_id', {});
+			//var sessId =svcConfig.load('session_id', {});
 			if(cookieSess && cookieUser)
 			{
 				authObj ={
@@ -250,14 +250,14 @@ angular.module('svc').factory('svcHttp', ['$http', '$q', '$rootScope', '$cookieS
 		formHost: function(params) {
 			var host ='/';		//default host to nothing (to do a local request)
 			//set CORS
-			if(parseInt(LGlobals.dirPaths.useCorsUrls.all, 10)) {
+			if(parseInt(svcConfig.dirPaths.useCorsUrls.all, 10)) {
 				$http.defaults.headers.common["X-Requested-With"] = undefined;		//CORS
-				host =LGlobals.dirPaths.ajaxUrlParts.main;		//not a local request - need to set host
+				host =svcConfig.dirPaths.ajaxUrlParts.main;		//not a local request - need to set host
 			}
 			/*
 			//update: this isn't true; could be a local request from a production (non 'localhost') server
-			if(LGlobals.dirPaths.ajaxUrlParts.main.indexOf('localhost') <0) {		//not a local request - need to set host
-				host =LGlobals.dirPaths.ajaxUrlParts.main;
+			if(svcConfig.dirPaths.ajaxUrlParts.main.indexOf('localhost') <0) {		//not a local request - need to set host
+				host =svcConfig.dirPaths.ajaxUrlParts.main;
 			}
 			*/
 

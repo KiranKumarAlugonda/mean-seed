@@ -47,14 +47,14 @@ buttons: [
 'use strict';
 
 angular.module('svc').
-factory('svcNav', ['$rootScope', '$location', 'LGlobals', 'jrgArray', function($rootScope, $location, LGlobals, jrgArray) {
+factory('svcNav', ['$rootScope', '$location', 'svcConfig', 'jrgArray', function($rootScope, $location, svcConfig, jrgArray) {
 var inst ={
 
 	inited: false,		//trigger that will be set after this first time this is run
 	initTrigs: {
 		routeChange: false		//used to skip the first time so don't go back out of the app on history.back
 	},
-	pathRoot: 'modules/services/nav/',		//LGlobals.dirPaths.staticPath will be prepended
+	pathRoot: 'modules/services/nav/',		//svcConfig.dirPaths.staticPath will be prepended
 	paths: {},		//holds file paths for various things, specifically templates (HTML template files) and appPathLink. See initPaths function for more info.
 	
 	historyCounter: 0,		//will increment on each route change (so can avoid going "back" outside of app)
@@ -113,12 +113,12 @@ var inst ={
 	@method initPaths
 	*/
 	initPaths: function(params) {
-		this.pathRoot =LGlobals.dirPaths.staticPath+this.pathRoot;		//prepend static path to account for different environments / configs and ensure this always references the correct path
+		this.pathRoot =svcConfig.dirPaths.staticPath+this.pathRoot;		//prepend static path to account for different environments / configs and ensure this always references the correct path
 		this.paths.templates = {
 			headerCentered: this.pathRoot+'header-centered/header-centered.html',
 			footerFlex: this.pathRoot+'footer-flex/footer-flex.html'
 		};
-		this.paths.appPathLink =LGlobals.dirPaths.appPathLink;
+		this.paths.appPathLink =svcConfig.dirPaths.appPathLink;
 	},
 	
 	/**

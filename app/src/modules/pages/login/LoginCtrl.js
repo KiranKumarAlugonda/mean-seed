@@ -8,9 +8,8 @@
 
 'use strict';
 
-//function LoginCtrl($scope, svcHttp, LFBLogin, UserModel, LGlobals, $rootScope) {
-angular.module('myApp').controller('LoginCtrl', ['$scope', 'svcHttp', 'UserModel', 'LGlobals', '$rootScope', 'svcSocialAuth',
-function($scope, svcHttp, UserModel, LGlobals, $rootScope, svcSocialAuth) {
+angular.module('myApp').controller('LoginCtrl', ['$scope', 'svcHttp', 'UserModel', 'svcConfig', '$rootScope', 'svcSocialAuth',
+function($scope, svcHttp, UserModel, svcConfig, $rootScope, svcSocialAuth) {
 	/**
 	@property $scope.signupVisible
 	@type Boolean

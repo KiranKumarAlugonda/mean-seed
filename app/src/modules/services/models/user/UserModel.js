@@ -7,7 +7,7 @@
 
 'use strict';
 
-angular.module('UserModelModule', []).
+angular.module('models').
 factory('UserModel', ['svcStorage', function(svcStorage){
 var inst ={
 

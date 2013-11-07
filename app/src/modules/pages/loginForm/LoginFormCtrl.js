@@ -5,7 +5,7 @@
 
 'use strict';
 
-angular.module('myApp').controller('LoginFormCtrl', ['$scope', 'LGlobals', 'svcHttp', '$rootScope', 'UserModel', '$location', function($scope, LGlobals, svcHttp, $rootScope, UserModel, $location) {
+angular.module('myApp').controller('LoginFormCtrl', ['$scope', 'svcConfig', 'svcHttp', '$rootScope', 'UserModel', '$location', function($scope, svcConfig, svcHttp, $rootScope, UserModel, $location) {
 	$scope.formVals = {};
 
 	/**
@@ -39,7 +39,7 @@ angular.module('myApp').controller('LoginFormCtrl', ['$scope', 'LGlobals', 'svcH
 		if($scope.formVals.email !==undefined && $scope.formVals.email.length >1) {
 			var promise =svcHttp.go({}, {url:'auth/forgotPassword', data: {email:$scope.formVals.email} }, {});
 			promise.then(function(response) {
-				$location.url(LGlobals.dirPaths.appPathLocation+"password-reset");
+				$location.url(svcConfig.dirPaths.appPathLocation+"password-reset");
 			});
 		}
 		else {

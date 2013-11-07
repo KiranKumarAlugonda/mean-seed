@@ -1,3 +1,12 @@
+# 0.8.0
+## Breaking Changes
+- Refactor Part 2: build process
+	- updated to grunt-buildfiles v0.3.0 which includes a replacement/upgrade from `buildfilesList.js` to `buildfilesModules.json` and `buildfilesModuleGroups.json` for much more flexibility and modularity in defining builds.
+		- Much easier to add or remove modules
+		- External / 3rd party code can now be minified/uglified if it was not already - this lead to a (small) code size reduction so the total between ALL code (css, js, html templates) is under 300kb minified!
+	- moved LESS to be built via grunt/buildfiles rather than `@import` directly in LESS files (`_base.less` is now generated from `_base-grunt.less`)
+
+
 # 0.7.0
 
 ## Features

@@ -12,8 +12,8 @@ var cfgJson = grunt.config('cfgJson');
     <title><% print(cfgJson.app.title); %></title>
 
 <%
-var filePath =grunt.config('filePathMinCss');
 var filePath =grunt.config('filePathConcatCss');
+var filePath =grunt.config('filePathMinCss');
 print('\t<link rel="stylesheet" href="' + filePath + '"/>\n');
 %>
 

@@ -1,7 +1,4 @@
 /**
-@todo
-- add in jasmine node backend test running (replacing mocha)
-- cssmin (can only min files that aren't already minified - i.e. do same process as with javascript - min custom ones first THEN concat?)
 
 @module grunt
 @class grunt
@@ -144,7 +141,10 @@ module.exports = function(grunt) {
 		}
 		
 		var publicPathRelativeRoot ="app/src/";
-		var buildfilesListObj = require('./'+publicPathRelativeRoot+'config/buildfilesList');
+		
+		var buildfilesModules = require('./'+publicPathRelativeRoot+'config/buildfilesModules.json');		//the file with the object/arrays of all modules (directories and files to form paths for (css, js, html))
+		var buildfilesModuleGroups = require('./'+publicPathRelativeRoot+'config/buildfilesModuleGroups.json');
+		
 		var publicPathRelative = publicPathRelativeRoot;
 		var publicPathRelativeDot = "./"+publicPathRelative;		//the "./" is necessary for some file paths to work in grunt tasks
 		
@@ -228,6 +228,7 @@ module.exports = function(grunt) {
 			filePathsJs:        '',
 			//will be filled/created in buildfiles task
 			filePathsCss:       '',
+			filePathsLess: '',
 			filePathConcatJs:   staticPath+paths.concatJs,
 			filePathConcatCss:  staticPath+paths.concatCss,
 			filePathsJsNoPrefix:        '',		//will be filled/created in buildfiles task
@@ -246,12 +247,16 @@ module.exports = function(grunt) {
 			buildPathIndexHtml: staticPath+buildDir+'/',
 			buildfiles: {
 				// customMinifyFile:   config.customMinifyFile,
-				buildfilesArray:    buildfilesListObj.files,
+				buildfilesModules: buildfilesModules,		//define where your list of files/directories are for all your build assets
+				buildfilesModuleGroups: buildfilesModuleGroups,
+				
+				//this takes your buildfiles modules and moduleGroups of all js, css, less, and html files and generates full paths to all these build assets then stuffs them into other grunt task file paths.
 				configPaths: {
 					//generic file lists for use elsewhere
 					noPrefix: {
 						// prefix: '',
-						files: {
+						moduleGroup: 'allNoBuildCss',
+						outputFiles: {
 							js: ['filePathsJsNoPrefix'],
 							css: ['filePathsCssNoPrefix']
 						}
@@ -259,59 +264,68 @@ module.exports = function(grunt) {
 					//index.html file paths (have the static path prefix for use in <link rel="stylesheet" > and <script> tags)
 					indexFilePaths:{
 						prefix: cfgJson.server.staticPath,
-						files: {
+						moduleGroup: 'allNoBuildCss',
+						outputFiles: {
 							js: ['filePathsJs'],
 							css: ['filePathsCss']
+						}
+					},
+					//_base.less file paths (have a prefix path relative to this file for @import)
+					lessFilePaths:{
+						prefix: '../../',
+						moduleGroup: 'allNoBuild',
+						outputFiles: {
+							less: ['filePathsLess']
 						}
 					},
 					//list of files to lint - will be stuffed into jshint grunt task variable(s)
 					jshint:{
 						prefix: publicPathRelativeDot,
-						fileGroup: 'custom',
-						files: {
+						moduleGroup: 'nonMinifiedLint',
+						outputFiles: {
 							js: ['jshint.beforeconcat.files.src', 'jshint.beforeconcatQ.files.src']
 						}
 					},
 					//list of js files to concatenate together - will be stuffed into concat grunt task variable(s)
 					concatJsMin: {
 						prefix: publicPathRelativeDot,
-						fileGroup: 'ext',
-						additionalFiles: [config.customMinifyFile],
-						files: {
+						moduleGroup: 'allMinified',
+						outputFiles: {
 							js: ['concat.devJs.src']
 						}
 					},
 					//list of css files to concat - will be stuffed into concat grunt task variable(s)
 					concatCss: {
 						prefix: publicPathRelativeDot,
-						fileGroup: 'all',
-						files: {
-							css: ['concat.devCss.src']
+						moduleGroup: 'allNoBuildCss',
+						outputFiles: {
+							css: ['concat.devCss.src', 'cssmin.dev.src']
 						}
 					},
 					//list of files to uglify - will be stuffed into uglify grunt task variable(s)
 					uglify:{
 						prefix: publicPathRelativeDot,
-						fileGroup: 'custom',
+						moduleGroup: 'nonMinified',
 						uglify: true,
-						files: {
+						outputFiles: {
 							js: ['uglify.build.files']
 						}
 					},
 					//list of html templates to join together to stuff in AngularJS $templateCache - will be stuffed into ngtemplates grunt task variable(s)
 					templates: {
 						prefix: publicPathRelativeDot,
-						files: {
+						moduleGroup: 'allNoBuild',
+						outputFiles: {
 							html: ['ngtemplates.main.src']
 						}
 					},
 					concatJsNoMin: {
 						prefix: publicPathRelativeDot,
-						fileGroup: 'all',
-						files: {
+						moduleGroup: 'allNoBuild',
+						outputFiles: {
 							js: ['concat.devJsNoMin.src']
 						}
-					},
+					}
 				},
 				files: {
 					indexHtml: {
@@ -334,6 +348,10 @@ module.exports = function(grunt) {
 						ifOpts:	[{key: 'config', val:'triggerio'}],
 						src:        publicPathRelative+"index-triggerio-grunt.html",
 						dest:       publicPathRelative+"index.html"
+					},
+					baseLess: {
+						src: publicPathRelative+"common/less/_base-grunt.less",
+						dest: publicPathRelative+"common/less/_base.less"
 					},
 					// touchHtml: {
 						// src:        publicPathRelative+"partials/resources/touch-grunt.html",
@@ -468,10 +486,6 @@ module.exports = function(grunt) {
 					},
 					files: {
 						"<%= buildPath %>/base.css": "<%= publicPathRelative %>common/less/_base.less"
-						//publicPathRelative+"css/1compiled/base.css": publicPathRelative+"1less/base.less",
-						//"public/css/1compiled/base.css":"public/1less/base.less",
-						// "<%= buildPath %>/bootstrap.css":             "<%= publicPathRelative %>lib/twitter-bootstrap/bootstrap.less",      //twitter bootstrap
-						// "<%= buildPath %>/bootstrap-responsive.css":  "<%= publicPathRelative %>lib/twitter-bootstrap/responsive.less"       //twitter bootstrap responsive
 					}
 				},
 				production: {
@@ -483,6 +497,12 @@ module.exports = function(grunt) {
 						//"path/to/result.css": "path/to/source.less"
 						"<%= buildPath %>/base.css": "<%= publicPathRelative %>common/less/_base.less"
 					}
+				}
+			},
+			cssmin: {
+				dev: {
+					src: [],		// will be filled via buildfiles task
+					dest: publicPathRelativeDot+paths.minCss
 				}
 			},
 			karma: {
@@ -651,11 +671,9 @@ module.exports = function(grunt) {
 
 		grunt.registerTask('lint-backend', ['jshint:backend']);
 		
-		grunt.registerTask('build', ['buildfiles', 'ngtemplates:main', 'jshint:backend', 'jshint:beforeconcat', 'uglify:build', 'fontAwesomeVars', 'less:development', 'concat:devJs', 'concat:devCss']);
+		grunt.registerTask('build', ['buildfiles', 'ngtemplates:main', 'jshint:backend', 'jshint:beforeconcat', 'uglify:build', 'fontAwesomeVars', 'less:development', 'concat:devCss', 'cssmin:dev', 'concat:devJs']);		//don't really need BOTH concat css and cssmin css..
 
 		// Default task(s).
-		// grunt.registerTask('default', ['buildfiles', 'jshint:beforeconcat', 'uglify:build', 'fontAwesomeVars', 'less:development', 'concat:devJs', 'concat:devCss', 'jshint:backend', 'yuidoc', 'jasmine_node']);
-		//grunt.registerTask('default', ['buildfiles', 'jshint:beforeconcat', 'uglify:build', 'fontAwesomeVars', 'less:development', 'concat:devJs', 'concat:devCss', 'jshint:backend', 'yuidoc']);
 		grunt.registerTask('default', 'run default task', function() {
 			//check to ensure config files and npm install are up to date
 			var cfgVersion = (cfgJson.versions) ? cfgJson.versions.cfg : undefined;
@@ -682,7 +700,7 @@ module.exports = function(grunt) {
 				if(cfgJson.forever !==undefined && cfgJson.forever) {
 					tasks =['build', 'foreverMulti', 'wait:afterForever', 'test'];		//need to wait after restart server to give a chance to initialize before the tests are attempted (otherwise will just error and fail because the server isn't up/restarted yet)
 				}
-				// grunt.task.run(['buildfiles', 'ngtemplates:main', 'jshint:backend', 'jshint:beforeconcat', 'uglify:build', 'fontAwesomeVars', 'less:development', 'concat:devJs', 'concat:devCss', 'test']);
+				// grunt.task.run(['buildfiles', 'ngtemplates:main', 'jshint:backend', 'jshint:beforeconcat', 'uglify:build', 'fontAwesomeVars', 'less:development', 'concat:devCss', 'cssmin:dev', 'concat:devJs', 'test']);
 				grunt.task.run(tasks);
 			} else {
 				throw new Error('invalid project versions.');
@@ -690,7 +708,7 @@ module.exports = function(grunt) {
 		});
 
 		//quick version of default task testing/viewing quick changes
-		grunt.registerTask('q', ['buildfiles', 'ngtemplates:main', 'jshint:backendQ', 'jshint:beforeconcatQ', 'uglify:build', 'fontAwesomeVars', 'less:development', 'concat:devJs', 'concat:devCss']);
+		grunt.registerTask('q', ['buildfiles', 'ngtemplates:main', 'jshint:backendQ', 'jshint:beforeconcatQ', 'uglify:build', 'fontAwesomeVars', 'less:development', 'concat:devCss', 'cssmin:dev', 'concat:devJs']);
 		
 		//Phonegap build
 		grunt.registerTask('phonegap', 'run Phonegap task', function() {
@@ -698,7 +716,7 @@ module.exports = function(grunt) {
 			grunt.option('type', 'prod');
 			init({});		//re-init (since changed grunt options)
 		
-			grunt.task.run(['buildfiles', 'ngtemplates:main', 'uglify:build', 'fontAwesomeVars', 'less:development', 'concat:devJs', 'concat:devCss', 'copy:phonegapAndroid', 'copy:phonegapIOS']);
+			grunt.task.run(['buildfiles', 'ngtemplates:main', 'uglify:build', 'fontAwesomeVars', 'less:development', 'concat:devCss', 'cssmin:dev', 'concat:devJs', 'copy:phonegapAndroid', 'copy:phonegapIOS']);
 		});
 		
 		grunt.registerTask('noMin', ['buildfiles', 'ngtemplates:main', 'fontAwesomeVars', 'less:development', 'concat:devJsNoMin', 'concat:devCss']);

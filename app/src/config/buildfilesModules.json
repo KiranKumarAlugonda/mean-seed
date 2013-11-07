@@ -1,0 +1,326 @@
+{
+	"dirs":[
+		{
+			"name":"buildTempCss",
+			"path":"build",
+			"comment": "Need this at top since the order of css matters and want the base.css file FIRST. Also, NEED this file in the same directory as 'main.css' for relative file paths - i.e. to font-awesome font so it works with EITHER base.css or main.css..",
+			"files": {
+				"css":["base.css"]
+			}
+		},
+		{
+			"name":"bower",
+			"path":"bower_components",
+			"dirs":[
+				{
+					"name":"minified",
+					"path":"",
+					"comment":"directory paths are part of file lists/names",
+					"files": {
+						"js": [
+							"angular/angular.min.js",
+							"angular-route/angular-route.min.js",
+							"angular-sanitize/angular-sanitize.min.js",
+							"angular-touch/angular-touch.min.js",
+							"angular-animate/angular-animate.min.js",
+							"angular-cookies/angular-cookies.min.js",
+							"momentjs/min/moment.min.js",
+							"hammerjs/dist/hammer.min.js",
+							
+							"angular-array/array.min.js",
+							"angular-string/string.min.js",
+							"angular-facebook-auth/facebook-auth.min.js",
+							"angular-google-auth/google-auth.min.js"
+						]
+					},
+					"dirs":[
+						{
+							"name":"lesshat",
+							"files":{
+								"less":["lesshat.less"]
+							}
+						},
+						{
+							"name":"less-flexbox",
+							"files":{
+								"less":["flexbox-mixins.less", "flexbox.less"]
+							}
+						},
+						{
+							"name":"font-awesome",
+							"files":{
+								"less":["less/font-awesome.less"]
+							}
+						},
+						{
+							"name":"angular-forminput",
+							"files":{
+								"js":["forminput.min.js"],
+								"less":["forminput.less"]
+							}
+						}
+					]
+				},
+				{
+					"name":"nonMinified",
+					"path":"",
+					"comment":"directory paths are part of file lists/names",
+					"files": {
+						"js": [
+							"angular-hammer/angular-hammer.js"
+						]
+					}
+				}
+			]
+		},
+		{
+			"name":"lib",
+			"dirs":[
+				{
+					"name":"minified",
+					"path":"",
+					"comment":"directory paths are part of file lists/names. Also, 'facebook/facebook.all.js' is not included currently because it is a HUGE 168kb minified! just for login, which is a waste - try to shift to just backend facebook calls??",
+					"files": {
+						"js": [
+							"angular-ui-bootstrap/ui-bootstrap-custom-tpls-0.4.0.min.js"
+						]
+					}
+				},
+				{
+					"name":"nonMinified",
+					"path":"",
+					"comment":"directory paths are part of file lists/names",
+					"files": {
+						"js": [
+							"lawnchair/lawnchair-edit.js"
+						]
+					}
+				}
+			]
+		},
+		{
+			"name":"commonLess",
+			"path":"common/less",
+			"comment": "Separated this from 'common' for ordering purposes",
+			"files": {
+				"less":[
+					"reset.less",
+					"fonts.less",
+					"bootstrap-parts.less",
+					"body-other.less",
+					"form.less",
+					"buttons.less",
+					"typography.less",
+					"layout.less",
+					"margin-padding.less",
+					"layout-animate.less",
+					"list.less",
+					"pop-up.less"
+				]
+			}
+		},
+		{
+			"name": "common",
+			"path": "common",
+			"dirs":[
+				{
+					"name":"js",
+					"path":"js",
+					"files": {
+						"js": ["app.js"]
+					}
+				}
+			]
+		},
+		{
+			"name":"modules",
+			"dirs":[
+				{
+					"name":"services",
+					"files": {
+						"js":["svc.js", "LGlobals.js", "UserModel.js"]
+					},
+					"dirs":[
+						{
+							"name":"http",
+							"files": {
+								"js":["http.js"]
+							}
+						},
+						{
+							"name":"auth",
+							"files": {
+								"js":["auth.js"]
+							}
+						},
+						{
+							"name":"storage",
+							"files": {
+								"js":["storage.js"]
+							}
+						},
+						{
+							"name":"nav",
+							"files": {
+								"js":["nav.js"],
+								"less":["nav.less"]
+							},
+							"dirs":[
+								{
+									"name":"header-centered",
+									"files": {
+										"html":["header-centered.html"],
+										"less":["header-centered.less"]
+									}
+								},
+								{
+									"name":"footer-flex",
+									"files": {
+										"html":["footer-flex.html"],
+										"less":["footer-flex.less"]
+									}
+								}
+							]
+						},
+						{
+							"name":"socialAuth",
+							"files": {
+								"js":["socialAuth.js"]
+							}
+						}
+					]
+				},
+				{
+					"name":"directives",
+					"files": {
+						"js":["dtv.js"]
+					},
+					"dirs":[
+						{
+							"name":"appalert",
+							"files": {
+								"js":["appalert.js"],
+								"less":["appalert.less"]
+							}
+						}
+					]
+				},
+				{
+					"name":"pages",
+					"dirs":[
+						{
+							"name":"layout",
+							"files": {
+								"js":["LayoutCtrl.js"]
+							}
+						},
+						{
+							"name":"header",
+							"files": {
+								"js":["HeaderCtrl.js"],
+								"html":["header.html"],
+								"less":["header.less"]
+							}
+						},
+						{
+							"name":"footer",
+							"files": {
+								"js":["FooterCtrl.js"],
+								"html":["footer.html"],
+								"less":["footer.less"]
+							}
+						},
+						{
+							"name":"home",
+							"files": {
+								"js":["HomeCtrl.js"],
+								"html":["home.html"]
+							}
+						},
+						{
+							"name":"login",
+							"files": {
+								"js":["LoginCtrl.js"],
+								"html":["login.html"],
+								"less":["login.less"]
+							}
+						},
+						{
+							"name":"loginSignup",
+							"files": {
+								"js":["LoginSignupCtrl.js"],
+								"html":["login-signup.html"],
+								"less":["login-signup.less"]
+							}
+						},
+						{
+							"name":"logout",
+							"files": {
+								"js":["LogoutCtrl.js"],
+								"html":["logout.html"]
+							}
+						},
+						{
+							"name":"userDelete",
+							"files": {
+								"js":["UserDeleteCtrl.js"],
+								"html":["user-delete.html"]
+							}
+						},
+						{
+							"name":"passwordReset",
+							"files": {
+								"js":["PasswordResetCtrl.js"],
+								"html":["password-reset.html"],
+								"less":["password-reset.less"]
+							}
+						},
+						{
+							"name":"loginForm",
+							"files": {
+								"js":["LoginFormCtrl.js"],
+								"html":["login-form.html"]
+							}
+						},
+						{
+							"name":"signupForm",
+							"files": {
+								"js":["SignupFormCtrl.js"],
+								"html":["signup-form.html"]
+							}
+						},
+						{
+							"name":"test",
+							"files": {
+								"js":["TestCtrl.js"],
+								"html":["test.html"]
+							}
+						},
+						{
+							"name":"design",
+							"files": {
+								"js":["DesignCtrl.js"],
+								"html":["design.html"],
+								"less":["design.less"]
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"name":"build",
+			"path":"build",
+			"files":{
+				"css":["main.css"]
+			}
+		},
+		{
+			"name":"buildTemp",
+			"path":"build/temp",
+			"files": {
+				"js":["custom.min.js"]
+			}
+		}
+	]
+}

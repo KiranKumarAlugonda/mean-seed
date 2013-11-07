@@ -1,3 +1,23 @@
+# 0.8.1
+## Breaking Changes
+- `LGlobals` service renamed to `svcConfig` and is a child of the `svc` module now
+- `UserModel` service moved into `models` folder and is a child of the `models` module now
+- (grouped) modules now declared in `app.js` (`dtv.js`, `svc.js` files removed)
+- moved/modularized login and signup to their own pages and into directives
+	- also made socialAuth directive
+
+## Features
+- svcHttp
+	- Added `suppressErrorAlert` parameter to svcHttp.go call and used it for logout call so it doesn't show an error message if already logged out
+	
+## Bug Fixes
+- facebook: added the facebook JS SDK file back in and updated angular-facebook-auth so FB login and signup works now. NOTE: this is a HUGE (170kb minified!) file so if you're NOT using Facebook, definitely REMOVE this file (from `buildfilesModules.json`)!
+- google: added the google api JS file in and updated angular-google-auth so google login and signup works now.
+- added in default 'testing' facebook and google api keys so facebook and google should work by default on localhost (will not work outside of localhost!)
+	- NOTE: you should replace these keys (in `config.json`) to your own (you'll likely need one per domain)
+- NOTE: `main-min.js` jumped up to around 400kb in size because of this - facebook (170kb) and google (33kb) comprise over 200kb (about half!) of this - mostly facebook!
+
+	
 # 0.8.0
 ## Breaking Changes
 - Refactor Part 2: build process

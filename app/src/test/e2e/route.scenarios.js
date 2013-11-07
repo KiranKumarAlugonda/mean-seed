@@ -62,6 +62,14 @@ describe("E2E: Testing Routes", function() {
 		// var btnLogin =ptor.findElement(protractor.By.css('.login-form .btn-primary:submit'));
 		var btnLogin =ptor.findElement(protractor.By.css('.login-form .btn-primary'));
 		expect(btnLogin.getText()).toContain('Login');
+	});
+	
+	it('should have a working /signup route and allow creating a new user', function() {
+		ptor.get('/signup');
+		expect(ptor.getCurrentUrl()).toContain("/signup");
+		
+		/*
+		//outdated now that have both login and signup pages separately
 		
 		//click button to go to sign up
 		// var ele =ptor.findElement(protractor.By.css('.login-signup .btn-link:nth-child(1)'));		//doesn't work - eq() is different than css selectors and handles this?
@@ -76,6 +84,7 @@ describe("E2E: Testing Routes", function() {
 		var ele =ptor.findElement(protractor.By.xpath("//div["+hasClass('login-signup')+"]/div[1]/div[2]/*[@class='btn-link']"));
 		expect(ele.getText()).toContain('Sign Up');
 		ele.click();
+		*/
 		
 		//fill in signup form
 		var formSelector ='.signup-form form';

@@ -25,6 +25,8 @@ Feel free to fork the project to make seeds with other default technologies (Mon
 
 Any suggestions for improvement are welcome!
 
+### NOTE: if you are NOT using Facebook login, REMOVE the `facebook.all.js` file that's included in `buildfilesModules.json` since it's a HUGE (170kb minified!) file and thus a huge waste if you're not using it!
+
 ### NOTE: In general, each (major) directory should have its own README file to avoid this one from getting bloated and hard to follow. Currently there is (just) a README specific to the frontend in the `app/src` folder.
 
 ## Limitations / Compatibility
@@ -359,7 +361,10 @@ API:Main Moudle Route   | `/api/`, `/api/help`
 
 
 ## TODO
+- Shift all Facebook calls to backend? Is this possible? So we can then remove the HUGE 170kb minified Facebook Javascript SDK that's just used for login..
 - Use Yeoman (once it comes out of 1.0 Beta)
+
 - modularize the non-modularized files so the configurations (all the custom code) can be edited separately from the functions and generic code.
+
 - make a Mongoose fork for people who want to use Mongoose instead of mongo-db-native as the node-mongo interface?
 - make a SASS/SCSS fork for people who prefer SASS/Compass over LESS for CSS pre-processing?

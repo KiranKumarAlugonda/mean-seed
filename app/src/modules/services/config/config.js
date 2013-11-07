@@ -49,11 +49,11 @@ provider('svcConfig', function(){
 	'appTitle':'Project',
 	//'androidMarketLink':'http://play.google.com/store/apps/details?id=com.phonegap.x',
 	'websiteLink':'http://domainHere.com/',
-	'fbAppId':'',
+	'fbAppId':'195380783916970',
 	//'fbPerms':"email,user_birthday,offline_access,publish_stream",
 	'fbPerms':"email,user_birthday",
 	'twitterHandle':'handleHere',
-	'googleClientId':'',
+	'googleClientId':'486630891328.apps.googleusercontent.com',
 	'timezone':{
 		'name':'',
 		'offset':'',
@@ -231,13 +231,13 @@ provider('svcConfig', function(){
 			"sms":{
 			},
 			"facebook":{
-				"appId":""
+				"appId":"195380783916970"
 			},
 			"less":{
 				"dirPathRootPrefix":""
 			},
 			"google":{
-				"clientId":"",
+				"clientId":"486630891328.apps.googleusercontent.com",
 				"clientSecret":""
 			},
 			"sauceLabs":{

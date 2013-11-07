@@ -79,10 +79,12 @@
 				{
 					"name":"minified",
 					"path":"",
-					"comment":"directory paths are part of file lists/names. Also, 'facebook/facebook.all.js' is not included currently because it is a HUGE 168kb minified! just for login, which is a waste - try to shift to just backend facebook calls??",
+					"comment":"directory paths are part of file lists/names. Also, 'facebook/facebook.all.js' is HUGE (170kb minified!) and is currently included for Facebook login but if you are NOT going to use that, make sure to REMOVE this file! In general it may be better to try to shift to just backend facebook calls since this seems like a waste just for login... Similarly (though it is not as large) with google - remove if you are not using it!",
 					"files": {
 						"js": [
-							"angular-ui-bootstrap/ui-bootstrap-custom-tpls-0.4.0.min.js"
+							"angular-ui-bootstrap/ui-bootstrap-custom-tpls-0.4.0.min.js",
+							"facebook/facebook.all.min.js",
+							"google/gapi-plusone.min.js"
 						]
 					}
 				},
@@ -213,6 +215,27 @@
 								"js":["appalert.js"],
 								"less":["appalert.less"]
 							}
+						},
+						{
+							"name":"login",
+							"files": {
+								"js":["login.js"],
+								"less":["login.less"]
+							}
+						},
+						{
+							"name":"signup",
+							"files": {
+								"js":["signup.js"],
+								"less":["signup.less"]
+							}
+						},
+						{
+							"name":"socialAuth",
+							"files": {
+								"js":["socialAuth.js"],
+								"less":["social-auth.less"]
+							}
 						}
 					]
 				},
@@ -257,11 +280,19 @@
 							}
 						},
 						{
-							"name":"loginSignup",
+							"name":"signup",
 							"files": {
-								"js":["LoginSignupCtrl.js"],
-								"html":["login-signup.html"],
-								"less":["login-signup.less"]
+								"js":["SignupCtrl.js"],
+								"html":["signup.html"],
+								"less":["signup.less"]
+							}
+						},
+						{
+							"name":"passwordReset",
+							"files": {
+								"js":["PasswordResetCtrl.js"],
+								"html":["password-reset.html"],
+								"less":["password-reset.less"]
 							}
 						},
 						{
@@ -276,28 +307,6 @@
 							"files": {
 								"js":["UserDeleteCtrl.js"],
 								"html":["user-delete.html"]
-							}
-						},
-						{
-							"name":"passwordReset",
-							"files": {
-								"js":["PasswordResetCtrl.js"],
-								"html":["password-reset.html"],
-								"less":["password-reset.less"]
-							}
-						},
-						{
-							"name":"loginForm",
-							"files": {
-								"js":["LoginFormCtrl.js"],
-								"html":["login-form.html"]
-							}
-						},
-						{
-							"name":"signupForm",
-							"files": {
-								"js":["SignupFormCtrl.js"],
-								"html":["signup-form.html"]
 							}
 						},
 						{

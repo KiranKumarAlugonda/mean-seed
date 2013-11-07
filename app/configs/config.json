@@ -56,13 +56,13 @@
 	"sms":{
 	},
 	"facebook":{
-		"appId": ""
+		"appId": "195380783916970"
 	},
 	"less":{
 		"dirPathRootPrefix": ""
 	},
 	"google":{
-		"clientId": "",
+		"clientId": "486630891328.apps.googleusercontent.com",
 		"clientSecret": ""
 	},
 	"sauceLabs":{

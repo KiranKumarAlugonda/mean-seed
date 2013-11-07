@@ -1,6 +1,8 @@
 /**
 This controller is the main controller set on the <body> tag so is thus the parent controller for all other controllers in the app. So all other controllers inherit $scope properities defined here - notably: $scope.appPath, $scope.appPathLink, $scope.appPathLocation, $scope.appTitle.
 
+It's always available/loaded so any 'global' events that always need to be listened for can be put here (like logging in or logging out). Anything put on $scope is available in ANY other controllers and HTML partials.
+
 There's 3 main div elements on the page: 1. header, 2. content, 3. footer
 
 The "pages" array defines the pages and is used to set the layout and top level classes to apply to a given page using $scope.classes
@@ -8,12 +10,24 @@ The "pages" array defines the pages and is used to set the layout and top level 
 @module ang-layout
 @main ang-layout
 @class ang-layout
+
+@toc
+1. define 'global' properties that can be used in any other javascript controller / HTML partial
+2. $scope.$on('loginEvt',..		//this MUST be declared in THIS controller otherwise (i.e. if put in LoginCtrl) it will ONLY get listened for when on the login page!
+3. $scope.$on('changeLayoutEvt',..
+4. ensure footer is always below scroll line (i.e. on each resize)
+	4.1. resize
 */
 
 'use strict';
 
 angular.module('myApp').controller('LayoutCtrl', ['$scope', 'svcConfig', '$location', '$cookieStore', '$rootScope', 'svcAuth', '$timeout',
  function($scope, svcConfig, $location, $cookieStore, $rootScope, svcAuth, $timeout) {
+	/**
+	define 'global' properties
+	@toc 1.
+	*/
+	
 	/**
 	Most common and default use of appPath, which is set from svcConfig and is used to allow using absolute paths for ng-include and all other file structure / path references
 	@property $scope.appPath
@@ -79,6 +93,7 @@ angular.module('myApp').controller('LayoutCtrl', ['$scope', 'svcConfig', '$locat
 	*/
 	$scope.contentMinHeight =0;
 	
+	
 
 	/**
 	Handles post login (or reverse for logout)
@@ -86,6 +101,7 @@ angular.module('myApp').controller('LayoutCtrl', ['$scope', 'svcConfig', '$locat
 	- sets $scope.classes.loggedIn
 	- sets (or clears for logout) cookies for session and user
 	- redirects to the appropriate page if need be
+	@toc 2.
 	@method $scope.$on('loginEvt',..
 	@param {Object} params
 		@param {Boolean} [loggedIn] true if logged in
@@ -107,12 +123,12 @@ angular.module('myApp').controller('LayoutCtrl', ['$scope', 'svcConfig', '$locat
 			if(params.user_id !==undefined) {
 				$cookieStore.put('user_id', params.user_id);
 			}
-			if(params.noRedirect ===undefined || !params.noRedirect || (params.loggedIn && (locPathMatch ==appPath1Match+'login' || locPathMatch ==appPath1Match+'password-reset') ) ) {
+			if(params.noRedirect ===undefined || !params.noRedirect || (params.loggedIn && (locPathMatch ==appPath1Match+'login' || locPathMatch ==appPath1Match+'password-reset' || locPathMatch ==appPath1Match+'signup') ) ) {
 				var page ='home';
 				var redirect =false;
 				if(svcAuth.data.redirectUrl) {
 				//if(0) {
-					if(svcAuth.data.redirectUrl.indexOf('login') <0 && svcAuth.data.redirectUrl.indexOf('password-reset') <0) {		//prevent infinite loop //UPDATE: android appends weird stuff in front so can't do exact match..
+					if(svcAuth.data.redirectUrl.indexOf('login') <0 && svcAuth.data.redirectUrl.indexOf('password-reset') <0 && svcAuth.data.redirectUrl.indexOf('signup') <0) {		//prevent infinite loop //UPDATE: android appends weird stuff in front so can't do exact match..
 						page =svcAuth.data.redirectUrl;
 						redirect =true;
 					}
@@ -133,23 +149,41 @@ angular.module('myApp').controller('LayoutCtrl', ['$scope', 'svcConfig', '$locat
 		else {
 			$scope.classes.loggedIn ='logged-out';
 			svcConfig.state.loggedIn =false;
-			if(params.noRedirect ===undefined || !params.noRedirect || (params.loggedIn && (locPathMatch ==appPath1Match+'login' || locPathMatch ==appPath1Match+'password-reset') ) ) {
+			if(params.noRedirect ===undefined || !params.noRedirect || (params.loggedIn && (locPathMatch ==appPath1Match+'login' || locPathMatch ==appPath1Match+'password-reset' || locPathMatch ==appPath1Match+'signup') ) ) {
 				$location.url(svcConfig.dirPaths.appPathLocation+"home");
 			}
 		}
 	});
 
-	/*
-	@param classPage =string of class to give to this page (i.e. 'main', 'product-rec', ..)
+	
+	/**
+	@toc 3.
+	@method $scope.$on('changeLayoutEvt',..
+	@param {String} classPage Class to give to this page (i.e. 'main', 'product-rec', ..)
+	@param {Object} [params]
+		@param [classLoggedIn] Class to set $scope.classes.loggedIn to
 	*/
-	$scope.$on('changeLayoutEvt', function(evt, classPage) {
+	$scope.$on('changeLayoutEvt', function(evt, classPage, params) {
+		if(params ===undefined) {
+			params ={};
+		}
+		
 		if(classPage) {
 			$scope.classes.layout =classPage;
 		}
+		if(params.classLoggedIn !==undefined) {
+			$scope.classes.loggedIn =params.classLoggedIn;
+		}
+		
 		resize({'otherHeightEleIds':[$scope.ids.header, $scope.ids.content, $scope.ids.footer], 'minHeightEleId':$scope.ids.content});
 	});
 
-	//ensure footer is always below scroll line (i.e. on each resize)
+	
+	
+	/**
+	ensure footer is always below scroll line (i.e. on each resize)
+	@toc 4.
+	*/
 	window.onresize =function() {
 		resize({'otherHeightEleIds':[$scope.ids.header, $scope.ids.content, $scope.ids.footer], 'minHeightEleId':$scope.ids.content});
 	};
@@ -163,6 +197,7 @@ angular.module('myApp').controller('LayoutCtrl', ['$scope', 'svcConfig', '$locat
 	*/
 
 	/**
+	@toc 4.1.
 	@method resize
 	@param {Object} params
 		@param {Array} otherHeightEleIds other ids on page that's used to figure out height / where top of footer should be
@@ -192,6 +227,8 @@ angular.module('myApp').controller('LayoutCtrl', ['$scope', 'svcConfig', '$locat
 		}
 	}
 
+	
+	
 	//init (need to wait until loaded)
 	/*
 	var promise =libAngular.scopeLoaded({'idEle':$scope.ids.content});

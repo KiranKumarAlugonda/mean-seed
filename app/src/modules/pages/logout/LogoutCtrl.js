@@ -9,7 +9,7 @@ angular.module('myApp').controller('LogoutCtrl', ['$scope', '$location', '$cooki
 	var user =UserModel.load();
 	var sessId =$cookieStore.get('sess_id');
 	
-	var promise1 =svcHttp.go({}, {url: 'auth/logout', data: {user_id:user._id, sess_id:sessId}}, {});
+	var promise1 =svcHttp.go({}, {url: 'auth/logout', data: {user_id:user._id, sess_id:sessId}}, {suppressErrorAlert:true});
 	promise1.then( function(data) {
 		clearData({});
 		$rootScope.$broadcast('loginEvt', {'loggedIn':false});

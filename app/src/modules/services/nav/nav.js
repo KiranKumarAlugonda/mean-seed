@@ -230,6 +230,36 @@ var inst ={
 			}
 		};
 		
+		//signup
+		this.pages.signup ={
+			header: {
+				template: self.paths.templates.headerCentered,
+				title: {
+					html: '&nbsp;'
+				},
+				buttons: {
+					left: [
+						{
+							html: "&nbsp;"
+						}
+					],
+					right: [
+						{
+							html: "&nbsp;"
+						}
+					]
+				}
+			},
+			footer: {
+				template: self.paths.templates.footerFlex,
+				buttons: [
+					{
+						html: "&nbsp;"
+					}
+				]
+			}
+		};
+		
 		
 		//test
 		this.pages.test =jrgArray.copy(this.components.defaultNav);

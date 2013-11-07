@@ -32,6 +32,7 @@ angular.module('svc').factory('svcHttp', ['$http', '$q', '$rootScope', '$cookieS
 			@param {String} [msgSuccess] Message to alert upon success
 			@param {Boolean} [noLoadingScreen] Boolean true to NOT show loading screen
 			@param {Number} [maxMilliseconds =7500] How long to allow the call to go (after this, call will fail and error will be returned)
+			@param {Boolean} [suppressErrorAlert] True to NOT show the error if the HTTP call errors
 		@return deferred.promise
 		@example with just success handling
 			var promise =svcHttp.go({method:'Auth.login'}, {data:$scope.formVals}, {});
@@ -70,7 +71,9 @@ angular.module('svc').factory('svcHttp', ['$http', '$q', '$rootScope', '$cookieS
 					
 					// response.error is only pressent when an error has occurred
 					if( response.hasOwnProperty('error') ) {
-						$rootScope.$broadcast('evtAppalertAlert', {type:'error', msg:response.error.message});
+						if(params.suppressErrorAlert ===undefined || !params.suppressErrorAlert) {
+							$rootScope.$broadcast('evtAppalertAlert', {type:'error', msg:response.error.message});
+						}
 						deferred.reject(response);
 					} else {
 						if(params.msgSuccess) {		//only alert message if one was passed in

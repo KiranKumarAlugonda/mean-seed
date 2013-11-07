@@ -46,7 +46,7 @@ var inst ={
 	@method saveUrlLocation
 	*/
 	saveUrlLocation: function(params) {
-		var skipPages =['login'];
+		var skipPages =['login', 'signup'];
 		//var curPage =$location.path().replace(svcConfig.dirPaths.appPath, '');		//$location doesn't have url & path defined yet??
 		// var appPath =window.location.host+svcConfig.dirPaths.appPath;
 		var appPath =svcConfig.dirPaths.appPath;
@@ -194,8 +194,8 @@ var inst ={
 				else {
 					goTrig =true;
 					if(svcConfig.state.loggedIn ===false) {
-						$rootScope.$broadcast('changeLayoutEvt', 'login');
 						if(!params.noLoginRequired) {
+							$rootScope.$broadcast('changeLayoutEvt', 'layout-login');
 							//thisObj.data.redirectUrl =$location.url();		//save for after login
 							$location.url(svcConfig.dirPaths.appPathLocation+params.loginPage);
 							if(thisObj.samePage(params.loginPage, {})) {
@@ -221,8 +221,8 @@ var inst ={
 		}
 		if(goTrig) {		//no AJAXing, just handle redirect (to login OR home/main) here
 			if(svcConfig.state.loggedIn ===false) {
-				$rootScope.$broadcast('changeLayoutEvt', 'login');
 				if(!params.noLoginRequired) {
+					$rootScope.$broadcast('changeLayoutEvt', 'layout-login');
 					//thisObj.data.redirectUrl =$location.url();		//save for after login
 					$location.url(svcConfig.dirPaths.appPathLocation+params.loginPage);
 					if(thisObj.samePage(params.loginPage, {})) {

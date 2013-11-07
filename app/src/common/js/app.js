@@ -104,6 +104,13 @@ config(['$routeProvider', '$locationProvider', 'svcConfigProvider', '$compilePro
 			}
 		}
 	});
+	$routeProvider.when(appPathRoute+'signup', {templateUrl: pagesPath+'signup/signup.html',
+		resolve: {
+			auth: function(svcAuth) {
+				return svcAuth.checkSess({'noLoginRequired':true});
+			}
+		}
+	});
 	$routeProvider.when(appPathRoute+'logout', {templateUrl: pagesPath+'logout/logout.html',
 		resolve: {
 			auth: function(svcAuth) {

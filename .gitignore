@@ -34,7 +34,7 @@ yuidocs
 # ignore files compiled / built by grunt
 app/src/build
 app/src/common/less/_base.less
-app/src/modules/services/LGlobals.js
+app/src/modules/services/config/config.js
 app/src/config/karma.conf.js
 _dir-paths.less
 app/src/index.html

@@ -20,11 +20,11 @@ The core call(s) to always do before commiting any changes:
 	- NOTE: since this runs the frontend Karma server tests, this will NOT auto-complete; use Ctrl+C to exit the task once it runs and you see the 'SUCCESS' message for all tests passing
 
 Other calls (relatively in order of importantance / most used)
-`grunt q` for quick compiles (doesn't run tests or build docs)
+`grunt q` for quick compiles (doesn't run tests or build yui docs)
 `grunt noMin` a quick compile that also builds main.js and main.css (instead of main-min versions) - good for debugging/development.
 `grunt test-frontend` - runs Karma frontend tests
 `grunt test` - runs ALL tests
-`grunt docs` - generate YUIDoc auto documentation
+`grunt yui` - generate YUIDoc auto documentation
 `grunt test-backend` to just test backend
 `grunt lint-backend` to just lint backend
 
@@ -667,7 +667,7 @@ module.exports = function(grunt) {
 			grunt.task.run(['test-backend', 'test-frontend']);
 		});
 
-		grunt.registerTask('docs', ['yuidoc']);
+		grunt.registerTask('yui', ['yuidoc']);
 
 		grunt.registerTask('lint-backend', ['jshint:backend']);
 		

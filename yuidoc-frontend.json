@@ -5,7 +5,7 @@
     "url": "TODO",
     "options": {
         "paths": "./app/src/",
-        "outdir": "docs/frontend",
+        "outdir": "yuidocs/frontend",
         "exclude": ""
     }
 }

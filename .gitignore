@@ -29,7 +29,7 @@ selenium
 /config_environment.json
 
 # ignore auto generated documentation (YUIDoc) files
-docs
+yuidocs
 
 # ignore files compiled / built by grunt
 app/src/build

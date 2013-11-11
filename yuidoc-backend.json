@@ -5,7 +5,7 @@
     "url": "TODO",
     "options": {
         "paths": ".",
-        "outdir": "docs/backend",
+        "outdir": "yuidocs/backend",
         "exclude": "node_modules,public,src"
     }
 }

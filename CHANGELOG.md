@@ -1,3 +1,8 @@
+# 0.8.2
+## Breaking Changes
+- Upgrade to LESSHat 2.0 - change all .gradient(~"") to .background-image()
+
+
 # 0.8.1
 ## Breaking Changes
 - `LGlobals` service renamed to `svcConfig` and is a child of the `svc` module now

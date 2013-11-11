@@ -37,7 +37,7 @@
 						{
 							"name":"lesshat",
 							"files":{
-								"less":["lesshat.less"]
+								"less":["build/lesshat.less"]
 							}
 						},
 						{

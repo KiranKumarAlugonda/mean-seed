@@ -1,6 +1,9 @@
 /**
 @module ang-login
 @class ang-logout
+
+@toc
+1. clearData
 */
 
 'use strict';
@@ -19,6 +22,11 @@ angular.module('myApp').controller('LogoutCtrl', ['$scope', '$location', '$cooki
 		$rootScope.$broadcast('loginEvt', {'loggedIn':false});
 	});
 	
+	/**
+	Clear all (user) data - in javascript memory and localStorage. As more frontend / memory data is added, make sure to clear/destroy them here!
+	@toc 1.
+	@method clearData
+	*/
 	function clearData(params) {
 		$cookieStore.remove('sess_id');
 		$cookieStore.remove('user_id');

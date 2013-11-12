@@ -41,10 +41,6 @@ angular.module('dtv').directive('dtvAppalert', ['$rootScope', '$timeout', functi
 		template: "<div class='dtv-appalert {{alert.classes}}'>"+
 			"<alert type='alert.type' close='closeAlert({})'>{{alert.msg}}</alert>"+
 		"</div>",
-		/*
-		compile: function(element, attrs) {
-		},
-		*/
 		
 		controller: function($scope, $element, $attrs) {
 			/**

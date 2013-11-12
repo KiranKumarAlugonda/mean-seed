@@ -28,7 +28,8 @@ function (svcHttp, UserModel, svcConfig, $rootScope, svcSocialAuth) {
 		scope: {
 		},
 
-		compile: function(element, attrs) {
+		// replace: true,
+		template: function(element, attrs) {
 			var defaultAttrs ={
 				buttonText: 'Login'
 			};
@@ -38,7 +39,7 @@ function (svcHttp, UserModel, svcConfig, $rootScope, svcSocialAuth) {
 				"<div class='social-auth-button-facebook' ng-click='fbLogin()'><i class='fa fa-facebook padding-lr social-auth-button-icon'></i><div class='social-auth-button-text'>"+attrs.buttonText+"</div></div>"+
 				"<div class='social-auth-button-google' ng-click='googleLogin()'><i class='fa fa-google-plus padding-lr social-auth-button-icon'></i><div class='social-auth-button-text'>"+attrs.buttonText+"</div></div>"+
 			"</div>";
-			element.replaceWith(html);
+			return html;
 		},
 		
 		controller: function($scope, $element, $attrs) {

@@ -29,7 +29,8 @@ angular.module('dtv').directive('dtvLogin', ['svcConfig', function (svcConfig) {
 			login:'&',
 		},
 
-		compile: function(element, attrs) {
+		// replace: true,
+		template: function(element, attrs) {
 			var html ="<div class='login-form center center-margin'>"+
 				"<form class='jrg-forminput-form' name='loginForm' ng-submit='submitForm()'>"+
 					"<div jrg-forminput type='email' placeholder='Email' ng-model='formVals.email' opts='' required></div>"+
@@ -53,7 +54,7 @@ angular.module('dtv').directive('dtvLogin', ['svcConfig', function (svcConfig) {
 			"</div>"+
 			
 			"<div class='center margin-tb'><span>Don't have an account with {{appTitle}}?</span> <a class='btn-link' ng-href='{{appPathLink}}signup'>Sign Up</a></div>";
-			element.replaceWith(html);
+			return html;
 		},
 		
 		controller: function($scope, $element, $attrs) {

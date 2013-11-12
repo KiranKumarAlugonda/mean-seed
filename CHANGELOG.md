@@ -1,3 +1,8 @@
+# 0.8.3
+## Features
+- support Angular 1.2.0 - switch from `compile` to `template` for all directives (and dependency directives)
+
+
 # 0.8.2
 ## Breaking Changes
 - Upgrade to LESSHat 2.0 - change all .gradient(~"") to .background-image()

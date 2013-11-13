@@ -1,3 +1,12 @@
+# OBSOLETE / UPGRADED & MOVED
+MEAN-seed has been upgraded to a Yeoman Generator!
+Simpler/less steps, more automation, and more!
+https://github.com/jackrabbitsgroup/generator-mean-seed
+
+
+
+
+
 # MEAN (Mongo Express Angular Node) seed
 *MongoDB, Express.js, AngularJS, Node.js + Grunt, Jasmine*
 
